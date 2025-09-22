@@ -1,31 +1,20 @@
 package com.example.demo.model;
 
-import jakarta.persistence.*;
-
-@Entity
-@Table(name = "hashtags")
 public class Hashtag {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long hashtag_id;
+    private Long hashtagId;
+    private String text;
 
-    @Column(nullable = false, unique = true)
-    private String text;   // The hashtag text like #java
+    public Hashtag() {}
 
-    // Getters and Setters
-    public Long getHashtag_id() {
-        return hashtag_id;
-    }
-
-    public void setHashtag_id(Long hashtag_id) {
-        this.hashtag_id = hashtag_id;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
+    public Hashtag(Long hashtagId, String text) {
+        this.hashtagId = hashtagId;
         this.text = text;
     }
+
+    // Getters and setters
+    public Long getHashtagId() { return hashtagId; }
+    public void setHashtagId(Long hashtagId) { this.hashtagId = hashtagId; }
+
+    public String getText() { return text; }
+    public void setText(String text) { this.text = text; }
 }

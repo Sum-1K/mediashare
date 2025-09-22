@@ -2,47 +2,31 @@ package com.example.demo.model;
 
 import java.time.LocalDateTime;
 
-import org.hibernate.annotations.CreationTimestamp;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-
-@Entity
-@Table(name = "like_table") // "like" is a reserved keyword in SQL, so using "like_table"
 public class Like {
+    private Long likeId;
+    private LocalDateTime createdAt;
+    private Long userId;
+    private Long contentId;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long like_id;
+    public Like() {}
 
-    @CreationTimestamp
-    private LocalDateTime created_at;
+    public Like(Long likeId, LocalDateTime createdAt, Long userId, Long contentId) {
+        this.likeId = likeId;
+        this.createdAt = createdAt;
+        this.userId = userId;
+        this.contentId = contentId;
+    }
 
-    // Many likes belong to one user
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    // Getters and setters
+    public Long getLikeId() { return likeId; }
+    public void setLikeId(Long likeId) { this.likeId = likeId; }
 
-    // Many likes belong to one content
-    @ManyToOne
-    @JoinColumn(name = "content_id", nullable = false)
-    private Content contentEntity;
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    // Getters and Setters
-    public Long getLike_id() { return like_id; }
-    public void setLike_id(Long like_id) { this.like_id = like_id; }
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
 
-    public LocalDateTime getCreated_at() { return created_at; }
-    public void setCreated_at(LocalDateTime created_at) { this.created_at = created_at; }
-
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
-
-    public Content getContentEntity() { return contentEntity; }
-    public void setContentEntity(Content contentEntity) { this.contentEntity = contentEntity; }
+    public Long getContentId() { return contentId; }
+    public void setContentId(Long contentId) { this.contentId = contentId; }
 }

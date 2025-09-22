@@ -1,77 +1,27 @@
 package com.example.demo.model;
 
-import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "follow_requests")
 public class FollowRequest {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long request_id;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Status status;
-
-    @CreationTimestamp
-    private LocalDateTime sent_at;
-
-    // Sender of the request
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_id", nullable = false)
-    private User sender;
-
-    // Receiver of the request
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "receiver_id", nullable = false)
-    private User receiver;
-
-    public enum Status {
-        SENT, ACCEPTED, DECLINED
-    }
+    private Long sender_id;
+    private Long receiver_id;
+    private String status;
+    private LocalDateTime created_at;
 
     // Getters and Setters
-    public Long getRequest_id() {
-        return request_id;
-    }
+    public Long getRequest_id() { return request_id; }
+    public void setRequest_id(Long request_id) { this.request_id = request_id; }
 
-    public void setRequest_id(Long request_id) {
-        this.request_id = request_id;
-    }
+    public Long getSender_id() { return sender_id; }
+    public void setSender_id(Long sender_id) { this.sender_id = sender_id; }
 
-    public Status getStatus() {
-        return status;
-    }
+    public Long getReceiver_id() { return receiver_id; }
+    public void setReceiver_id(Long receiver_id) { this.receiver_id = receiver_id; }
 
-    public void setStatus(Status status) {
-        this.status = status;
-    }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
-    public LocalDateTime getSent_at() {
-        return sent_at;
-    }
-
-    public void setSent_at(LocalDateTime sent_at) {
-        this.sent_at = sent_at;
-    }
-
-    public User getSender() {
-        return sender;
-    }
-
-    public void setSender(User sender) {
-        this.sender = sender;
-    }
-
-    public User getReceiver() {
-        return receiver;
-    }
-
-    public void setReceiver(User receiver) {
-        this.receiver = receiver;
-    }
+    public LocalDateTime getCreated_at() { return created_at; }
+    public void setCreated_at(LocalDateTime created_at) { this.created_at = created_at; }
 }

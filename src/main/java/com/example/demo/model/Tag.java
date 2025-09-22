@@ -1,32 +1,26 @@
 package com.example.demo.model;
 
-import jakarta.persistence.*;
-
-@Entity
-@Table(name = "tag")   // Table name in your database
 public class Tag {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long tag_id;
+    private Long user_id;
+    private Long content_id;
 
-    // Foreign key to users table
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false) 
-    private User user;
+    // Constructors
+    public Tag() {}
 
-    // Foreign key to content table
-    @ManyToOne
-    @JoinColumn(name = "content_id", nullable = false)
-    private Content content;
+    public Tag(Long tag_id, Long user_id, Long content_id) {
+        this.tag_id = tag_id;
+        this.user_id = user_id;
+        this.content_id = content_id;
+    }
 
-    // ---------- Getters and Setters ----------
+    // Getters & Setters
     public Long getTag_id() { return tag_id;}
     public void setTag_id(Long tag_id) { this.tag_id = tag_id;}
 
-    public User getUser() { return user;}
-    public void setUser(User user) { this.user = user;}
+    public Long getUser_id() { return user_id;}
+    public void setUser_id(Long user_id) { this.user_id = user_id;}
 
-    public Content getContent() { return content;}
-    public void setContent(Content content) { this.content = content;}
+    public Long getContent_id() { return content_id;}
+    public void setContent_id(Long content_id) { this.content_id = content_id;}
 }

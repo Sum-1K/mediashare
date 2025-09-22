@@ -1,43 +1,50 @@
 package com.example.demo.model;
 
-import jakarta.persistence.*;
-
-@Entity
-@Table(name = "stories")
 public class Story {
+    private Long storyId;  // PK and also FK → content_id
+    private String mediaFile;
+    private String highlightTopic;
+    private Boolean isHighlighted;
+    private Boolean isArchived;
 
-    @Id
-    private Long story_id;  // also foreign key to content_id
+    // Getters and setters
+    public Long getStoryId() {
+        return storyId;
+    }
 
-    @OneToOne
-    @MapsId   // tells JPA that story_id = content_id
-    @JoinColumn(name = "story_id")
-    private Content content;
+    public void setStoryId(Long storyId) {
+        this.storyId = storyId;
+    }
 
-    private String media_file;
+    public String getMediaFile() {
+        return mediaFile;
+    }
 
-    private String highlight_topic;
+    public void setMediaFile(String mediaFile) {
+        this.mediaFile = mediaFile;
+    }
 
-    private boolean is_highlighted;
+    public String getHighlightTopic() {
+        return highlightTopic;
+    }
 
-    private boolean is_archived;
+    public void setHighlightTopic(String highlightTopic) {
+        this.highlightTopic = highlightTopic;
+    }
 
-    // Getters and Setters
-    public Long getStory_id() { return story_id; }
-    public void setStory_id(Long story_id) { this.story_id = story_id; }
+    public Boolean getIsHighlighted() {
+        return isHighlighted;
+    }
 
-    public Content getContent() { return content; }
-    public void setContent(Content content) { this.content = content; }
+    public void setIsHighlighted(Boolean isHighlighted) {
+        this.isHighlighted = isHighlighted;
+    }
 
-    public String getMedia_file() { return media_file; }
-    public void setMedia_file(String media_file) { this.media_file = media_file; }
+    public Boolean getIsArchived() {
+        return isArchived;
+    }
 
-    public String getHighlight_topic() { return highlight_topic; }
-    public void setHighlight_topic(String highlight_topic) { this.highlight_topic = highlight_topic; }
-
-    public boolean isIs_highlighted() { return is_highlighted; }
-    public void setIs_highlighted(boolean is_highlighted) { this.is_highlighted = is_highlighted; }
-
-    public boolean isIs_archived() { return is_archived; }
-    public void setIs_archived(boolean is_archived) { this.is_archived = is_archived; }
+    public void setIsArchived(Boolean isArchived) {
+        this.isArchived = isArchived;
+    }
 }

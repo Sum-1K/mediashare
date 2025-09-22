@@ -1,35 +1,14 @@
 package com.example.demo.model;
 
-import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "chats")
 public class Chat {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long chat_id;
-
-    @Column(nullable = false)
-    private Boolean seen = false;
-
-    @Lob
-    @Column(nullable = false)
+    private Boolean seen;
     private String message;
-
-    @CreationTimestamp
     private LocalDateTime sent_at;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_id", nullable = false)
-    private User sender;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "receiver_id", nullable = false)
-    private User receiver;
+    private Long sender_id;
+    private Long receiver_id;
 
     // Getters and Setters
     public Long getChat_id() { return chat_id; }
@@ -44,9 +23,9 @@ public class Chat {
     public LocalDateTime getSent_at() { return sent_at; }
     public void setSent_at(LocalDateTime sent_at) { this.sent_at = sent_at; }
 
-    public User getSender() { return sender; }
-    public void setSender(User sender) { this.sender = sender; }
+    public Long getSender_id() { return sender_id; }
+    public void setSender_id(Long sender_id) { this.sender_id = sender_id; }
 
-    public User getReceiver() { return receiver; }
-    public void setReceiver(User receiver) { this.receiver = receiver; }
+    public Long getReceiver_id() { return receiver_id; }
+    public void setReceiver_id(Long receiver_id) { this.receiver_id = receiver_id; }
 }

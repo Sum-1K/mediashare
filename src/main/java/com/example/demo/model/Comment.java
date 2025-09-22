@@ -2,54 +2,36 @@ package com.example.demo.model;
 
 import java.time.LocalDateTime;
 
-import org.hibernate.annotations.CreationTimestamp;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-
-@Entity
-@Table(name = "comment")
 public class Comment {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long comment_id;
-
-    @Lob
+    private Long commentId;
     private String content;
+    private LocalDateTime createdAt;
+    private Long userId;
+    private Long contentId;
 
-    @CreationTimestamp
-    private LocalDateTime created_at;
+    public Comment() {}
 
-    // Many comments belong to one user
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    public Comment(Long commentId, String content, LocalDateTime createdAt, Long userId, Long contentId) {
+        this.commentId = commentId;
+        this.content = content;
+        this.createdAt = createdAt;
+        this.userId = userId;
+        this.contentId = contentId;
+    }
 
-    // Many comments belong to one content
-    @ManyToOne
-    @JoinColumn(name = "content_id", nullable = false)
-    private Content contentEntity;
-
-    // Getters and Setters
-    public Long getComment_id() { return comment_id; }
-    public void setComment_id(Long comment_id) { this.comment_id = comment_id; }
+    // Getters and setters
+    public Long getCommentId() { return commentId; }
+    public void setCommentId(Long commentId) { this.commentId = commentId; }
 
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
 
-    public LocalDateTime getCreated_at() { return created_at; }
-    public void setCreated_at(LocalDateTime created_at) { this.created_at = created_at; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
 
-    public Content getContentEntity() { return contentEntity; }
-    public void setContentEntity(Content contentEntity) { this.contentEntity = contentEntity; }
+    public Long getContentId() { return contentId; }
+    public void setContentId(Long contentId) { this.contentId = contentId; }
 }

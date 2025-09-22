@@ -1,26 +1,21 @@
 package com.example.demo.model;
 
-import jakarta.persistence.*;
-
-@Entity
-@Table(name = "content_hashtag")
-@IdClass(ContentHashtagId.class)
 public class ContentHashtag {
+    private Long content_id;
+    private Long hashtag_id;
 
-    @Id
-    @ManyToOne
-    @JoinColumn(name = "content_id", nullable = false)
-    private Content content;
+    // Constructors
+    public ContentHashtag() {}
 
-    @Id
-    @ManyToOne
-    @JoinColumn(name = "hashtag_id", nullable = false)
-    private Hashtag hashtag;
+    public ContentHashtag(Long content_id, Long hashtag_id) {
+        this.content_id = content_id;
+        this.hashtag_id = hashtag_id;
+    }
 
-    // -------- Getters and Setters --------
-    public Content getContent() { return content;}
-    public void setContent(Content content) { this.content = content;}
+    // Getters & Setters
+    public Long getContent_id() { return content_id; }
+    public void setContent_id(Long content_id) { this.content_id = content_id; }
 
-    public Hashtag getHashtag() { return hashtag;}
-    public void setHashtag(Hashtag hashtag) { this.hashtag = hashtag;}
+    public Long getHashtag_id() { return hashtag_id; }
+    public void setHashtag_id(Long hashtag_id) { this.hashtag_id = hashtag_id; }
 }
