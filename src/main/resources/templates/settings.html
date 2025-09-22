@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Media Share Settings</title>
     <link rel="stylesheet" href="../static/settings.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
 <body>
     <div class="settings-container">
@@ -80,5 +81,80 @@
 
         <button class="logout-btn">Log Out</button>
     </div>
+
+    <!-- Bottom Navbar (Sidebar on larger screens) -->
+    <nav class="bottom-nav">
+        <i class="fa-solid fa-house active"></i>
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <i class="fa-solid fa-circle-plus"></i>
+        <i class="fa-regular fa-comment"></i>
+        <i class="fa-regular fa-user"></i>
+        <i class="fa-solid fa-bars more-btn"></i>
+        <div class="menu-popup">
+            <div class="menu-item">Settings</div>
+            <div class="menu-item">Your activity</div>
+            <div class="menu-item">Saved</div>
+            <div class="menu-item">Switch appearance</div>
+            <div class="menu-item">Report a problem</div>
+            <div class="menu-item">Switch accounts</div>
+            <div class="menu-item">Log out</div>
+        </div>
+    </nav>
+
+    <script>
+        // Toggle and position popup menu for the "More" button
+        const moreBtn = document.querySelector('.more-btn');
+        const popup = document.querySelector('.menu-popup');
+        const bottomNav = document.querySelectorAll('.bottom-nav i');
+
+        // Toggle active class for bottom nav icons
+        bottomNav.forEach(icon => {
+            icon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (!icon.classList.contains('more-btn')) {
+                    bottomNav.forEach(i => i.classList.remove('active'));
+                    icon.classList.add('active');
+                }
+            });
+        });
+
+        // Toggle popup menu
+        moreBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            popup.classList.toggle('active');
+
+            // Dynamically position popup to stay within viewport
+            const rect = moreBtn.getBoundingClientRect();
+            const isDesktop = window.innerWidth >= 1024;
+            const popupHeight = popup.offsetHeight;
+            const popupWidth = popup.offsetWidth;
+
+            if (isDesktop) {
+                // Sidebar mode: position to the right
+                popup.style.left = '82px';
+                popup.style.right = 'auto';
+                popup.style.top = `${rect.top - popupHeight + 40}px`;
+                popup.style.bottom = 'auto';
+            } else {
+                // Mobile mode: position above navbar
+                popup.style.right = '10px';
+                popup.style.left = 'auto';
+                popup.style.bottom = `${window.innerHeight - rect.top + 10}px`;
+                popup.style.top = 'auto';
+
+                // Adjust if popup would go off-screen
+                if (rect.right + popupWidth > window.innerWidth) {
+                    popup.style.right = '5px';
+                }
+            }
+        });
+
+        // Close popup when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!popup.contains(e.target) && !moreBtn.contains(e.target)) {
+                popup.classList.remove('active');
+            }
+        });
+    </script>
 </body>
 </html>
