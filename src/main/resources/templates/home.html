@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediaShare Home</title>
+  <link rel="stylesheet" href="../static/home.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+  <!-- Top Navbar -->
+  <header class="top-nav">
+    <div class="logo">MediaShare</div>
+    <div class="top-icons">
+      <i class="fa-regular fa-heart top-icon"></i>
+      <i class="fa-regular fa-paper-plane top-icon"></i>
+    </div>
+  </header>
+
+  <!-- Stories Section -->
+  <section class="stories">
+    <div class="story"><img src="../static/priyamvada.jpg" alt="User 1"><span>priyamvada</span></div>
+    <div class="story"><img src="../static/user2.jpg" alt="User 2"><span>user2</span></div>
+    <div class="story"><img src="../static/user3.jpg" alt="User 3"><span>user3</span></div>
+    <div class="story"><img src="../static/user4.jpg" alt="User 4"><span>user4</span></div>
+    <div class="story"><img src="../static/user5.jpg" alt="User 5"><span>user5</span></div>
+  </section>
+
+  <!-- Feed Section -->
+  <main class="feed">
+    <div class="post">
+      <div class="post-header">
+        <img class="user-pic" src="images/priyamvada.jpg" alt="Priyamvada">
+        <span class="username">@priyamvada</span>
+      </div>
+      <div class="post-media">
+        <div class="carousel">
+          <!-- Local images; replace filenames with your actual image names -->
+          <!-- For dynamic rendering: Fetch image URLs from an API or user input -->
+          <img class="carousel-img" src="../static/sunset1.jpg" alt="Sunset 1">
+          <img class="carousel-img" src="../static/sunset2.jpg" alt="Sunset 2">
+          <img class="carousel-img" src="../static/sunset3.jpg" alt="Sunset 3">
+        </div>
+        <button class="prev">&lt;</button>
+        <button class="next">&gt;</button>
+        <div class="carousel-indicators"></div>
+      </div>
+      <div class="post-actions">
+        <i class="fa-regular fa-heart like-btn"></i>
+        <a href="comments.html"><i class="fa-regular fa-comment"></i></a>
+        <i class="fa-regular fa-paper-plane"></i>
+      </div>
+      <div class="post-caption">
+        <span class="username">priyamvada</span> Enjoying the sunset! 🌅
+      </div>
+    </div>
+
+    <div class="post">
+      <div class="post-header">
+        <img class="user-pic" src="images/user2.jpg" alt="User 2">
+        <span class="username">user2</span>
+      </div>
+      <div class="post-media">
+        <div class="carousel">
+          <!-- Local images; replace filenames with your actual image names -->
+          <!-- For dynamic rendering: Loop through user-uploaded image URLs -->
+          <img class="carousel-img" src="images/coffee1.jpg" alt="Coffee 1">
+          <img class="carousel-img" src="images/coffee2.jpg" alt="Coffee 2">
+        </div>
+        <button class="prev">&lt;</button>
+        <button class="next">&gt;</button>
+        <div class="carousel-indicators"></div>
+      </div>
+      <div class="post-actions">
+        <i class="fa-regular fa-heart like-btn"></i>
+        <a href="comments.html"><i class="fa-regular fa-comment"></i></a>
+        <i class="fa-regular fa-paper-plane"></i>
+      </div>
+      <div class="post-caption">
+        <span class="username">user2</span> Coffee vibes ☕
+      </div>
+    </div>
+  </main>
+
+  <!-- Bottom Navbar (Sidebar on larger screens) -->
+  <nav class="bottom-nav">
+    <i class="fa-solid fa-house active"></i>
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <i class="fa-solid fa-circle-plus"></i>
+    <i class="fa-regular fa-comment"></i>
+    <i class="fa-regular fa-user"></i>
+    <i class="fa-solid fa-bars more-btn"></i> <!-- Added the missing "More" button -->
+      <div class="menu-popup">
+      <div class="menu-item">Settings</div>
+      <div class="menu-item">Your activity</div>
+      <div class="menu-item">Saved</div>
+      <div class="menu-item">Switch appearance</div>
+      <div class="menu-item">Report a problem</div>
+      <div class="menu-item">Switch accounts</div>
+      <div class="menu-item">Log out</div>
+    </div>
+  </nav>
+
+  <!-- JavaScript for like button, bottom-nav active, and carousel -->
+  <script>
+    // Like button
+    const likes = document.querySelectorAll('.like-btn');
+    likes.forEach(like => {
+      like.addEventListener('click', () => {
+        like.classList.toggle('liked');
+        like.classList.toggle('fa-regular');
+        like.classList.toggle('fa-solid');
+      });
+    });
+
+    // Bottom nav
+    const bottomNav = document.querySelectorAll('.bottom-nav i');
+    bottomNav.forEach(icon => {
+      icon.addEventListener('click', () => {
+        bottomNav.forEach(i => i.classList.remove('active'));
+        icon.classList.add('active');
+      });
+    });
+
+    // Carousel functionality
+    document.querySelectorAll('.post-media').forEach(media => {
+      const carousel = media.querySelector('.carousel');
+      const images = carousel.querySelectorAll('.carousel-img');
+      const prevBtn = media.querySelector('.prev');
+      const nextBtn = media.querySelector('.next');
+      const indicatorsContainer = media.querySelector('.carousel-indicators');
+      
+      // Hide carousel controls for single image
+      if (images.length <= 1) {
+        prevBtn.style.display = 'none';
+        nextBtn.style.display = 'none';
+        return;
+      }
+
+      // Create indicators dynamically based on number of images
+      images.forEach((_, index) => {
+        const dot = document.createElement('span');
+        dot.classList.add('dot');
+        if (index === 0) dot.classList.add('active');
+        indicatorsContainer.appendChild(dot);
+      });
+
+      const dots = indicatorsContainer.querySelectorAll('.dot');
+      let currentIndex = 0;
+
+      function updateCarousel() {
+        carousel.style.transform = `translateX(-${currentIndex * 100}%)`;
+        dots.forEach((dot, idx) => dot.classList.toggle('active', idx === currentIndex));
+        prevBtn.style.display = currentIndex === 0 ? 'none' : 'block';
+        nextBtn.style.display = currentIndex === images.length - 1 ? 'none' : 'block';
+      }
+
+      prevBtn.addEventListener('click', () => {
+        if (currentIndex > 0) {
+          currentIndex--;
+          updateCarousel();
+        }
+      });
+
+      nextBtn.addEventListener('click', () => {
+        if (currentIndex < images.length - 1) {
+          currentIndex++;
+          updateCarousel();
+        }
+      });
+
+      updateCarousel();
+    });
+       // Menu popup
+    const moreBtn = document.querySelector('.more-btn');
+    const menuPopup = document.querySelector('.menu-popup');
+    moreBtn.addEventListener('click', () => {
+      menuPopup.classList.toggle('active');
+    });
+
+    // Close popup when clicking outside
+    document.addEventListener('click', (event) => {
+      if (!moreBtn.contains(event.target) && !menuPopup.contains(event.target)) {
+        menuPopup.classList.remove('active');
+      }
+    });
+  </script>
+</body>
+</html>
