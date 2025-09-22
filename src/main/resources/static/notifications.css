@@ -1,0 +1,134 @@
+/* General reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #f8f9fb; /* light background */
+    color: #333;
+    display: flex; /* For sidebar + content layout */
+    }
+
+/* Sidebar Navbar */
+.sidebar {
+    width: 220px;
+    min-height: 100vh;
+    background: #eceff1; /* subtle grey shade for differentiation */
+    padding: 20px 15px;
+    color: #222;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: fixed;
+    left: 0;
+    top: 0;
+    border-right: 1px solid #ddd; /* light separation line */
+}
+
+.logo {
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-bottom: 30px;
+}
+
+.nav-links {
+    list-style: none;
+    width: 100%;
+}
+
+.nav-links li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    margin: 8px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.nav-links li:hover {
+    background: #dfe4ea; /* slightly darker hover */
+}
+
+.nav-links i {
+    font-size: 18px;
+}
+
+.nav-links span {
+    font-size: 14px;
+}
+
+.nav-links .active {
+    background: #cfd8dc; /* highlight active */
+    font-weight: 600;
+}
+
+/* Notifications Section */
+.notifications {
+    margin-left: 240px; /* space for sidebar */
+    padding: 30px;
+    max-width: 700px;
+    width: 100%;
+}
+
+.notifications h2 {
+    margin-bottom: 20px;
+    font-weight: 600;
+    color: #444;
+}
+
+.notification-card {
+    display: flex;
+    align-items: center;
+    background: white;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 15px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease;
+}
+
+.notification-card:hover {
+    transform: translateY(-3px);
+}
+
+.notification-card img {
+    border-radius: 50%;
+    margin-right: 12px;
+}
+
+.notification-card p {
+    flex: 1;
+    font-size: 14px;
+}
+
+.notification-card .time {
+    font-size: 12px;
+    color: #777;
+}
+
+/* Reset link styles inside sidebar */
+.sidebar a {
+    text-decoration: none;     /* remove underline */
+    color: #000;               /* make text black */
+    display: flex;             /* keep icon + text in a row */
+    align-items: center;       /* vertically center */
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+/* Hover effect */
+.sidebar a:hover {
+    background-color: #e9ecef; 
+}
+
+/* Highlight the active page */
+.sidebar a.active {
+    background-color: #dee2e6; 
+    font-weight: bold;
+}
