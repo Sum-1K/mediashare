@@ -7,25 +7,24 @@
 
 body {
     font-family: 'Poppins', sans-serif;
-    background: #f8f9fb; /* light background */
+    background: #f8f9fb;
     color: #333;
-    display: flex; /* For sidebar + content layout */
-    }
+    display: flex;
+}
 
 /* Sidebar Navbar */
 .sidebar {
-    width: 220px;
+    width: 240px;
     min-height: 100vh;
-    background: #eceff1; /* subtle grey shade for differentiation */
-    padding: 20px 15px;
-    color: #222;
+    background: #eceff1;
+    padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
     position: fixed;
-    left: 0;
     top: 0;
-    border-right: 1px solid #ddd; /* light separation line */
+    left: 0;
+    border-right: 1px solid #ddd;
 }
 
 .logo {
@@ -37,39 +36,47 @@ body {
 .nav-links {
     list-style: none;
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
-.nav-links li {
+.sidebar a {
+    text-decoration: none;
+    color: #000;
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px 15px;
-    margin: 8px 0;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.2s ease;
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-weight: 500;
+    background: #fff;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+    transition: all 0.2s ease;
 }
 
-.nav-links li:hover {
-    background: #dfe4ea; /* slightly darker hover */
-}
-
-.nav-links i {
+.sidebar a i {
     font-size: 18px;
+    margin-right: 12px;
 }
 
-.nav-links span {
+.sidebar a span {
     font-size: 14px;
 }
 
-.nav-links .active {
-    background: #cfd8dc; /* highlight active */
+.sidebar a:hover {
+    background-color: #f1f3f5;
+    transform: translateY(-2px);
+}
+
+.sidebar a.active {
+    background-color: #e0e0e0;
     font-weight: 600;
 }
 
 /* Notifications Section */
 .notifications {
-    margin-left: 240px; /* space for sidebar */
+    margin-left: 260px;
     padding: 30px;
     max-width: 700px;
     width: 100%;
@@ -81,54 +88,43 @@ body {
     color: #444;
 }
 
+/* Notification Cards (match sidebar links style) */
 .notification-card {
     display: flex;
     align-items: center;
-    background: white;
+    background: #fff;
     border-radius: 12px;
     padding: 12px 16px;
-    margin-bottom: 15px;
+    margin-bottom: 16px;
     box-shadow: 0 3px 6px rgba(0,0,0,0.08);
-    transition: transform 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 .notification-card:hover {
-    transform: translateY(-3px);
+    background-color: #f1f3f5;
+    transform: translateY(-2px);
 }
 
 .notification-card img {
     border-radius: 50%;
     margin-right: 12px;
+    width: 40px;
+    height: 40px;
+}
+
+.notification-card .notification-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
 }
 
 .notification-card p {
-    flex: 1;
     font-size: 14px;
 }
 
 .notification-card .time {
     font-size: 12px;
     color: #777;
-}
-
-/* Reset link styles inside sidebar */
-.sidebar a {
-    text-decoration: none;     /* remove underline */
-    color: #000;               /* make text black */
-    display: flex;             /* keep icon + text in a row */
-    align-items: center;       /* vertically center */
-    padding: 12px 15px;
-    border-radius: 8px;
-    font-weight: 500;
-}
-
-/* Hover effect */
-.sidebar a:hover {
-    background-color: #e9ecef; 
-}
-
-/* Highlight the active page */
-.sidebar a.active {
-    background-color: #dee2e6; 
-    font-weight: bold;
+    margin-top: 4px;
 }
