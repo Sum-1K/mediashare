@@ -28,15 +28,13 @@
 
   <!-- Feed Section -->
   <main class="feed">
-    <div class="post">
+    <div class="post" data-post-id="1">
       <div class="post-header">
         <img class="user-pic" src="../static/priyamvada.jpg" alt="Priyamvada">
         <span class="username">@priyamvada</span>
       </div>
       <div class="post-media">
         <div class="carousel">
-          <!-- Local images; replace filenames with your actual image names -->
-          <!-- For dynamic rendering: Fetch image URLs from an API or user input -->
           <img class="carousel-img" src="../static/sunset1.jpg" alt="Sunset 1">
           <img class="carousel-img" src="../static/sunset2.jpg" alt="Sunset 2">
           <img class="carousel-img" src="../static/sunset3.jpg" alt="Sunset 3">
@@ -47,23 +45,49 @@
       </div>
       <div class="post-actions">
         <i class="fa-regular fa-heart like-btn"></i>
-        <a href="comments.html"><i class="fa-regular fa-comment"></i></a>
+        <i class="fa-regular fa-comment comment-btn" data-post-id="1"></i>
         <i class="fa-regular fa-paper-plane"></i>
+        <div class="comment-popup" id="comment-popup-1">
+          <div class="comment-content">
+            <div class="comment-header">
+              <h3>Comments</h3>
+              <span class="close-btn">&times;</span>
+            </div>
+            <div class="comment-list">
+              <div class="comment">
+                <img src="../static/priyamvada.jpg" alt="Priyamvada" class="comment-user-pic">
+                <div class="comment-text">
+                  <span class="comment-username">priyamvada</span>
+                  Nice sunset! 🌅
+                </div>
+              </div>
+              <div class="comment">
+                <img src="../static/user2.jpg" alt="User 2" class="comment-user-pic">
+                <div class="comment-text">
+                  <span class="comment-username">user2</span>
+                  Beautiful view!
+                </div>
+              </div>
+            </div>
+            <div class="comment-input">
+              <input type="text" placeholder="Add a comment...">
+              <button class="post-comment">Post</button>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="post-caption">
         <span class="username">priyamvada</span> Enjoying the sunset! 🌅
       </div>
     </div>
 
-    <div class="post">
+    <div class="post" data-post-id="2">
       <div class="post-header">
         <img class="user-pic" src="../static/user2.jpg" alt="User 2">
         <span class="username">user2</span>
       </div>
       <div class="post-media">
         <div class="carousel">
-          <!-- Local images; replace filenames with your actual image names -->
-          <!-- For dynamic rendering: Loop through user-uploaded image URLs -->
           <img class="carousel-img" src="../static/coffee1.jpg" alt="Coffee 1">
           <img class="carousel-img" src="../static/coffee2.jpg" alt="Coffee 2">
         </div>
@@ -73,8 +97,36 @@
       </div>
       <div class="post-actions">
         <i class="fa-regular fa-heart like-btn"></i>
-        <a href="comments.html"><i class="fa-regular fa-comment"></i></a>
+        <i class="fa-regular fa-comment comment-btn" data-post-id="2"></i>
         <i class="fa-regular fa-paper-plane"></i>
+        <div class="comment-popup" id="comment-popup-2">
+          <div class="comment-content">
+            <div class="comment-header">
+              <h3>Comments</h3>
+              <span class="close-btn">&times;</span>
+            </div>
+            <div class="comment-list">
+              <div class="comment">
+                <img src="../static/user2.jpg" alt="User 2" class="comment-user-pic">
+                <div class="comment-text">
+                  <span class="comment-username">user2</span>
+                  Love this coffee! ☕
+                </div>
+              </div>
+              <div class="comment">
+                <img src="../static/priyamvada.jpg" alt="Priyamvada" class="comment-user-pic">
+                <div class="comment-text">
+                  <span class="comment-username">priyamvada</span>
+                  Looks delicious!
+                </div>
+              </div>
+            </div>
+            <div class="comment-input">
+              <input type="text" placeholder="Add a comment...">
+              <button class="post-comment">Post</button>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="post-caption">
         <span class="username">user2</span> Coffee vibes ☕
@@ -89,8 +141,8 @@
     <i class="fa-solid fa-circle-plus"></i>
     <i class="fa-regular fa-comment"></i>
     <i class="fa-regular fa-user"></i>
-    <i class="fa-solid fa-bars more-btn"></i> <!-- Added the missing "More" button -->
-      <div class="menu-popup">
+    <i class="fa-solid fa-bars more-btn"></i>
+    <div class="menu-popup">
       <div class="menu-item">Settings</div>
       <div class="menu-item">Your activity</div>
       <div class="menu-item">Saved</div>
@@ -101,7 +153,7 @@
     </div>
   </nav>
 
-  <!-- JavaScript for like button, bottom-nav active, and carousel -->
+  <!-- JavaScript for like button, bottom-nav active, carousel, and comment popup -->
   <script>
     // Like button
     const likes = document.querySelectorAll('.like-btn');
@@ -130,14 +182,12 @@
       const nextBtn = media.querySelector('.next');
       const indicatorsContainer = media.querySelector('.carousel-indicators');
       
-      // Hide carousel controls for single image
       if (images.length <= 1) {
         prevBtn.style.display = 'none';
         nextBtn.style.display = 'none';
         return;
       }
 
-      // Create indicators dynamically based on number of images
       images.forEach((_, index) => {
         const dot = document.createElement('span');
         dot.classList.add('dot');
@@ -171,7 +221,8 @@
 
       updateCarousel();
     });
-       // Menu popup
+
+    // Menu popup
     const moreBtn = document.querySelector('.more-btn');
     const menuPopup = document.querySelector('.menu-popup');
     moreBtn.addEventListener('click', () => {
@@ -183,6 +234,31 @@
       if (!moreBtn.contains(event.target) && !menuPopup.contains(event.target)) {
         menuPopup.classList.remove('active');
       }
+    });
+
+    // Comment popup toggle
+    const commentBtns = document.querySelectorAll('.comment-btn');
+    const popups = document.querySelectorAll('.comment-popup');
+
+    commentBtns.forEach((btn, index) => {
+      btn.addEventListener('click', () => {
+        popups.forEach(popup => popup.classList.remove('active'));
+        const popup = popups[index];
+        popup.classList.add('active');
+        // Ensure it fits within viewport
+        const rect = popup.getBoundingClientRect();
+        if (rect.right > window.innerWidth) {
+          popup.style.right = 'auto';
+          popup.style.left = '-360px';
+        }
+      });
+    });
+
+    const closeBtns = document.querySelectorAll('.close-btn');
+    closeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.closest('.comment-popup').classList.remove('active');
+      });
     });
   </script>
 </body>
