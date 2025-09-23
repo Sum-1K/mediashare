@@ -108,11 +108,19 @@ button:hover {
 }
 
 .signup-btn {
-  background: #08f600;
+  width: 100%;         /* full width */
+  padding: 12px;       /* same as main button */
+  border: none;
+  border-radius: 8px;
+  background-color: #0095f6;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
 .signup-btn:hover {
-  background: #08f600;
+  background: #0095f6;
 }
 
 /* Responsive (stack on mobile) */
@@ -136,6 +144,7 @@ button:hover {
     height: 90%;
   }
 }
+
 .top-nav .logo {
     display: flex;
     align-items: center;
