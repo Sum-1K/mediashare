@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediaShare Profile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background-color: #fafafa;
+            color: #262626;
+        }
+
+        .navbar {
+            background-color: #fff;
+            border-bottom: 1px solid #dbdbdb;
+            padding: 10px 20px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .navbar-icons {
+            display: flex;
+            gap: 20px;
+            font-size: 24px;
+        }
+
+        .sidebar {
+            background-color: #fff;
+            border-right: 1px solid #dbdbdb;
+            width: 70px;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 70px;
+            z-index: 999;
+        }
+
+        .sidebar-item {
+            font-size: 24px;
+            margin: 20px 0;
+            cursor: pointer;
+        }
+
+        .sidebar-item:last-child {
+            margin-top: auto;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            max-width: 935px;
+            margin: 0 auto;
+            padding: 20px;
+            margin-left: 90px;
+            margin-top: 60px;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 44px;
+            padding: 20px 0;
+        }
+
+        .profile-pic {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin-right: 100px;
+            overflow: hidden;
+        }
+
+        .profile-pic img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .username {
+            font-size: 28px;
+            font-weight: 300;
+            margin-bottom: 20px;
+        }
+
+        .profile-stats {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .stat {
+            margin-right: 40px;
+            font-size: 16px;
+        }
+
+        .stat span {
+            font-weight: 600;
+        }
+
+        .bio {
+            font-size: 16px;
+            line-height: 24px;
+        }
+
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+        }
+
+        .post {
+            width: 100%;
+            padding-top: 100%;
+            position: relative;
+            background-color: #fff;
+            border: 1px solid #dbdbdb;
+        }
+
+        .post img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+        }
+
+        .modal-option {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #dbdbdb;
+        }
+
+        .modal-option:last-child {
+            border-bottom: none;
+        }
+
+        .modal-option:hover {
+            background-color: #fafafa;
+        }
+
+        .upload-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .upload-modal-content {
+            background-color: #fff;
+            border-radius: 12px;
+            width: 600px;
+            height: 400px;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .upload-preview {
+            width: 50%;
+            background-color: #fafafa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .upload-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .upload-caption {
+            width: 50%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .upload-caption textarea {
+            flex: 1;
+            border: 1px solid #dbdbdb;
+            border-radius: 4px;
+            padding: 10px;
+            resize: none;
+            font-size: 14px;
+        }
+
+        .upload-caption button {
+            margin-top: 10px;
+            padding: 8px;
+            background-color: #0095f6;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .upload-caption button:hover {
+            background-color: #0074cc;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 50px;
+                padding-top: 60px;
+            }
+
+            .sidebar-item {
+                font-size: 20px;
+                margin: 15px 0;
+            }
+
+            .container {
+                margin-left: 60px;
+                margin-top: 50px;
+                padding: 10px;
+            }
+
+            .profile-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .profile-pic {
+                margin: 0 auto 20px;
+                width: 100px;
+                height: 100px;
+            }
+
+            .posts-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .upload-modal-content {
+                width: 90%;
+                height: 80%;
+                flex-direction: column;
+            }
+
+            .upload-preview {
+                width: 100%;
+                height: 50%;
+            }
+
+            .upload-caption {
+                width: 100%;
+                height: 50%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-title">MediaShare</div>
+        <div class="navbar-icons">
+            <span>❤️</span>
+            <span>🔁</span>
+        </div>
+    </div>
+    <div class="sidebar">
+        <div class="sidebar-item">🏠</div>
+        <div class="sidebar-item">🔍</div>
+        <div class="sidebar-item" id="create-post">➕</div>
+        <div class="sidebar-item">💬</div>
+        <div class="sidebar-item">👤</div>
+        <div class="sidebar-item">≡</div>
+    </div>
+    <div class="container">
+        <div class="profile-header">
+            <div class="profile-pic">
+                <img src="https://via.placeholder.com/150" alt="Profile Picture">
+            </div>
+            <div class="profile-info">
+                <div class="username">username</div>
+                <div class="profile-stats">
+                    <div class="stat"><span>12</span> posts</div>
+                    <div class="stat"><span>1,234</span> followers</div>
+                    <div class="stat"><span>567</span> following</div>
+                </div>
+                <div class="bio">
+                    <strong>Full Name</strong><br>
+                    A short bio about yourself. Passionate about photography, travel, and coffee.
+                </div>
+            </div>
+        </div>
+        <div class="posts-grid">
+            <div class="post"><img src="https://via.placeholder.com/300" alt="Post 1"></div>
+            <div class="post"><img src="https://via.placeholder.com/300" alt="Post 2"></div>
+            <div class="post"><img src="https://via.placeholder.com/300" alt="Post 3"></div>
+            <div class="post"><img src="https://via.placeholder.com/300" alt="Post 4"></div>
+            <div class="post"><img src="https://via.placeholder.com/300" alt="Post 5"></div>
+            <div class="post"><img src="https://via.placeholder.com/300" alt="Post 6"></div>
+        </div>
+    </div>
+    <div class="modal" id="create-modal">
+        <div class="modal-content">
+            <div class="modal-option" id="post-option">Post</div>
+            <div class="modal-option">Story</div>
+            <div class="modal-option">Reel</div>
+        </div>
+    </div>
+    <div class="upload-modal" id="upload-modal">
+        <div class="upload-modal-content">
+            <div class="upload-preview">
+                <img id="preview-image" src="" alt="Preview" style="display: none;">
+            </div>
+            <div class="upload-caption">
+                <input type="file" id="photo-upload" accept="image/*" style="margin-bottom: 10px;">
+                <textarea placeholder="Write a caption..."></textarea>
+                <button onclick="submitPost()">Share</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        const createPostBtn = document.getElementById('create-post');
+        const createModal = document.getElementById('create-modal');
+        const postOption = document.getElementById('post-option');
+        const uploadModal = document.getElementById('upload-modal');
+        const photoUpload = document.getElementById('photo-upload');
+        const previewImage = document.getElementById('preview-image');
+
+        createPostBtn.addEventListener('click', () => {
+            createModal.style.display = 'flex';
+        });
+
+        postOption.addEventListener('click', () => {
+            createModal.style.display = 'none';
+            uploadModal.style.display = 'flex';
+        });
+
+        photoUpload.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewImage.src = e.target.result;
+                    previewImage.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.addEventListener('click', (event) => {
+            if (event.target === createModal) {
+                createModal.style.display = 'none';
+            }
+            if (event.target === uploadModal) {
+                uploadModal.style.display = 'none';
+                previewImage.style.display = 'none';
+                previewImage.src = '';
+                photoUpload.value = '';
+            }
+        });
+
+        function submitPost() {
+            // Placeholder for post submission logic
+            alert('Post submitted!');
+            uploadModal.style.display = 'none';
+            previewImage.style.display = 'none';
+            previewImage.src = '';
+            photoUpload.value = '';
+        }
+    </script>
+</body>
+</html>
