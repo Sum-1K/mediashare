@@ -89,6 +89,7 @@ public class User {
     private Privacy privacy;
     private String photo;
     private LocalDateTime join_date;
+    private String password;
 
     // Getters & setters
     public Long getUser_id() { return user_id; }
@@ -120,4 +121,12 @@ public class User {
 
     public LocalDateTime getJoin_date() { return join_date; }
     public void setJoin_date(LocalDateTime join_date) { this.join_date = join_date; }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }

@@ -112,4 +112,12 @@ public class UserDao extends BaseDao<User, Long> {
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, email);
         return count != null && count > 0;
     }
+
+    public Optional<User> findByEmail(String email) {
+    final String sql = "SELECT * FROM users WHERE email = ?";
+    List<User> list = jdbcTemplate.query(sql, rowMapper, email);
+    return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
+}
+
+    
 }
