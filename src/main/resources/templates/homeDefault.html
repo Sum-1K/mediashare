@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediaShare Home</title>
+  <link rel="stylesheet" href="homeDefault.css">
+  <link rel="stylesheet" href="login.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+  <!-- Top Navbar -->
+  <header class="top-nav">
+    <div class="logo">MediaShare</div>
+    <div class="top-icons"></div>
+  </header>
+
+  <!-- Feed Section -->
+  
+    <!-- LOGIN BOX -->
+    <div class="login-container">
+      <!-- Left graphics / illustration -->
+      <div class="left-side">
+        <div class="illustration">
+          <!-- Optional SVG / image -->
+        </div>
+      </div>
+
+      <!-- Right login/signup form -->
+      <div class="right-side">
+        <div class="form-container">
+          <h1>Welcome to MediaShare</h1>
+          <p class="sub-text">Sign in to continue</p>
+
+          <form id="login-form">
+            <input type="email" placeholder="Email" required>
+            <input type="password" placeholder="Password" required>
+            <button type="submit">Sign In</button>
+          </form>
+
+          <div class="separator">OR</div>
+          <button class="signup-btn">Sign Up</button>
+        </div>
+      </div>
+    </div>
+  
+
+  <!-- JavaScript -->
+  <script>
+    // Like button
+    const likes = document.querySelectorAll('.like-btn');
+    likes.forEach(like => {
+      like.addEventListener('click', () => {
+        like.classList.toggle('liked');
+        like.classList.toggle('fa-regular');
+        like.classList.toggle('fa-solid');
+      });
+    });
+
+    // Bottom nav
+    const bottomNav = document.querySelectorAll('.bottom-nav i');
+    bottomNav.forEach(icon => {
+      icon.addEventListener('click', () => {
+        bottomNav.forEach(i => i.classList.remove('active'));
+        icon.classList.add('active');
+      });
+    });
+
+    // Carousel functionality
+    document.querySelectorAll('.post-media').forEach(media => {
+      const carousel = media.querySelector('.carousel');
+      const images = carousel.querySelectorAll('.carousel-img');
+      const prevBtn = media.querySelector('.prev');
+      const nextBtn = media.querySelector('.next');
+      const indicatorsContainer = media.querySelector('.carousel-indicators');
+
+      if (images.length <= 1) {
+        prevBtn.style.display = 'none';
+        nextBtn.style.display = 'none';
+        return;
+      }
+
+      images.forEach((_, index) => {
+        const dot = document.createElement('span');
+        dot.classList.add('dot');
+        if (index === 0) dot.classList.add('active');
+        indicatorsContainer.appendChild(dot);
+      });
+
+      const dots = indicatorsContainer.querySelectorAll('.dot');
+      let currentIndex = 0;
+
+      function updateCarousel() {
+        carousel.style.transform = `translateX(-${currentIndex * 100}%)`;
+        dots.forEach((dot, idx) => dot.classList.toggle('active', idx === currentIndex));
+        prevBtn.style.display = currentIndex === 0 ? 'none' : 'block';
+        nextBtn.style.display = currentIndex === images.length - 1 ? 'none' : 'block';
+      }
+
+      prevBtn.addEventListener('click', () => {
+        if (currentIndex > 0) {
+          currentIndex--;
+          updateCarousel();
+        }
+      });
+
+      nextBtn.addEventListener('click', () => {
+        if (currentIndex < images.length - 1) {
+          currentIndex++;
+          updateCarousel();
+        }
+      });
+
+      updateCarousel();
+    });
+
+    // Menu popup
+    const moreBtn = document.querySelector('.more-btn');
+    const menuPopup = document.querySelector('.menu-popup');
+    if(moreBtn) {
+      moreBtn.addEventListener('click', () => {
+        menuPopup.classList.toggle('active');
+      });
+
+      document.addEventListener('click', (event) => {
+        if (!moreBtn.contains(event.target) && !menuPopup.contains(event.target)) {
+          menuPopup.classList.remove('active');
+        }
+      });
+    }
+  </script>
+</body>
+</html>
