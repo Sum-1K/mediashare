@@ -77,6 +77,7 @@ body {
   text-align: center;
   cursor: pointer;
   transition: transform 0.3s;
+  position: relative;
 }
 
 .story:hover {
@@ -102,6 +103,29 @@ body {
   max-width: 80px;
 }
 
+.story-add-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.5rem;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.story:hover .story-add-btn {
+  opacity: 1;
+}
+
 /* Feed */
 .feed {
   flex: 1;
@@ -118,7 +142,7 @@ body {
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid #dbdbdb;
-  position: relative; /* Ensure positioning context for popup */
+  position: relative;
   transition: transform 0.3s, box-shadow 0.3s;
 }
 
@@ -223,7 +247,7 @@ body {
   padding: 12px 16px;
   font-size: 1.5rem;
   color: #262626;
-  position: relative; /* Ensure positioning context */
+  position: relative;
 }
 
 .post-actions i {
@@ -250,11 +274,9 @@ body {
 .liked {
   color: #ed4956 !important;
 }
-/* Bottom Navbar (Mobile) */
+
+/* Bottom Navbar */
 .bottom-nav {
-  color: inherit;       /* inherit the existing color (#262626) */
-  text-decoration: none; /* remove underline */
-  display: flex;         /* keep the flex layout for icon + text */
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -268,22 +290,9 @@ body {
   border-top: 1px solid #dbdbdb;
   z-index: 100;
 }
-/* Remove default blue link color for bottom nav links */
-.bottom-nav .nav-item a {
-  color: #262626;       /* same as nav-item text color */
-  text-decoration: none; /* remove underline */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-}
-
 
 .nav-item {
   display: flex;
-  color: inherit;       /* inherit the existing color (#262626) */
-  text-decoration: none; /* remove underline */
-  display: flex;         /* keep the flex layout for icon + text */
   flex-direction: column;
   align-items: center;
   font-size: 0.8rem;
@@ -313,9 +322,6 @@ body {
 /* Bottom Navbar (Laptop - Vertical Sidebar) */
 @media (min-width: 1024px) {
   .bottom-nav {
-    color: inherit !important;       /* inherit color from parent nav-item */
-    text-decoration: none !important; /* remove underline */
-    display: flex;         /* keep the flex layout for icon + text */
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
@@ -342,16 +348,16 @@ body {
   }
 
   .more-btn {
-    margin-top: auto; /* Push to bottom of sidebar */
+    margin-top: auto;
   }
 
   .feed {
-    margin-left: 200px; /* Offset for sidebar width + padding */
+    margin-left: 200px;
     max-width: 714px;
   }
 
   .top-nav, .stories {
-    margin-left: 222px; /* Offset for sidebar */
+    margin-left: 222px;
     max-width: calc(975px - 92px);
   }
 }
@@ -362,7 +368,7 @@ body {
   position: absolute;
   left: 24px;
   top: 420px;
-  background: #efeeeeff;
+  background: #efeeee;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   z-index: 200;
@@ -375,28 +381,26 @@ body {
 }
 
 .menu-item {
-  color: inherit;       /* inherit the existing text color (#050505) */
-  text-decoration: none; /* remove underline */
-  display: block;       /* fill the menu item area */
+  display: block;
   padding: 10px 16px;
-  color: #050505ff;
+  color: #262626;
   font-size: 0.9rem;
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .menu-item:hover {
-  background: #a4a4a4ff;
+  background: #a4a4a4;
 }
 
-/* Comment Popup (beside actions) */
+/* Comment Popup */
 .comment-popup {
-  display: none; /* Hidden by default */
+  display: none;
   position: absolute;
   top: -230px;
   right: 230px;
-  background: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
-  width: 340px; /* Reduced width to fit better */
+  background: rgba(0, 0, 0, 0.5);
+  width: 340px;
   max-height: 80vh;
   overflow-y: auto;
   z-index: 300;
@@ -496,6 +500,79 @@ body {
   display: none;
 }
 
+/* Story Upload Modal */
+.story-upload-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+.story-upload-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  position: relative;
+}
+
+.story-upload-header {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.story-upload-header .close-btn {
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #262626;
+}
+
+.story-preview {
+  margin: 20px 0;
+  height: 300px;
+  overflow: hidden;
+  border: 1px solid #dbdbdb;
+  border-radius: 5px;
+}
+
+.story-preview-item {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.story-input {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.add-story-btn, .post-story-btn {
+  padding: 10px;
+  background: #0095f6;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.post-story-btn {
+  background: #4caf50;
+}
+
+.add-story-btn:hover, .post-story-btn:hover {
+  opacity: 0.9;
+}
+
 /* Responsive (Mobile) */
 @media (max-width: 768px) {
   .top-nav, .bottom-nav {
@@ -512,6 +589,11 @@ body {
   .story span {
     font-size: 0.7rem;
   }
+  .story-add-btn {
+    width: 20px;
+    height: 20px;
+    font-size: 1.2rem;
+  }
   .feed {
     padding: 15px;
   }
@@ -527,20 +609,30 @@ body {
     justify-content: space-around;
   }
   .more-btn {
-    display: none; /* Hide on mobile */
+    display: none;
   }
   .menu-popup {
     left: auto;
     right: 10px;
-    top: 60px; /* Adjust based on top-nav height */
+    top: 60px;
   }
   .comment-popup {
-    right: -350px; /* Adjusted for mobile */
+    right: -350px;
     width: 90%;
     max-height: 70vh;
   }
   .comment-user-pic {
     width: 25px;
     height: 25px;
+  }
+  .story-upload-modal {
+    padding: 10px;
+  }
+  .story-upload-content {
+    width: 95%;
+    max-width: 350px;
+  }
+  .story-preview {
+    height: 200px;
   }
 }

@@ -19,7 +19,11 @@
 
   <!-- Stories Section -->
   <section class="stories">
-    <div class="story"><img src="../static/priyamvada.jpg" alt="User 1"><span>priyamvada</span></div>
+    <div class="story" id="user-story">
+      <img src="../static/priyamvada.jpg" alt="User 1">
+      <span>priyamvada</span>
+      <i class="fa-solid fa-circle-plus story-add-btn"></i>
+    </div>
     <div class="story"><img src="../static/user2.jpg" alt="User 2"><span>user2</span></div>
     <div class="story"><img src="../static/user3.jpg" alt="User 3"><span>user3</span></div>
     <div class="story"><img src="../static/user4.jpg" alt="User 4"><span>user4</span></div>
@@ -135,7 +139,6 @@
   </main>
 
   <!-- Bottom Navbar (Sidebar on larger screens) -->
-  <!-- Bottom Navbar (Sidebar on larger screens) -->
   <nav class="bottom-nav">
     <div class="nav-item">
       <i class="fa-solid fa-house active"></i>
@@ -156,12 +159,12 @@
       </a>
     </div>
     <div class="nav-item">
-      <a href="profile.html"
-      <i class="fa-regular fa-user"> </i>
+      <a href="profile.html">
+      <i class="fa-regular fa-user"></i>
       <span>Profile</span>
       </a>
     </div>
-    <div class="nav-item">
+    <div class="nav-item" id="more-nav">
       <i class="fa-solid fa-bars more-btn"></i>
       <span>More</span>
     </div>
@@ -176,10 +179,42 @@
     </div>
   </nav>
 
-  <!-- JavaScript for like button, bottom-nav active, carousel, and comment popup -->
+  <!-- Story Upload Modal (Hidden by default) -->
+  <div class="story-upload-modal" id="storyUploadModal">
+    <div class="story-upload-content">
+      <div class="story-upload-header">
+        <span class="close-btn">&times;</span>
+      </div>
+      <div class="story-preview" id="storyPreview">
+        <!-- Preview image/video will be displayed here -->
+      </div>
+      <div class="story-input">
+        <input type="file" id="storyFile" accept="image/*,video/*" style="display: none;">
+        <button class="add-story-btn" id="addStoryBtn">Add to your story</button>
+        <button class="post-story-btn" id="postStoryBtn">Post</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
   <script>
-    // Like button
+    // Declare all variables at the top to avoid redeclaration
     const likes = document.querySelectorAll('.like-btn');
+    const navItems = document.querySelectorAll('.nav-item');
+    const commentBtns = document.querySelectorAll('.comment-btn');
+    const popups = document.querySelectorAll('.comment-popup');
+    const closeBtns = document.querySelectorAll('.close-btn');
+    const moreBtn = document.querySelector('.more-btn');
+    const menuPopup = document.querySelector('.menu-popup');
+    const postMedias = document.querySelectorAll('.post-media');
+    const storyAddBtn = document.querySelector('.story-add-btn');
+    const storyUploadModal = document.querySelector('#storyUploadModal');
+    const storyFileInput = document.querySelector('#storyFile');
+    const addStoryBtn = document.querySelector('#addStoryBtn');
+    const postStoryBtn = document.querySelector('#postStoryBtn');
+    const storyPreview = document.querySelector('#storyPreview');
+
+    // Like button functionality
     likes.forEach(like => {
       like.addEventListener('click', () => {
         like.classList.toggle('liked');
@@ -188,23 +223,22 @@
       });
     });
 
-    // Bottom nav
-    const bottomNav = document.querySelectorAll('.bottom-nav i');
-    bottomNav.forEach(icon => {
-      icon.addEventListener('click', () => {
-        bottomNav.forEach(i => i.classList.remove('active'));
-        icon.classList.add('active');
+    // Bottom nav active state
+    navItems.forEach(item => {
+      item.addEventListener('click', () => {
+        navItems.forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
       });
     });
 
     // Carousel functionality
-    document.querySelectorAll('.post-media').forEach(media => {
+    postMedias.forEach(media => {
       const carousel = media.querySelector('.carousel');
       const images = carousel.querySelectorAll('.carousel-img');
       const prevBtn = media.querySelector('.prev');
       const nextBtn = media.querySelector('.next');
       const indicatorsContainer = media.querySelector('.carousel-indicators');
-      
+
       if (images.length <= 1) {
         prevBtn.style.display = 'none';
         nextBtn.style.display = 'none';
@@ -246,8 +280,6 @@
     });
 
     // Menu popup
-    const moreBtn = document.querySelector('.more-btn');
-    const menuPopup = document.querySelector('.menu-popup');
     moreBtn.addEventListener('click', () => {
       menuPopup.classList.toggle('active');
     });
@@ -260,15 +292,11 @@
     });
 
     // Comment popup toggle
-    const commentBtns = document.querySelectorAll('.comment-btn');
-    const popups = document.querySelectorAll('.comment-popup');
-
     commentBtns.forEach((btn, index) => {
       btn.addEventListener('click', () => {
         popups.forEach(popup => popup.classList.remove('active'));
         const popup = popups[index];
         popup.classList.add('active');
-        // Ensure it fits within viewport
         const rect = popup.getBoundingClientRect();
         if (rect.right > window.innerWidth) {
           popup.style.right = 'auto';
@@ -277,11 +305,53 @@
       });
     });
 
-    const closeBtns = document.querySelectorAll('.close-btn');
     closeBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         btn.closest('.comment-popup').classList.remove('active');
       });
+    });
+
+    // Story upload functionality
+    storyAddBtn.addEventListener('click', () => {
+      storyUploadModal.style.display = 'block';
+      storyFileInput.click(); // Trigger file input
+    });
+
+    storyFileInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const url = URL.createObjectURL(file);
+        storyPreview.innerHTML = `<${file.type.startsWith('image') ? 'img' : 'video'} src="${url}" class="story-preview-item" ${file.type.startsWith('video') ? 'controls' : ''}></${file.type.startsWith('image') ? 'img' : 'video'}>`;
+      }
+    });
+
+    addStoryBtn.addEventListener('click', () => {
+      storyFileInput.click();
+    });
+
+    postStoryBtn.addEventListener('click', () => {
+      console.log('Story posted!');
+      storyUploadModal.style.display = 'none';
+      storyPreview.innerHTML = '';
+      storyFileInput.value = ''; // Reset file input
+    });
+
+    // Close modal
+    document.querySelectorAll('.story-upload-modal .close-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        storyUploadModal.style.display = 'none';
+        storyPreview.innerHTML = '';
+        storyFileInput.value = '';
+      });
+    });
+
+    // Close modal when clicking outside
+    window.addEventListener('click', (event) => {
+      if (event.target === storyUploadModal) {
+        storyUploadModal.style.display = 'none';
+        storyPreview.innerHTML = '';
+        storyFileInput.value = '';
+      }
     });
   </script>
 </body>
