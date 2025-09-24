@@ -58,6 +58,9 @@ body {
 
 /* Stories Section */
 .stories {
+  position: relative;
+  left: 0;
+  transition: left 0.3s;
   display: flex;
   overflow-x: auto;
   padding: 15px 20px;
@@ -67,6 +70,9 @@ body {
   scroll-behavior: smooth;
   max-width: 975px;
   margin: 0 auto;
+}
+.story-upload-modal.active ~ .stories {
+  left: 200px; /* shifts stories to the right */
 }
 
 .story {
@@ -502,9 +508,12 @@ body {
 
 /* Story Upload Modal */
 .story-upload-modal {
-  display: none;
+  display: flex;
   position: fixed;
+  justify-content: flex-start; /* horizontal start */
+  align-items: flex-start;     /* vertical start */
   top: 0;
+  padding: 50px;
   left: 0;
   width: 100%;
   height: 100%;
@@ -515,6 +524,7 @@ body {
 }
 
 .story-upload-content {
+  transform: translate(50px, 100px); /* shift right 50px, down 100px */
   background: #fff;
   padding: 20px;
   border-radius: 10px;

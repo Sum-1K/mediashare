@@ -9,7 +9,7 @@
 </head>
 <body>
     <div class="settings-container">
-        <h1>Media Share Settings</h1>
+        <h1>MediaShare Settings</h1>
 
         <div class="setting-item">
             <span class="setting-label">Saved</span>
@@ -83,25 +83,53 @@
     </div>
 
     <!-- Bottom Navbar (Sidebar on larger screens) -->
-    <nav class="bottom-nav">
-        <i class="fa-solid fa-house active"></i>
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <i class="fa-solid fa-circle-plus"></i>
-        <i class="fa-regular fa-comment"></i>
-        <i class="fa-regular fa-user"></i>
-        <i class="fa-solid fa-bars more-btn"></i>
-        <div class="menu-popup">
-            <div class="menu-item">Settings</div>
-            <div class="menu-item">Your activity</div>
-            <div class="menu-item">Saved</div>
-            <div class="menu-item">Switch appearance</div>
-            <div class="menu-item">Report a problem</div>
-            <div class="menu-item">Switch accounts</div>
-            <div class="menu-item">Log out</div>
-        </div>
-    </nav>
+<nav class="bottom-nav">
+  <div class="nav-item" onclick="location.href='home.html'">
+    <i class="fa-solid fa-house"></i>
+    <span>Home</span>
+  </div>
+  <div class="nav-item" onclick="location.href='search.html'">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span>Search</span>
+  </div>
+  <div class="nav-item" onclick="location.href='create.html'">
+    <i class="fa-solid fa-circle-plus"></i>
+    <span>Create</span>
+  </div>
+  <div class="nav-item" onclick="location.href='chat.html'">
+    <i class="fa-regular fa-comment"></i>
+    <span>Messages</span>
+  </div>
+  <div class="nav-item" onclick="location.href='profile.html'">
+    <i class="fa-regular fa-user"></i>
+    <span>Profile</span>
+  </div>
+  <div class="nav-item more-btn">
+    <i class="fa-solid fa-bars"></i>
+    <span>More</span>
+  </div>
+
+  <!-- Popup menu -->
+  <div class="menu-popup">
+    <div class="menu-item" onclick="location.href='settings.html'">Settings</div>
+    <div class="menu-item" onclick="location.href='activity.html'">Your activity</div>
+    <div class="menu-item" onclick="location.href='saved.html'">Saved</div>
+    <div class="menu-item">Switch appearance</div>
+    <div class="menu-item" onclick="location.href='report.html'">Report a problem</div>
+    <div class="menu-item" onclick="location.href='accounts.html'">Switch accounts</div>
+    <div class="menu-item" onclick="location.href='logout.html'">Log out</div>
+  </div>
+</nav>
+
+
 
     <script>
+        document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const link = item.getAttribute('data-link');
+      if (link) window.location.href = link;
+    });
+  });
         // Toggle and position popup menu for the "More" button
         const moreBtn = document.querySelector('.more-btn');
         const popup = document.querySelector('.menu-popup');

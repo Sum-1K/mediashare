@@ -137,7 +137,7 @@ input:checked + .slider:before {
     background: #fff;
     position: fixed;
     bottom: 0;
-    width: 100%;
+    width: 500px;
     max-width: 975px;
     margin: 0 auto;
     border-top: 1px solid #dbdbdb;
@@ -334,4 +334,8 @@ body.dark .menu-item:hover {
         left: auto;
         top: auto;
     }
+}
+
+.bottom-nav .nav-item i {
+  pointer-events: none;
 }
