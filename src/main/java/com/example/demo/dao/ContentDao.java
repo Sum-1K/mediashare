@@ -3,8 +3,11 @@ package com.example.demo.dao;
 import com.example.demo.model.Content;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -40,6 +43,28 @@ public class ContentDao extends BaseDao<Content, Long> {
     }
 
     // CREATE (insert new content)
+
+    public Long saveAndReturnId(Content content) {
+        String sql = "INSERT INTO content (user_id, created_at) VALUES (?, ?)";
+
+        LocalDateTime now = LocalDateTime.now();
+        content.setCreatedAt(now);
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(sql, new String[]{"content_id"});
+            ps.setLong(1, content.getUserId());
+            ps.setObject(2, now);
+            return ps;
+        }, keyHolder);
+
+        Long generatedId = keyHolder.getKey().longValue();
+        content.setContentId(generatedId);
+        return generatedId;
+    }
+
+
     public int save(Content content) {
         String sql = "INSERT INTO content (user_id, created_at) VALUES (?, ?)";
 
