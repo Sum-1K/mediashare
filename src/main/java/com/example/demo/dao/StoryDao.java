@@ -4,6 +4,7 @@ import com.example.demo.model.Story;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import java.util.List;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -48,6 +49,17 @@ public class StoryDao extends BaseDao<Story, Long> {
                 story.getIsHighlighted(),
                 story.getIsArchived());
     }
+    
+    public List<Story> findActiveStories() {
+    // Select stories joined with content, but only last 24 hours
+    String sql = "SELECT s.* FROM stories s " +
+                 "JOIN content c ON s.story_id = c.content_id " +
+                 "WHERE c.created_at >= NOW() - INTERVAL '24 hours' " +
+                 "ORDER BY c.created_at DESC";
+
+    return jdbcTemplate.query(sql, getRowMapper());
+    }
+
 
     public int update(Story story) {
         String sql = "UPDATE stories SET media_file=?, highlight_topic=?, is_highlighted=?, is_archived=? WHERE story_id=?";

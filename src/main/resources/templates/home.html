@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-<html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MediaShare Home</title>
-  <link rel="stylesheet" href="/home.css">
+  <link rel="stylesheet" href="../static/home.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 </head>
 <body>
@@ -20,29 +19,39 @@
 
   <!-- Stories Section -->
   <section class="stories">
+    <!-- User's own story with + icon -->
     <div class="story" id="user-story">
-      <img src="/priyamvada.jpg" alt="User 1">
+      <img src="../static/priyamvada.jpg" alt="User 1">
       <span>priyamvada</span>
       <i class="fa-solid fa-circle-plus story-add-btn"></i>
     </div>
-    <div class="story"><img src="/user2.jpg" alt="User 2"><span>user2</span></div>
-    <div class="story"><img src="/user3.jpg" alt="User 3"><span>user3</span></div>
-    <div class="story"><img src="/user4.jpg" alt="User 4"><span>user4</span></div>
-    <div class="story"><img src="/user5.jpg" alt="User 5"><span>user5</span></div>
+
+    <!-- Other users' stories -->
+    <div class="story"><img src="../static/user2.jpg" alt="User 2"><span>user2</span></div>
+    <div class="story"><img src="../static/user3.jpg" alt="User 3"><span>user3</span></div>
+    <div class="story"><img src="../static/user4.jpg" alt="User 4"><span>user4</span></div>
+    <div class="story"><img src="../static/user5.jpg" alt="User 5"><span>user5</span></div>
+
+    <!-- Loop through stories dynamically -->
+    <div th:each="story : ${stories}" class="story">
+      <img th:src="@{${story.mediaFile}}" alt="Story">
+      <span th:text="${story.highlightTopic}">Caption</span>
+    </div>
   </section>
 
   <!-- Feed Section -->
   <main class="feed">
+    <!-- Post 1 -->
     <div class="post" data-post-id="1">
       <div class="post-header">
-        <img class="user-pic" src="/priyamvada.jpg" alt="Priyamvada">
+        <img class="user-pic" src="../static/priyamvada.jpg" alt="Priyamvada">
         <span class="username">@priyamvada</span>
       </div>
       <div class="post-media">
         <div class="carousel">
-          <img class="carousel-img" src="/sunset1.jpg" alt="Sunset 1">
-          <img class="carousel-img" src="/sunset2.jpg" alt="Sunset 2">
-          <img class="carousel-img" src="/sunset3.jpg" alt="Sunset 3">
+          <img class="carousel-img" src="../static/sunset1.jpg" alt="Sunset 1">
+          <img class="carousel-img" src="../static/sunset2.jpg" alt="Sunset 2">
+          <img class="carousel-img" src="../static/sunset3.jpg" alt="Sunset 3">
         </div>
         <button class="prev">&lt;</button>
         <button class="next">&gt;</button>
@@ -60,14 +69,14 @@
             </div>
             <div class="comment-list">
               <div class="comment">
-                <img src="/priyamvada.jpg" alt="Priyamvada" class="comment-user-pic">
+                <img src="../static/priyamvada.jpg" alt="Priyamvada" class="comment-user-pic">
                 <div class="comment-text">
                   <span class="comment-username">priyamvada</span>
                   Nice sunset! 🌅
                 </div>
               </div>
               <div class="comment">
-                <img src="/user2.jpg" alt="User 2" class="comment-user-pic">
+                <img src="../static/user2.jpg" alt="User 2" class="comment-user-pic">
                 <div class="comment-text">
                   <span class="comment-username">user2</span>
                   Beautiful view!
@@ -86,9 +95,10 @@
       </div>
     </div>
 
+    <!-- Post 2 -->
     <div class="post" data-post-id="2">
       <div class="post-header">
-        <img class="user-pic" src="/user2.jpg" alt="User 2">
+        <img class="user-pic" src="../static/user2.jpg" alt="User 2">
         <span class="username">user2</span>
       </div>
       <div class="post-media">
@@ -139,7 +149,7 @@
     </div>
   </main>
 
-  <!-- Bottom Navbar (Sidebar on larger screens) -->
+  <!-- Bottom Navbar -->
   <nav class="bottom-nav">
     <div class="nav-item">
       <i class="fa-solid fa-house active"></i>
@@ -154,14 +164,13 @@
       <span>Create</span>
     </div>
     <div class="nav-item" onclick="location.href='chat.html'">
-  <i class="fa-regular fa-comment"></i>
-  <span>Messages</span>
-</div>
-<div class="nav-item" onclick="location.href='profile.html'">
-  <i class="fa-regular fa-user"></i>
-  <span>Profile</span>
-</div>
-
+      <i class="fa-regular fa-comment"></i>
+      <span>Messages</span>
+    </div>
+    <div class="nav-item" onclick="location.href='profile.html'">
+      <i class="fa-regular fa-user"></i>
+      <span>Profile</span>
+    </div>
     <div class="nav-item" id="more-nav">
       <i class="fa-solid fa-bars more-btn"></i>
       <span>More</span>
@@ -177,25 +186,37 @@
     </div>
   </nav>
 
-  <!-- Story Upload Modal (Hidden by default) -->
+  <!-- Story Upload Modal -->
   <div class="story-upload-modal" id="storyUploadModal">
     <div class="story-upload-content">
       <div class="story-upload-header">
-        <span class="close-btn">&times;</span>
+        <span class="close-btn" id="storyCloseBtn">&times;</span>
       </div>
-      <div class="story-preview" id="storyPreview">
-        <!-- Preview image/video will be displayed here -->
-      </div>
-      <div class="story-input">
-        <input type="file" id="storyFile" accept="image/*,video/*" style="display: none;">
-        <button class="add-story-btn" id="addStoryBtn">Add to your story</button>
-        <button class="post-story-btn" id="postStoryBtn">Post</button>
-      </div>
+      <form id="storyForm"
+            th:action="@{/stories}"
+            action="/stories"
+            method="post"
+            enctype="multipart/form-data">
+        <div class="story-preview" id="storyPreview"></div>
+        <input type="file" id="storyFile" name="storyFile" accept="image/*,video/*" style="display:none;">
+        <input type="text" name="highlightTopic" placeholder="Add a caption (optional)">
+        <div class="story-input">
+          <button type="button" class="add-story-btn" id="addStoryBtn">Choose file</button>
+          <button type="submit" class="post-story-btn">Post</button>
+        </div>
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf != null}" />
+      </form>
     </div>
   </div>
 
   <!-- JavaScript -->
   <script>
+    // Initialize modal state on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      const storyUploadModal = document.querySelector('#storyUploadModal');
+      storyUploadModal.style.display = 'none'; // Ensure modal is hidden on page load
+    });
+
     // Declare all variables at the top to avoid redeclaration
     const likes = document.querySelectorAll('.like-btn');
     const navItems = document.querySelectorAll('.nav-item');
@@ -205,12 +226,11 @@
     const moreBtn = document.querySelector('.more-btn');
     const menuPopup = document.querySelector('.menu-popup');
     const postMedias = document.querySelectorAll('.post-media');
-    const storyAddBtn = document.querySelector('.story-add-btn');
     const storyUploadModal = document.querySelector('#storyUploadModal');
     const storyFileInput = document.querySelector('#storyFile');
     const addStoryBtn = document.querySelector('#addStoryBtn');
-    const postStoryBtn = document.querySelector('#postStoryBtn');
     const storyPreview = document.querySelector('#storyPreview');
+    const storyCloseBtn = document.querySelector('#storyCloseBtn');
 
     // Like button functionality
     likes.forEach(like => {
@@ -310,10 +330,13 @@
     });
 
     // Story upload functionality
-    storyAddBtn.addEventListener('click', () => {
-      storyUploadModal.style.display = 'block';
-      storyFileInput.click(); // Trigger file input
+    document.querySelectorAll('.story-add-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        storyUploadModal.style.display = 'flex';
+      });
     });
+
+    addStoryBtn.addEventListener('click', () => storyFileInput.click());
 
     storyFileInput.addEventListener('change', (event) => {
       const file = event.target.files[0];
@@ -323,34 +346,17 @@
       }
     });
 
-    addStoryBtn.addEventListener('click', () => {
-      storyFileInput.click();
+    storyCloseBtn.addEventListener('click', closeStoryModal);
+
+    window.addEventListener('click', (event) => {
+      if (event.target === storyUploadModal) closeStoryModal();
     });
 
-    postStoryBtn.addEventListener('click', () => {
-      console.log('Story posted!');
+    function closeStoryModal() {
       storyUploadModal.style.display = 'none';
       storyPreview.innerHTML = '';
-      storyFileInput.value = ''; // Reset file input
-    });
-
-    // Close modal
-    document.querySelectorAll('.story-upload-modal .close-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        storyUploadModal.style.display = 'none';
-        storyPreview.innerHTML = '';
-        storyFileInput.value = '';
-      });
-    });
-
-    // Close modal when clicking outside
-    window.addEventListener('click', (event) => {
-      if (event.target === storyUploadModal) {
-        storyUploadModal.style.display = 'none';
-        storyPreview.innerHTML = '';
-        storyFileInput.value = '';
-      }
-    });
+      storyFileInput.value = '';
+    }
   </script>
 </body>
 </html>
