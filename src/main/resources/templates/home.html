@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MediaShare Home</title>
-  <link rel="stylesheet" href="../static/home.css">
+  <link rel="stylesheet" href="/home.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 </head>
 <body>
@@ -21,16 +21,16 @@
   <section class="stories">
     <!-- User's own story with + icon -->
     <div class="story" id="user-story">
-      <img src="../static/priyamvada.jpg" alt="User 1">
+      <img src="/priyamvada.jpg" alt="User 1">
       <span>priyamvada</span>
       <i class="fa-solid fa-circle-plus story-add-btn"></i>
     </div>
 
     <!-- Other users' stories -->
-    <div class="story"><img src="../static/user2.jpg" alt="User 2"><span>user2</span></div>
-    <div class="story"><img src="../static/user3.jpg" alt="User 3"><span>user3</span></div>
-    <div class="story"><img src="../static/user4.jpg" alt="User 4"><span>user4</span></div>
-    <div class="story"><img src="../static/user5.jpg" alt="User 5"><span>user5</span></div>
+    <div class="story"><img src="/user2.jpg" alt="User 2"><span>user2</span></div>
+    <div class="story"><img src="/user3.jpg" alt="User 3"><span>user3</span></div>
+    <div class="story"><img src="/user4.jpg" alt="User 4"><span>user4</span></div>
+    <div class="story"><img src="/user5.jpg" alt="User 5"><span>user5</span></div>
 
     <!-- Loop through stories dynamically -->
     <div th:each="story : ${stories}" class="story">
@@ -44,14 +44,14 @@
     <!-- Post 1 -->
     <div class="post" data-post-id="1">
       <div class="post-header">
-        <img class="user-pic" src="../static/priyamvada.jpg" alt="Priyamvada">
+        <img class="user-pic" src="/priyamvada.jpg" alt="Priyamvada">
         <span class="username">@priyamvada</span>
       </div>
       <div class="post-media">
         <div class="carousel">
-          <img class="carousel-img" src="../static/sunset1.jpg" alt="Sunset 1">
-          <img class="carousel-img" src="../static/sunset2.jpg" alt="Sunset 2">
-          <img class="carousel-img" src="../static/sunset3.jpg" alt="Sunset 3">
+          <img class="carousel-img" src="/sunset1.jpg" alt="Sunset 1">
+          <img class="carousel-img" src="/sunset2.jpg" alt="Sunset 2">
+          <img class="carousel-img" src="/sunset3.jpg" alt="Sunset 3">
         </div>
         <button class="prev">&lt;</button>
         <button class="next">&gt;</button>
@@ -69,14 +69,14 @@
             </div>
             <div class="comment-list">
               <div class="comment">
-                <img src="../static/priyamvada.jpg" alt="Priyamvada" class="comment-user-pic">
+                <img src="/priyamvada.jpg" alt="Priyamvada" class="comment-user-pic">
                 <div class="comment-text">
                   <span class="comment-username">priyamvada</span>
                   Nice sunset! 🌅
                 </div>
               </div>
               <div class="comment">
-                <img src="../static/user2.jpg" alt="User 2" class="comment-user-pic">
+                <img src="/user2.jpg" alt="User 2" class="comment-user-pic">
                 <div class="comment-text">
                   <span class="comment-username">user2</span>
                   Beautiful view!
@@ -98,7 +98,7 @@
     <!-- Post 2 -->
     <div class="post" data-post-id="2">
       <div class="post-header">
-        <img class="user-pic" src="../static/user2.jpg" alt="User 2">
+        <img class="user-pic" src="/user2.jpg" alt="User 2">
         <span class="username">user2</span>
       </div>
       <div class="post-media">
