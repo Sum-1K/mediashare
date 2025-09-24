@@ -3,16 +3,15 @@ package com.example.demo.controller;
 import com.example.demo.dao.UserDao;
 import com.example.demo.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-@RestController
-@RequestMapping("/api/users")
+@Controller
 public class UserController {
 
     @Autowired
@@ -20,67 +19,64 @@ public class UserController {
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    // REGISTER USER
+    //✅ Show signup form
+    @GetMapping("/signup")
+    public String signupPage(Model model) {
+        model.addAttribute("user", new User());
+        return "signup";
+    }
+
+    // ✅ Handle registration (form submission)
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody User user) {
-        if (user.getUser_name() == null || user.getPassword() == null || user.getEmail() == null) {
-            return ResponseEntity.badRequest().body("Username, email, and password are required");
-        }
-
-        // Check if email already exists
-        if (userDao.existsByEmail(user.getEmail())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already exists");
-        }
-
-        // Hash the password
-        String hashed = passwordEncoder.encode(user.getPassword());
-        user.setPassword(hashed);
-
-        // Set join date to now if not provided
-        if (user.getJoin_date() == null) {
-            user.setJoin_date(LocalDateTime.now());
-        }
-
-        Long id = userDao.save(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body("User registered with ID: " + id);
+public String registerUser(@ModelAttribute User user, @RequestParam("confirmPassword") String confirmPassword, Model model) {
+    System.out.println("Received user: " + user);
+    System.out.println("Received password: " + user.getPassword());
+    if (!user.getPassword().equals(confirmPassword)) {
+        model.addAttribute("error", "Passwords do not match");
+        return "signup"; // your signup page
     }
 
-    // LOGIN USER
-    @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody User loginRequest) {
-        if ((loginRequest.getUser_name() == null && loginRequest.getEmail() == null) || loginRequest.getPassword() == null) {
-            return ResponseEntity.badRequest().body("Username/email and password are required");
-        }
-
-        Optional<User> optionalUser;
-        if (loginRequest.getUser_name() != null) {
-            optionalUser = userDao.findByUserName(loginRequest.getUser_name());
-        } else {
-            optionalUser = userDao.findByUserName(loginRequest.getEmail());
-        }
-
-        if (optionalUser.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
-        }
-
-        User user = optionalUser.get();
-        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
-        }
-
-        user.setPassword(null); // remove password before sending to frontend
-        return ResponseEntity.ok(user);
+    if (user.getUser_name() == null || user.getPassword() == null || user.getEmail() == null) {
+        model.addAttribute("error", "All fields are required");
+        return "signup";
     }
 
-    // GET USER BY ID
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getUser(@PathVariable Long id) {
-        try {
-            User user = userDao.findById(id);
-            user.setPassword(null);
-            return ResponseEntity.ok(user);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+    if (userDao.existsByEmail(user.getEmail())) {
+        model.addAttribute("error", "Email already exists");
+        return "signup";
+    }
+
+    String hashed = passwordEncoder.encode(user.getPassword());
+    user.setPassword(hashed);
+    if (user.getJoin_date() == null) {
+        user.setJoin_date(LocalDateTime.now());
+    }
+
+    userDao.save(user);
+    return "redirect:/users/login"; // ✅ go to login page after successful signup
+}
+
+
+    // ✅ Show login page
+    @GetMapping("/users/login")
+    public String loginPage() {
+        return "homeDefault";
+    }
+
+    // ✅ (Optional) Handle login submission if you want to process form
+    @PostMapping("/users/login")
+    public String loginUser(@RequestParam String user_name,
+                            @RequestParam String password,
+                            Model model) {
+        Optional<User> optionalUser = userDao.findByUserName(user_name);
+        if (optionalUser.isEmpty() || !passwordEncoder.matches(password, optionalUser.get().getPassword())) {
+            model.addAttribute("error", "Invalid credentials");
+            return "homeDefault";
         }
+
+        // You can set session attributes here if needed
+        //session.setAttribute("loggedInUser", optionalUser.get());
+
+        return "redirect:/home"; // redirect to some authenticated page
     }
 }

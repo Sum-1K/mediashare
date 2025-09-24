@@ -57,12 +57,12 @@ public class UserDao extends BaseDao<User, Long> {
 
     // Custom save method (returns generated id)
     public Long save(User user) {
-        final String sql = "INSERT INTO users (user_name, first_name, last_name, dob, email, bio, privacy, photo, join_date) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        final String sql = "INSERT INTO users (user_name, first_name, last_name, dob, email, bio, privacy, photo, join_date, password) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement ps = connection.prepareStatement(sql, new String[] {"user_id"});
             ps.setString(1, user.getUser_name());
             ps.setString(2, user.getFirst_name());
             ps.setString(3, user.getLast_name());
@@ -76,6 +76,7 @@ public class UserDao extends BaseDao<User, Long> {
                 ps.setTimestamp(9, Timestamp.valueOf(user.getJoin_date()));
             else
                 ps.setTimestamp(9, new Timestamp(System.currentTimeMillis()));
+            ps.setString(10, user.getPassword());
             return ps;
         }, keyHolder);
 
