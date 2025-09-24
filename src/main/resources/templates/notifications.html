@@ -1,57 +1,154 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mediashare - Notifications</title>
-    <link rel="stylesheet" href="../static/notifications.css">
+    /* General Reset */
+    * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    }
 
-    <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    body {
+    font-family: 'Poppins', sans-serif;
+    background: #fafafa;
+    color: #262626;
+    }
 
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
-    <!-- Sidebar Navbar -->
-    <nav class="sidebar">
-        <div class="logo">Mediashare</div>
-        <ul class="nav-links">
-            <li><a href="home.html"><i class="fas fa-home"></i><span>Home</span></a></li>
-            <li><a href="chat.html"><i class="fas fa-comment-dots"></i><span>Chat</span></a></li>
-            <li><a class="active" href="#"><i class="fas fa-bell"></i><span>Notifications</span></a></li>
-            <li><a href="settings.html"><i class="fas fa-cog"></i><span>Settings</span></a></li>
-            <li><a href="profile.html"><i class="fas fa-user-circle"></i><span>Profile</span></a></li>
-        </ul>
-    </nav>
+    /* Top Navbar */
+    .navbar {
+    background-color: #fff;
+    border-bottom: 1px solid #dbdbdb;
+    padding: 10px 20px;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    }
 
-    <!-- Notifications Section -->
-    <main class="notifications">
-        <h2>Notifications</h2>
+    .navbar-title {
+    font-size: 24px;
+    font-weight: 600;
+    }
 
-        <div class="notification-card">
-            <img src="https://via.placeholder.com/40" alt="User">
-            <div class="notification-content">
-                <p><strong>Alex</strong> liked your photo.</p>
-                <span class="time">2m ago</span>
-            </div>
-        </div>
+    .navbar-icons {
+    display: flex;
+    gap: 20px;
+    font-size: 24px;
+    }
 
-        <div class="notification-card">
-            <img src="https://via.placeholder.com/40" alt="User">
-            <div class="notification-content">
-                <p><strong>Jessica</strong> commented: "This looks amazing!"</p>
-                <span class="time">10m ago</span>
-            </div>
-        </div>
+    /* Sidebar */
+    .sidebar {
+    background-color: #fff;
+    border-right: 1px solid #dbdbdb;
+    width: 200px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Push content and more-btn apart */
+    padding-top: 70px;
+    padding-bottom: 20px;
+    z-index: 999;
+    }
 
-        <div class="notification-card">
-            <img src="https://via.placeholder.com/40" alt="User">
-            <div class="notification-content">
-                <p><strong>Michael</strong> started following you.</p>
-                <span class="time">1h ago</span>
-            </div>
-        </div>
-    </main>
-</body>
-</html>
+    .sidebar > div:first-child {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    }
+
+    .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 18px;
+    padding: 12px 20px;
+    cursor: pointer;
+    color: #262626;
+    }
+    .nav-item i {
+    font-size: 22px;
+    }
+    .nav-item.active {
+    background-color: #e0e0e0;
+    font-weight: 600;
+    color: #0095f6;
+    }
+    .nav-item:hover {
+    background-color: #fafafa;
+    }
+    .menu-popup {
+    display: none;
+    flex-direction: column;
+    background: #fff;
+    border: 1px solid #dbdbdb;
+    border-radius: 8px;
+    position: absolute;
+    bottom: 20px;
+    left: 220px;
+    width: 200px;
+    z-index: 1002;
+    }
+    .menu-item {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    }
+    .menu-item:last-child {
+    border-bottom: none;
+    }
+    .menu-item:hover {
+    background-color: #fafafa;
+    }
+
+    /* Main Container */
+    .container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 30px;
+    margin-left: 200px;
+    margin-top: 70px;
+    }
+
+    /* Notifications Section */
+    .notifications-header {
+    font-size: 28px;
+    font-weight: 300;
+    margin-bottom: 32px;
+    margin-top: 14px;
+    }
+    .notifications-list {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    }
+    .notification-card {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px 28px;
+    border: 1px solid #dbdbdb;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    transition: background 0.2s, transform 0.2s;
+    }
+    .notification-card:hover {
+    background-color: #fafafa;
+    transform: translateY(-2px);
+    }
+    .notification-card img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    margin-right: 24px;
+    }
+    .notification-content p {
+    font-size: 16px;
+    margin-bottom: 5px;
+    }
+    .notification-content .time {
+    font-size: 13px;
+    color: #8e8e8e;
+    }
