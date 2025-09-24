@@ -31,6 +31,7 @@ public class UserDao extends BaseDao<User, Long> {
             user.setPhoto(rs.getString("photo"));
             if (rs.getTimestamp("join_date") != null)
                 user.setJoin_date(rs.getTimestamp("join_date").toLocalDateTime());
+            user.setPassword(rs.getString("password"));
             return user;
         }
     };

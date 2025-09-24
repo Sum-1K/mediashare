@@ -77,6 +77,6 @@ public String registerUser(@ModelAttribute User user, @RequestParam("confirmPass
         // You can set session attributes here if needed
         //session.setAttribute("loggedInUser", optionalUser.get());
 
-        return "redirect:/home"; // redirect to some authenticated page
+        return "redirect:/dashboard"; // redirect to some authenticated page
     }
 }
