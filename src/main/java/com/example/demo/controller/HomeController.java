@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import com.example.demo.dao.StoryDao;
 import com.example.demo.model.Story;
+import com.example.demo.model.User;
+
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class HomeController {
@@ -16,12 +19,15 @@ public class HomeController {
     @Autowired
     private StoryDao storyDao;
 
-    @GetMapping("/home")
-    public String home(Model model) {
-        // Fetch all active stories to show on the homepage
-        List<Story> stories = storyDao.findActiveStories();
-        model.addAttribute("stories", stories);
+   @GetMapping( {"/home"})
+public String home(Model model, HttpSession session) {
+    User loggedInUser = (User) session.getAttribute("loggedInUser");
+    List<Story> stories = storyDao.findActiveStories();
 
-        return "home"; // Thymeleaf template: home.html
-    }
+    model.addAttribute("stories", stories);
+    model.addAttribute("loggedInUser", loggedInUser);
+
+    return "home";
+}
+
 }

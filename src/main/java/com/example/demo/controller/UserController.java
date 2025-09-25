@@ -1,15 +1,21 @@
 package com.example.demo.controller;
 
-import com.example.demo.dao.UserDao;
-import com.example.demo.model.User;
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
+import com.example.demo.dao.UserDao;
+import com.example.demo.model.User;
+
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class UserController {
@@ -63,20 +69,21 @@ public String registerUser(@ModelAttribute User user, @RequestParam("confirmPass
         return "homeDefault";
     }
 
-    // ✅ (Optional) Handle login submission if you want to process form
     @PostMapping("/users/login")
-    public String loginUser(@RequestParam String user_name,
-                            @RequestParam String password,
-                            Model model) {
-        Optional<User> optionalUser = userDao.findByUserName(user_name);
-        if (optionalUser.isEmpty() || !passwordEncoder.matches(password, optionalUser.get().getPassword())) {
-            model.addAttribute("error", "Invalid credentials");
-            return "homeDefault";
-        }
-
-        // You can set session attributes here if needed
-        //session.setAttribute("loggedInUser", optionalUser.get());
-
-        return "redirect:/dashboard"; // redirect to some authenticated page
+public String loginUser(@RequestParam String user_name,
+                        @RequestParam String password,
+                        HttpSession session,
+                        Model model) {
+    Optional<User> optionalUser = userDao.findByUserName(user_name);
+    if (optionalUser.isEmpty() || !passwordEncoder.matches(password, optionalUser.get().getPassword())) {
+        model.addAttribute("error", "Invalid credentials");
+        return "homeDefault";
     }
+
+    // store logged-in user in session
+    session.setAttribute("loggedInUser", optionalUser.get());
+
+    return "redirect:/dashboard"; // redirect to home or dashboard
+}
+
 }

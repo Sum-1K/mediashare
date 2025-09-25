@@ -1,10 +1,9 @@
 package com.example.demo.controller;
 
-import java.io.File;
-import java.io.IOException;
-import java.time.LocalDateTime;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,46 +20,51 @@ import jakarta.servlet.http.HttpSession;
 @Controller
 public class StoryController {
 
-    @Autowired
-    private ContentDao contentDao;
+    private final ContentDao contentDao;
+    private final StoryDao storyDao;
 
-    @Autowired
-    private StoryDao storyDao;
-
+    public StoryController(ContentDao contentDao, StoryDao storyDao) {
+        this.contentDao = contentDao;
+        this.storyDao = storyDao;
+    }
     @PostMapping("/stories")
-    public String addStory(@RequestParam("storyFile") MultipartFile file,
-                           @RequestParam(required = false) String highlightTopic,
-                           HttpSession session) throws IOException {
-
-        // 1. Get logged in user
+public String uploadStory(@RequestParam("storyFile") MultipartFile file,
+                          @RequestParam("highlightTopic") String highlightTopic,
+                          HttpSession session) {
+    try {
+        // get logged-in user
         User user = (User) session.getAttribute("loggedInUser");
         if (user == null) {
-            return "redirect:/login"; // no session → login first
+            return "redirect:/users/login"; // user not logged in
         }
 
-        // 2. Save uploaded file to static/uploads
         String uploadDir = "src/main/resources/static/uploads/";
-        File saveFile = new File(uploadDir + file.getOriginalFilename());
-        file.transferTo(saveFile);
-        String mediaPath = "/uploads/" + file.getOriginalFilename();
+        Files.createDirectories(Paths.get(uploadDir));
 
-        // 3. Insert into content table & get generated content_id
+        Path path = Paths.get(uploadDir).resolve(file.getOriginalFilename());
+        Files.write(path, file.getBytes());
+
+        // save content with logged-in user
         Content content = new Content();
         content.setUserId(user.getUser_id());
-        content.setCreatedAt(LocalDateTime.now());
-
         Long contentId = contentDao.saveAndReturnId(content);
 
-        // 4. Insert into stories table
+        // save story
         Story story = new Story();
-        story.setStoryId(contentId); // PK = FK
-        story.setMediaFile(mediaPath);
+        story.setStoryId(contentId);
         story.setHighlightTopic(highlightTopic);
-        story.setIsHighlighted(false);
-        story.setIsArchived(false);
+        story.setMediaFile("/uploads/" + file.getOriginalFilename());
+        story.setIsArchived(false);  // <-- add this
+        story.setIsHighlighted(false);    // <-- add this
         storyDao.save(story);
 
-        // 5. Redirect back to home
         return "redirect:/home";
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return "error";
     }
+}
+
+   
 }
