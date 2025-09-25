@@ -16,6 +16,21 @@ public class PageController {
         return "home"; // Thymeleaf will render login.html
     }
 
+    @GetMapping("/chat")
+    public String chatPage() {
+        return "chat"; // Thymeleaf template: chat.html in templates/
+    }
+    
+    @GetMapping("/profile")
+    public String profilePage() {
+        return "profile"; // profile.html in templates/
+    }
+
+    @GetMapping("/settings")
+    public String settingsPage() {
+        return "settings"; // settings.html in templates/
+    }
+
     // @GetMapping("/login")
     // public String loginPage() {
     //     return "homeDefault"; // optional, for explicit /login URL
