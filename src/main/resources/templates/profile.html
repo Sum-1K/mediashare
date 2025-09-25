@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MediaShare Profile</title>
-  <link rel="stylesheet" href="../static/home.css">
+  <link rel="stylesheet" href="/home.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <style>
     * {
@@ -320,27 +320,32 @@
     .upload-caption button:hover {
       background-color: #0074cc;
     }
+
+    a {
+  text-decoration: none;
+  color: inherit; /* keeps link color same as parent text */
+}
   </style>
 </head>
 <body>
   <div class="navbar">
     <div class="navbar-title">MediaShare</div>
     <div class="navbar-icons">
-      <i class="fa-regular fa-heart top-icon"></i>
+      <a href = "/notifications"> <i class="fa-regular fa-heart top-icon"></i> </a>
       <i class="fa-regular fa-paper-plane top-icon"></i>
     </div>
   </div>
 
   <!-- Sidebar -->
   <div class="sidebar">
-    <div class="nav-item"><i class="fa-solid fa-house"></i><span>Home</span></div>
+    <a href = "/dashboard" > <div class="nav-item"><i class="fa-solid fa-house"></i><span>Home</span></div> </a>
     <div class="nav-item" id="search-btn"><i class="fa-solid fa-magnifying-glass"></i><span>Search</span></div>
     <div class="nav-item" id="create-post"><i class="fa-solid fa-circle-plus"></i><span>Create</span></div>
-    <div class="nav-item"><i class="fa-regular fa-comment"></i><span>Messages</span></div>
+    <a href = "/chat" > <div class="nav-item"><i class="fa-regular fa-comment"></i><span>Messages</span></div> </a>
     <div class="nav-item"><i class="fa-regular fa-user"></i><span>Profile</span></div>
     <div class="nav-item more-btn"><i class="fa-solid fa-bars"></i><span>More</span></div>
     <div class="menu-popup" id="menu-popup">
-      <div class="menu-item">Settings</div>
+      <a href = "/settings" > <div class="menu-item">Settings</div> </a>
       <div class="menu-item">Your activity</div>
       <div class="menu-item">Saved</div>
       <div class="menu-item">Switch appearance</div>

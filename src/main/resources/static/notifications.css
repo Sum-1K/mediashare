@@ -1,18 +1,18 @@
-    /* General Reset */
-    * {
+/* General Reset */
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    }
+}
 
-    body {
+body {
     font-family: 'Poppins', sans-serif;
     background: #fafafa;
     color: #262626;
-    }
+}
 
-    /* Top Navbar */
-    .navbar {
+/* Top Navbar */
+.navbar {
     background-color: #fff;
     border-bottom: 1px solid #dbdbdb;
     padding: 10px 20px;
@@ -23,21 +23,21 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    }
+}
 
-    .navbar-title {
+.navbar-title {
     font-size: 24px;
     font-weight: 600;
-    }
+}
 
-    .navbar-icons {
+.navbar-icons {
     display: flex;
     gap: 20px;
     font-size: 24px;
-    }
+}
 
-    /* Sidebar */
-    .sidebar {
+/* Sidebar */
+.sidebar {
     background-color: #fff;
     border-right: 1px solid #dbdbdb;
     width: 200px;
@@ -51,15 +51,15 @@
     padding-top: 70px;
     padding-bottom: 20px;
     z-index: 999;
-    }
+}
 
-    .sidebar > div:first-child {
+.sidebar > div:first-child {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    }
+}
 
-    .nav-item {
+.nav-item {
     display: flex;
     align-items: center;
     gap: 15px;
@@ -67,19 +67,30 @@
     padding: 12px 20px;
     cursor: pointer;
     color: #262626;
-    }
-    .nav-item i {
+}
+
+.nav-item i {
     font-size: 22px;
-    }
-    .nav-item.active {
+}
+
+/* Sidebar links (remove underline) */
+.sidebar a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.nav-item.active {
     background-color: #e0e0e0;
     font-weight: 600;
     color: #0095f6;
-    }
-    .nav-item:hover {
+}
+.nav-item:hover {
     background-color: #fafafa;
-    }
-    .menu-popup {
+}
+
+/* More menu popup */
+.menu-popup {
     display: none;
     flex-direction: column;
     background: #fff;
@@ -90,41 +101,40 @@
     left: 220px;
     width: 200px;
     z-index: 1002;
-    }
-    .menu-item {
+}
+.menu-item {
     padding: 10px;
     cursor: pointer;
     border-bottom: 1px solid #eee;
-    }
-    .menu-item:last-child {
+}
+.menu-item:last-child {
     border-bottom: none;
-    }
-    .menu-item:hover {
+}
+.menu-item:hover {
     background-color: #fafafa;
-    }
+}
 
-    /* Main Container */
-    .container {
+/* Main Container */
+.container {
     max-width: 700px;
     margin: 0 auto;
     padding: 30px;
     margin-left: 200px;
-    margin-top: 70px;
-    }
+    margin-top: 90px; /* ✅ Fix: add spacing below navbar */
+}
 
-    /* Notifications Section */
-    .notifications-header {
+/* Notifications Section */
+.notifications-header {
     font-size: 28px;
     font-weight: 300;
     margin-bottom: 32px;
-    margin-top: 14px;
-    }
-    .notifications-list {
+}
+.notifications-list {
     display: flex;
     flex-direction: column;
     gap: 22px;
-    }
-    .notification-card {
+}
+.notification-card {
     display: flex;
     align-items: center;
     background: #fff;
@@ -133,22 +143,28 @@
     border: 1px solid #dbdbdb;
     box-shadow: 0 1px 4px rgba(0,0,0,0.04);
     transition: background 0.2s, transform 0.2s;
-    }
-    .notification-card:hover {
+}
+.notification-card:hover {
     background-color: #fafafa;
     transform: translateY(-2px);
-    }
-    .notification-card img {
+}
+.notification-card img {
     width: 48px;
     height: 48px;
     border-radius: 50%;
     margin-right: 24px;
-    }
-    .notification-content p {
+}
+.notification-content p {
     font-size: 16px;
     margin-bottom: 5px;
-    }
-    .notification-content .time {
+}
+.notification-content .time {
     font-size: 13px;
     color: #8e8e8e;
-    }
+}
+
+/* Default links */
+a {
+    text-decoration: none;
+    color: inherit;
+}

@@ -31,6 +31,11 @@ public class PageController {
         return "settings"; // settings.html in templates/
     }
 
+    @GetMapping("/notifications")
+    public String notificationsPage() {
+        return "notifications"; // notifications.html in templates/
+    }
+
     // @GetMapping("/login")
     // public String loginPage() {
     //     return "homeDefault"; // optional, for explicit /login URL

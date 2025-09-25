@@ -1,154 +1,90 @@
-    /* General Reset */
-    * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediaShare - Notifications</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/notifications.css">
+</head>
+<body>
+    <!-- Top Navbar -->
+    <div class="navbar">
+        <div class="navbar-title">MediaShare</div>
+        <div class="navbar-icons">
+            <i class="fa-regular fa-heart top-icon"></i>
+            <i class="fa-regular fa-paper-plane top-icon"></i>
+        </div>
+    </div>
 
-    body {
-    font-family: 'Poppins', sans-serif;
-    background: #fafafa;
-    color: #262626;
-    }
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div>
+            <a href="/dashboard" style="text-decoration:none; color:inherit;">
+                <div class="nav-item"><i class="fa-solid fa-house"></i><span>Home</span></div>
+            </a>
+            <div class="nav-item"><i class="fa-solid fa-magnifying-glass"></i><span>Search</span></div>
+            <div class="nav-item"><i class="fa-solid fa-circle-plus"></i><span>Create</span></div>
+            <a href="/chat" style="text-decoration:none; color:inherit;">
+                <div class="nav-item"><i class="fa-regular fa-comment"></i><span>Messages</span></div>
+            </a>
+            <a href="/profile" style="text-decoration:none; color:inherit;">
+                <div class="nav-item"><i class="fa-regular fa-user"></i><span>Profile</span></div>
+            </a>
+        </div>
 
-    /* Top Navbar */
-    .navbar {
-    background-color: #fff;
-    border-bottom: 1px solid #dbdbdb;
-    padding: 10px 20px;
-    position: fixed;
-    top: 0;
-    width: 100%;
-    z-index: 1000;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    }
+        <div class="nav-item more-btn">
+            <i class="fa-solid fa-bars"></i><span>More</span>
+        </div>
+    </nav>
 
-    .navbar-title {
-    font-size: 24px;
-    font-weight: 600;
-    }
+    <!-- Popup Menu -->
+    <div class="menu-popup" id="menu-popup">
+        <div class="menu-item">Settings</div>
+        <div class="menu-item">Your activity</div>
+        <div class="menu-item">Saved</div>
+        <div class="menu-item">Switch appearance</div>
+        <div class="menu-item">Report a problem</div>
+        <div class="menu-item">Switch accounts</div>
+        <div class="menu-item">Log out</div>
+    </div>
 
-    .navbar-icons {
-    display: flex;
-    gap: 20px;
-    font-size: 24px;
-    }
+    <!-- Main Container -->
+    <div class="container" id="main-container">
+        <div class="notifications-header">Notifications</div>
+        <div class="notifications-list">
+            <div class="notification-card">
+                <img src="https://via.placeholder.com/48" alt="User">
+                <div class="notification-content">
+                    <p><strong>Alex</strong> liked your photo.</p>
+                    <span class="time">2m ago</span>
+                </div>
+            </div>
+            <div class="notification-card">
+                <img src="https://via.placeholder.com/48" alt="User">
+                <div class="notification-content">
+                    <p><strong>Jessica</strong> commented: "This looks amazing!"</p>
+                    <span class="time">10m ago</span>
+                </div>
+            </div>
+            <div class="notification-card">
+                <img src="https://via.placeholder.com/48" alt="User">
+                <div class="notification-content">
+                    <p><strong>Michael</strong> started following you.</p>
+                    <span class="time">1h ago</span>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    /* Sidebar */
-    .sidebar {
-    background-color: #fff;
-    border-right: 1px solid #dbdbdb;
-    width: 200px;
-    height: 100vh;
-    position: fixed;
-    top: 0;
-    left: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between; /* Push content and more-btn apart */
-    padding-top: 70px;
-    padding-bottom: 20px;
-    z-index: 999;
-    }
-
-    .sidebar > div:first-child {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    }
-
-    .nav-item {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    font-size: 18px;
-    padding: 12px 20px;
-    cursor: pointer;
-    color: #262626;
-    }
-    .nav-item i {
-    font-size: 22px;
-    }
-    .nav-item.active {
-    background-color: #e0e0e0;
-    font-weight: 600;
-    color: #0095f6;
-    }
-    .nav-item:hover {
-    background-color: #fafafa;
-    }
-    .menu-popup {
-    display: none;
-    flex-direction: column;
-    background: #fff;
-    border: 1px solid #dbdbdb;
-    border-radius: 8px;
-    position: absolute;
-    bottom: 20px;
-    left: 220px;
-    width: 200px;
-    z-index: 1002;
-    }
-    .menu-item {
-    padding: 10px;
-    cursor: pointer;
-    border-bottom: 1px solid #eee;
-    }
-    .menu-item:last-child {
-    border-bottom: none;
-    }
-    .menu-item:hover {
-    background-color: #fafafa;
-    }
-
-    /* Main Container */
-    .container {
-    max-width: 700px;
-    margin: 0 auto;
-    padding: 30px;
-    margin-left: 200px;
-    margin-top: 70px;
-    }
-
-    /* Notifications Section */
-    .notifications-header {
-    font-size: 28px;
-    font-weight: 300;
-    margin-bottom: 32px;
-    margin-top: 14px;
-    }
-    .notifications-list {
-    display: flex;
-    flex-direction: column;
-    gap: 22px;
-    }
-    .notification-card {
-    display: flex;
-    align-items: center;
-    background: #fff;
-    border-radius: 12px;
-    padding: 16px 28px;
-    border: 1px solid #dbdbdb;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-    transition: background 0.2s, transform 0.2s;
-    }
-    .notification-card:hover {
-    background-color: #fafafa;
-    transform: translateY(-2px);
-    }
-    .notification-card img {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    margin-right: 24px;
-    }
-    .notification-content p {
-    font-size: 16px;
-    margin-bottom: 5px;
-    }
-    .notification-content .time {
-    font-size: 13px;
-    color: #8e8e8e;
-    }
+    <script>
+        // More menu toggle for sidebar
+        const moreBtn = document.querySelector('.more-btn');
+        const menuPopup = document.getElementById('menu-popup');
+        moreBtn.addEventListener('click', () => {
+            menuPopup.style.display = menuPopup.style.display === "flex" ? "none" : "flex";
+        });
+    </script>
+</body>
+</html>
