@@ -1,10 +1,29 @@
 package com.example.demo.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import com.example.demo.dao.FollowDao;
+import com.example.demo.dao.MediaDao;
+import com.example.demo.dao.PostDao;
+import com.example.demo.model.User;
+
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class PageController {
+
+    @Autowired
+    private PostDao postDao; // DAO for Post entity
+
+    @Autowired
+    private FollowDao followDao; // DAO for followers/following
+
+    @Autowired
+private MediaDao mediaDao;
+
     //handler methods to handle /abc request
     @GetMapping("/")
     public String home() {
@@ -22,9 +41,31 @@ public class PageController {
     }
     
     @GetMapping("/profile")
-    public String profilePage() {
-        return "profile"; // profile.html in templates/
+public String profilePage(HttpSession session, Model model) {
+    User user = (User) session.getAttribute("loggedInUser");
+    if (user == null) {
+        return "redirect:/users/login";
     }
+    
+    model.addAttribute("user", user);
+
+    // Fetch posts by user
+    int postCount = postDao.countByUserId(user.getUser_id());
+    model.addAttribute("postCount", postCount);
+
+    // Fetch followers and following count
+    int followers = followDao.countFollowers(user.getUser_id()); // people who follow this user
+    int following = followDao.countFollowing(user.getUser_id()); // people this user follows
+    model.addAttribute("followers", followers);
+    model.addAttribute("following", following);
+
+    // Optional: posts and media
+    // model.addAttribute("posts", postDao.findByUserId(user.getUser_id()));
+    // model.addAttribute("postMediaMap", mediaDao.findByUserId(user.getUser_id()));
+
+    return "profile";
+}
+
 
     @GetMapping("/settings")
     public String settingsPage() {

@@ -1,12 +1,13 @@
 package com.example.demo.dao;
 
-import com.example.demo.model.Post;
-import org.springframework.jdbc.core.JdbcTemplate;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import com.example.demo.model.Post;
 
 @Repository
 public class PostDao extends BaseDao<Post, Long> {
@@ -47,4 +48,24 @@ public class PostDao extends BaseDao<Post, Long> {
         String sql = "UPDATE posts SET caption = ? WHERE post_id = ?";
         return jdbcTemplate.update(sql, post.getCaption(), post.getPostId());
     }
+
+    // Add this method inside PostDao
+    public List<Post> findByUserId(Long userId) {
+        String sql = "SELECT p.* FROM posts p " +
+                 "JOIN content c ON p.post_id = c.content_id " +
+                 "WHERE c.user_id = ?";
+        return jdbcTemplate.query(sql, getRowMapper(), userId);
+    }
+
+    public int countByUserId(Long userId) {
+    String sql = """
+        SELECT COUNT(*)
+        FROM posts p
+        JOIN content c ON p.post_id = c.content_id
+        WHERE c.user_id = ?;
+    """;
+    return jdbcTemplate.queryForObject(sql, Integer.class, userId);
+}
+
+
 }

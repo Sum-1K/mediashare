@@ -72,4 +72,15 @@ public class FollowDao extends BaseDao<Follow, Long> {
         String sql = "SELECT * FROM " + getTableName() + " WHERE followee_id = ?";
         return jdbcTemplate.query(sql, getRowMapper(), followeeId);
     }
+
+    public int countFollowers(Long userId) {
+        String sql = "SELECT COUNT(*) FROM follows WHERE followee_id = ?";
+        return jdbcTemplate.queryForObject(sql, Integer.class, userId);
+    }
+
+    public int countFollowing(Long userId) {
+        String sql = "SELECT COUNT(*) FROM follows WHERE follower_id = ?";
+        return jdbcTemplate.queryForObject(sql, Integer.class, userId);
+    }
+
 }
