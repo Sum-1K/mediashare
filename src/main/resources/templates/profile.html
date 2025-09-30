@@ -79,7 +79,7 @@
         <!-- Profile Header -->
         <div class="profile-header">
             <div class="profile-pic">
-                <img th:src="${user.photo != null} ? @{${user.photo}} : @{/src/main/resources/static/uploads/logo.jpg}" alt="Profile Picture">
+                <img th:src="${user.photo != null} ? @{/uploads/{file}(file=${user.photo})} : @{/uploads/default_dp.jpg}" alt="Profile Picture">
             </div>
             <div class="profile-info">
                 <div class="username" th:text="${user.user_name}">username</div>
@@ -95,9 +95,7 @@
         <div class="posts-grid">
     <div class="post" th:each="post : ${posts}">
         <div th:each="media : ${postMediaMap[post.postId]}">
-            <img th:if="${media.type.name() == 'PHOTO'}"
-                 th:src="@{${media.url}}"
-                 th:alt="${post.caption}" />
+            <img th:if="${media.type.name() == 'PHOTO'}" th:src="@{${media.url}}" th:alt="${post.caption}" />
         </div>
     </div>
 </div>
