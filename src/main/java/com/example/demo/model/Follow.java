@@ -1,24 +1,27 @@
 package com.example.demo.model;
 
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "follows")
 public class Follow {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(name = "follower_id")
     private Long followerId;
+    
+    @Column(name = "followee_id")
     private Long followeeId;
+    
+    @Column(name = "is_close_friend")
     private boolean isCloseFriend;
+    
     private LocalDateTime since;
 
-    // Constructor
-    public Follow() {}
-
-    public Follow(Long followerId, Long followeeId, boolean isCloseFriend, LocalDateTime since) {
-        this.followerId = followerId;
-        this.followeeId = followeeId;
-        this.isCloseFriend = isCloseFriend;
-        this.since = since;
-    }
-
-    // Getters and Setters
+    // ... getters and setters
     public Long getFollowerId() {
         return followerId;
     }

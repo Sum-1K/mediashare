@@ -1,6 +1,7 @@
 package com.example.demo.dao;
 
 import com.example.demo.model.Follow;
+import com.example.demo.model.User;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
@@ -18,8 +19,6 @@ public class FollowDao extends BaseDao<Follow, Long> {
 
     @Override
     protected String getIdColumn() {
-        // Not really useful because we have a composite key,
-        // but BaseDao requires it, so we just return one of them.
         return "follower_id";
     }
 
@@ -41,7 +40,8 @@ public class FollowDao extends BaseDao<Follow, Long> {
     // ✅ Override: findById using composite key
     public Follow findById(Long followerId, Long followeeId) {
         String sql = "SELECT * FROM " + getTableName() + " WHERE follower_id = ? AND followee_id = ?";
-        return jdbcTemplate.queryForObject(sql, getRowMapper(), followerId, followeeId);
+        List<Follow> follows = jdbcTemplate.query(sql, getRowMapper(), followerId, followeeId);
+        return follows.isEmpty() ? null : follows.get(0);
     }
 
     // ✅ Override: deleteById using composite key
@@ -83,4 +83,38 @@ public class FollowDao extends BaseDao<Follow, Long> {
         return jdbcTemplate.queryForObject(sql, Integer.class, userId);
     }
 
+    // New methods for follow service
+    public boolean isFollowing(Long followerId, Long followingId) {
+        String sql = "SELECT COUNT(*) FROM " + getTableName() + " WHERE follower_id = ? AND followee_id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, followerId, followingId);
+        return count != null && count > 0;
+    }
+
+    public boolean delete(Long followerId, Long followeeId) {
+        String sql = "DELETE FROM " + getTableName() + " WHERE follower_id = ? AND followee_id = ?";
+        int rowsAffected = jdbcTemplate.update(sql, followerId, followeeId);
+        return rowsAffected > 0;
+    }
+
+    public int getFollowerCount(Long userId) {
+        String sql = "SELECT COUNT(*) FROM " + getTableName() + " WHERE followee_id = ?";
+        return jdbcTemplate.queryForObject(sql, Integer.class, userId);
+    }
+
+    public int getFollowingCount(Long userId) {
+        String sql = "SELECT COUNT(*) FROM " + getTableName() + " WHERE follower_id = ?";
+        return jdbcTemplate.queryForObject(sql, Integer.class, userId);
+    }
+
+    // Get followers as User objects
+    public List<User> getFollowers(Long userId) {
+        String sql = "SELECT u.* FROM users u JOIN follows f ON u.user_id = f.follower_id WHERE f.followee_id = ?";
+        return jdbcTemplate.query(sql, new UserDao(jdbcTemplate).getRowMapper(), userId);
+    }
+
+    // Get following as User objects  
+    public List<User> getFollowing(Long userId) {
+        String sql = "SELECT u.* FROM users u JOIN follows f ON u.user_id = f.followee_id WHERE f.follower_id = ?";
+        return jdbcTemplate.query(sql, new UserDao(jdbcTemplate).getRowMapper(), userId);
+    }
 }

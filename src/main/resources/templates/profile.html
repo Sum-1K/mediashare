@@ -17,7 +17,8 @@
         .profile-pic { width: 150px; height: 150px; border-radius: 50%; margin-right: 100px; overflow: hidden; }
         .profile-pic img { width: 100%; height: 100%; object-fit: cover; }
         .profile-info { flex: 1; }
-        .username { font-size: 28px; font-weight: 300; margin-bottom: 20px; }
+        .username-section { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
+        .username { font-size: 28px; font-weight: 300; }
         .profile-stats { display: flex; margin-bottom: 20px; }
         .stat { margin-right: 40px; font-size: 16px; }
         .stat span { font-weight: 600; }
@@ -25,6 +26,71 @@
         .posts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
         .post { width: 100%; padding-top: 100%; position: relative; background-color: #fff; border: 1px solid #dbdbdb; }
         .post img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Follow Button Styles */
+        .follow-btn, .unfollow-btn, .requested-btn, .edit-profile-btn {
+            padding: 8px 24px;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .follow-btn {
+            background-color: #0095f6;
+            color: white;
+        }
+        
+        .unfollow-btn {
+            background-color: transparent;
+            border: 1px solid #dbdbdb;
+            color: #262626;
+        }
+        
+        .requested-btn {
+            background-color: transparent;
+            border: 1px solid #dbdbdb;
+            color: #262626;
+        }
+        
+        .edit-profile-btn {
+            background-color: transparent;
+            border: 1px solid #dbdbdb;
+            color: #262626;
+        }
+        
+        .follow-btn:hover {
+            background-color: #0074cc;
+        }
+        
+        .unfollow-btn:hover {
+            background-color: #fafafa;
+        }
+        
+        .edit-profile-btn:hover {
+            background-color: #fafafa;
+        }
+        
+        .profile-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .follow-requests-link {
+            margin-top: 10px;
+        }
+        
+        .follow-requests-link a {
+            color: #0095f6;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .follow-requests-link a:hover {
+            text-decoration: underline;
+        }
+
         .modal, .upload-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1001; justify-content: center; align-items: center; }
         .modal-content { background-color: #fff; border-radius: 12px; padding: 20px; width: 300px; text-align: center; }
         .modal-option { padding: 10px; font-size: 16px; cursor: pointer; border-bottom: 1px solid #dbdbdb; }
@@ -37,6 +103,7 @@
         .upload-caption textarea { flex: 1; border: 1px solid #dbdbdb; border-radius: 4px; padding: 10px; resize: none; font-size: 14px; }
         .upload-caption button { margin-top: 10px; padding: 8px; background-color: #0095f6; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
         .upload-caption button:hover { background-color: #0074cc; }
+        
         @media (max-width: 768px) {
             .sidebar { width: 50px; padding-top: 60px; }
             .sidebar-item { font-size: 20px; margin: 15px 0; }
@@ -47,6 +114,9 @@
             .upload-modal-content { width: 90%; height: 80%; flex-direction: column; }
             .upload-preview { width: 100%; height: 50%; }
             .upload-caption { width: 100%; height: 50%; }
+            .username-section { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .profile-actions { width: 100%; }
+            .follow-btn, .unfollow-btn, .requested-btn, .edit-profile-btn { width: 100%; }
         }
         .flash-message { color: green; text-align: center; margin-bottom: 10px; }
     </style>
@@ -63,12 +133,12 @@
 
     <!-- Sidebar -->
     <div class="sidebar">
-        <div class="sidebar-item"><a th:href="@{/dashboard}">🏠</a></div>
-        <div class="sidebar-item"><a th:href="@{/search}">🔍</a></div>
+        <div class="sidebar-item"><a th:href="@{/dashboard}" style="text-decoration: none; color: inherit;">🏠</a></div>
+        <div class="sidebar-item"><a th:href="@{/search}" style="text-decoration: none; color: inherit;">🔍</a></div>
         <div class="sidebar-item" id="create-post">➕</div>
-        <div class="sidebar-item"><a th:href="@{/chat}">💬</a></div>
-        <div class="sidebar-item"><a th:href="@{/profile}">👤</a></div>
-        <div class="sidebar-item"><a th:href="@{/settings}">≡</a></div>
+        <div class="sidebar-item"><a th:href="@{/chat}" style="text-decoration: none; color: inherit;">💬</a></div>
+        <div class="sidebar-item"><a th:href="@{/profile}" style="text-decoration: none; color: inherit;">👤</a></div>
+        <div class="sidebar-item"><a th:href="@{/settings}" style="text-decoration: none; color: inherit;">≡</a></div>
     </div>
 
     <!-- Main Container -->
@@ -79,29 +149,73 @@
         <!-- Profile Header -->
         <div class="profile-header">
             <div class="profile-pic">
-                <img th:src="${user.photo != null} ? @{${user.photo}} : @{/src/main/resources/static/uploads/logo.jpg}" alt="Profile Picture">
+                <img th:src="${user.photo != null} ? @{${user.photo}} : @{'/user2.jpg'}" alt="Profile Picture">
             </div>
             <div class="profile-info">
-                <div class="username" th:text="${user.user_name}">username</div>
+                <div class="username-section">
+                    <div class="username" th:text="${user.user_name}">username</div>
+                    <div class="profile-actions" th:if="${currentUser != null}">
+                        <!-- Edit Profile Button (own profile) -->
+                        <button class="edit-profile-btn" 
+                                th:if="${currentUser.user_id == user.user_id}"
+                                onclick="location.href='/settings'">
+                            Edit Profile
+                        </button>
+                        
+                        <!-- Follow/Unfollow Buttons (other users) -->
+                        <button class="follow-btn" id="followBtn" onclick="followUser()" 
+                                th:if="${currentUser.user_id != user.user_id}" 
+                                style="display: none;">
+                            Follow
+                        </button>
+                        <button class="unfollow-btn" id="unfollowBtn" onclick="unfollowUser()" 
+                                th:if="${currentUser.user_id != user.user_id}" 
+                                style="display: none;">
+                            Following
+                        </button>
+                        <button class="requested-btn" id="requestedBtn" 
+                                th:if="${currentUser.user_id != user.user_id}" 
+                                style="display: none;">
+                            Requested
+                        </button>
+                    </div>
+                </div>
+                
                 <div class="profile-stats">
                     <div class="stat"><span th:text="${postCount}">0</span> posts</div>
-                    <div class="stat"><span th:text="${followers}">0</span> followers</div>
-                    <div class="stat"><span th:text="${following}">0</span> following</div>
+                    <div class="stat">
+                        <span id="followerCount" th:text="${followers != null ? followers : 0}">0</span> 
+                        <a th:href="@{/followers/{id}(id=${user.user_id})}" style="text-decoration: none; color: inherit;">followers</a>
+                    </div>
+                    <div class="stat">
+                        <span id="followingCount" th:text="${following != null ? following : 0}">0</span> 
+                        <a th:href="@{/following/{id}(id=${user.user_id})}" style="text-decoration: none; color: inherit;">following</a>
+                    </div>
                 </div>
-                <div class="bio" th:text="${user.bio}">A short bio</div>
+                
+                <div class="bio">
+                    <strong th:text="${user.first_name + ' ' + user.last_name}">Full Name</strong>
+                    <p th:text="${user.bio}">A short bio</p>
+                </div>
+                
+                <!-- Follow Requests Link (only show for own profile if private account) -->
+                <div class="follow-requests-link" 
+                    th:if="${currentUser != null && currentUser.user_id == user.user_id && user.privacy != null && user.privacy.name() == 'PRIVATE'}">
+                    <a th:href="@{/follow/requests}">View follow requests</a>
+                </div>
             </div>
         </div>
 
+        <!-- Posts Grid -->
         <div class="posts-grid">
-    <div class="post" th:each="post : ${posts}">
-        <div th:each="media : ${postMediaMap[post.postId]}">
-            <img th:if="${media.type.name() == 'PHOTO'}"
-                 th:src="@{${media.url}}"
-                 th:alt="${post.caption}" />
+            <div class="post" th:each="post : ${posts}">
+                <div th:each="media : ${postMediaMap[post.postId]}">
+                    <img th:if="${media.type.name() == 'PHOTO'}"
+                         th:src="@{${media.url}}"
+                         th:alt="${post.caption}" />
+                </div>
+            </div>
         </div>
-    </div>
-</div>
-
     </div>
 
     <!-- Create Modal -->
@@ -136,39 +250,160 @@
         const photoUpload = document.getElementById('photo-upload');
         const previewContainer = document.getElementById('preview-container');
 
-        // Open create modal
-        createPostBtn.addEventListener('click', () => createModal.style.display = 'flex');
+        // Follow/Unfollow functionality
+        const userId = [[${user.user_id}]];
+        const currentUserId = [[${currentUser != null ? currentUser.user_id : null}]];
+        const isOwnProfile = [[${currentUser != null && currentUser.user_id == user.user_id}]];
 
-        // Open upload modal
-        postOption.addEventListener('click', () => {
-            createModal.style.display = 'none';
-            uploadModal.style.display = 'flex';
-        });
-
-        // Multi-image preview
-        photoUpload.addEventListener('change', (event) => {
-            const files = event.target.files;
-            previewContainer.innerHTML = '';
-            Array.from(files).forEach(file => {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    previewContainer.appendChild(img);
-                };
-                reader.readAsDataURL(file);
-            });
-        });
-
-        // Close modals on outside click
-        document.addEventListener('click', event => {
-            if(event.target === createModal) createModal.style.display = 'none';
-            if(event.target === uploadModal) {
-                uploadModal.style.display = 'none';
-                previewContainer.innerHTML = '';
-                photoUpload.value = '';
+        // Load follow status when page loads (only for other users' profiles)
+        document.addEventListener('DOMContentLoaded', function() {
+            if (currentUserId && !isOwnProfile) {
+                loadFollowStatus();
             }
+            
+            // Initialize modals
+            initModals();
         });
+
+        function loadFollowStatus() {
+            fetch('/follow/status/' + userId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateFollowButtons(data.isFollowing, data.hasPendingRequest);
+                        document.getElementById('followerCount').textContent = data.followerCount;
+                        document.getElementById('followingCount').textContent = data.followingCount;
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function updateFollowButtons(isFollowing, hasPendingRequest) {
+            const followBtn = document.getElementById('followBtn');
+            const unfollowBtn = document.getElementById('unfollowBtn');
+            const requestedBtn = document.getElementById('requestedBtn');
+
+            followBtn.style.display = 'none';
+            unfollowBtn.style.display = 'none';
+            requestedBtn.style.display = 'none';
+
+            if (hasPendingRequest) {
+                requestedBtn.style.display = 'block';
+            } else if (isFollowing) {
+                unfollowBtn.style.display = 'block';
+            } else {
+                followBtn.style.display = 'block';
+            }
+        }
+
+        function followUser() {
+            fetch('/follow/' + userId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateFollowButtons(data.isFollowing, data.hasPendingRequest);
+                    document.getElementById('followerCount').textContent = data.followerCount;
+                    // Show success message
+                    showFlashMessage(data.message, 'success');
+                } else {
+                    showFlashMessage(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showFlashMessage('Error following user', 'error');
+            });
+        }
+
+        function unfollowUser() {
+            if (confirm('Are you sure you want to unfollow this user?')) {
+                fetch('/follow/unfollow/' + userId, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateFollowButtons(data.isFollowing, data.hasPendingRequest);
+                        document.getElementById('followerCount').textContent = data.followerCount;
+                        showFlashMessage(data.message, 'success');
+                    } else {
+                        showFlashMessage(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showFlashMessage('Error unfollowing user', 'error');
+                });
+            }
+        }
+
+        function showFlashMessage(message, type) {
+            // Create flash message element
+            const flashDiv = document.createElement('div');
+            flashDiv.className = 'flash-message';
+            flashDiv.style.color = type === 'success' ? 'green' : 'red';
+            flashDiv.textContent = message;
+            
+            // Insert at top of container
+            const container = document.querySelector('.container');
+            container.insertBefore(flashDiv, container.firstChild);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                flashDiv.remove();
+            }, 3000);
+        }
+
+        // Modal functionality
+        function initModals() {
+            // Open create modal
+            if (createPostBtn) {
+                createPostBtn.addEventListener('click', () => createModal.style.display = 'flex');
+            }
+
+            // Open upload modal
+            if (postOption) {
+                postOption.addEventListener('click', () => {
+                    createModal.style.display = 'none';
+                    uploadModal.style.display = 'flex';
+                });
+            }
+
+            // Multi-image preview
+            if (photoUpload) {
+                photoUpload.addEventListener('change', (event) => {
+                    const files = event.target.files;
+                    previewContainer.innerHTML = '';
+                    Array.from(files).forEach(file => {
+                        const reader = new FileReader();
+                        reader.onload = e => {
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            previewContainer.appendChild(img);
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                });
+            }
+
+            // Close modals on outside click
+            document.addEventListener('click', event => {
+                if(event.target === createModal) createModal.style.display = 'none';
+                if(event.target === uploadModal) {
+                    uploadModal.style.display = 'none';
+                    if (previewContainer) previewContainer.innerHTML = '';
+                    if (photoUpload) photoUpload.value = '';
+                }
+            });
+        }
     </script>
 </body>
 </html>

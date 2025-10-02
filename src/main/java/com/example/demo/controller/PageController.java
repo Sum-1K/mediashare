@@ -22,7 +22,7 @@ public class PageController {
     private FollowDao followDao; // DAO for followers/following
 
     @Autowired
-private MediaDao mediaDao;
+    private MediaDao mediaDao;
 
     //handler methods to handle /abc request
     @GetMapping("/")
@@ -41,31 +41,27 @@ private MediaDao mediaDao;
     }
     
     @GetMapping("/profile")
-public String profilePage(HttpSession session, Model model) {
-    User user = (User) session.getAttribute("loggedInUser");
-    if (user == null) {
-        return "redirect:/users/login";
+    public String profilePage(HttpSession session, Model model) {
+        User user = (User) session.getAttribute("loggedInUser");
+        if (user == null) {
+            return "redirect:/users/login";
+        }
+        
+        model.addAttribute("user", user);
+        model.addAttribute("currentUser", user); // Important for follow buttons
+
+        // Fetch posts by user
+        int postCount = postDao.countByUserId(user.getUser_id());
+        model.addAttribute("postCount", postCount);
+
+        // Fetch followers and following count
+        int followers = followDao.countFollowers(user.getUser_id()); // people who follow this user
+        int following = followDao.countFollowing(user.getUser_id()); // people this user follows
+        model.addAttribute("followers", followers);
+        model.addAttribute("following", following);
+
+        return "profile";
     }
-    
-    model.addAttribute("user", user);
-
-    // Fetch posts by user
-    int postCount = postDao.countByUserId(user.getUser_id());
-    model.addAttribute("postCount", postCount);
-
-    // Fetch followers and following count
-    int followers = followDao.countFollowers(user.getUser_id()); // people who follow this user
-    int following = followDao.countFollowing(user.getUser_id()); // people this user follows
-    model.addAttribute("followers", followers);
-    model.addAttribute("following", following);
-
-    // Optional: posts and media
-    // model.addAttribute("posts", postDao.findByUserId(user.getUser_id()));
-    // model.addAttribute("postMediaMap", mediaDao.findByUserId(user.getUser_id()));
-
-    return "profile";
-}
-
 
     @GetMapping("/settings")
     public String settingsPage() {
@@ -76,14 +72,4 @@ public String profilePage(HttpSession session, Model model) {
     public String notificationsPage() {
         return "notifications"; // notifications.html in templates/
     }
-
-    // @GetMapping("/login")
-    // public String loginPage() {
-    //     return "homeDefault"; // optional, for explicit /login URL
-    // }
-
-    // @GetMapping("/signup")
-    // public String signupPage() {
-    //     return "signup"; // optional, for explicit /login URL
-    // }
 }

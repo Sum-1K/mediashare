@@ -119,7 +119,18 @@ public class UserDao extends BaseDao<User, Long> {
     final String sql = "SELECT * FROM users WHERE email = ?";
     List<User> list = jdbcTemplate.query(sql, rowMapper, email);
     return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
-}
+    }
 
-    
+        // Add this method to your existing UserDao.java
+    public User findById(Long userId) {
+        String sql = "SELECT * FROM " + getTableName() + " WHERE user_id = ?";
+        List<User> users = jdbcTemplate.query(sql, getRowMapper(), userId);
+        return users.isEmpty() ? null : users.get(0);
+    }
+
+    public List<User> searchUsers(String query) {
+    String sql = "SELECT * FROM users WHERE user_name ILIKE ? OR first_name ILIKE ? OR last_name ILIKE ?";
+    String searchTerm = "%" + query + "%";
+    return jdbcTemplate.query(sql, getRowMapper(), searchTerm, searchTerm, searchTerm);
+}
 }

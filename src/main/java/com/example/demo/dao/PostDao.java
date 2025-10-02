@@ -49,14 +49,6 @@ public class PostDao extends BaseDao<Post, Long> {
         return jdbcTemplate.update(sql, post.getCaption(), post.getPostId());
     }
 
-    // Add this method inside PostDao
-    public List<Post> findByUserId(Long userId) {
-        String sql = "SELECT p.* FROM posts p " +
-                 "JOIN content c ON p.post_id = c.content_id " +
-                 "WHERE c.user_id = ?";
-        return jdbcTemplate.query(sql, getRowMapper(), userId);
-    }
-
     public int countByUserId(Long userId) {
     String sql = """
         SELECT COUNT(*)
@@ -65,7 +57,15 @@ public class PostDao extends BaseDao<Post, Long> {
         WHERE c.user_id = ?;
     """;
     return jdbcTemplate.queryForObject(sql, Integer.class, userId);
-}
+    }
 
+    public int countPostsByUserId(Long userId) {
+    String sql = "SELECT COUNT(*) FROM posts WHERE user_id = ?";
+    return jdbcTemplate.queryForObject(sql, Integer.class, userId);
+    }
 
+    public List<Post> findByUserId(Long userId) {
+        String sql = "SELECT * FROM posts WHERE user_id = ? ORDER BY created_at DESC";
+        return jdbcTemplate.query(sql, getRowMapper(), userId);
+    }
 }
