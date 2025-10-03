@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 @Repository
 public class ReelDao extends BaseDao<Reel, Long> {
@@ -52,4 +53,21 @@ public class ReelDao extends BaseDao<Reel, Long> {
                 reel.getVideoFile(),
                 reel.getReelId());
     }
+
+    // Count reels by userId
+public int countByUserId(Long userId) {
+    String sql = "SELECT COUNT(*) FROM reels r " +
+                 "JOIN content c ON r.reel_id = c.content_id " +
+                 "WHERE c.user_id = ?";
+    return jdbcTemplate.queryForObject(sql, Integer.class, userId);
+}
+
+
+// Find reels by userId
+public List<Reel> findByUserId(Long userId) {
+    String sql = "SELECT r.* FROM reels r " +
+                 "JOIN content c ON r.reel_id = c.content_id " +
+                 "WHERE c.user_id = ? ORDER BY c.created_at DESC";
+    return jdbcTemplate.query(sql, getRowMapper(), userId);
+}
 }

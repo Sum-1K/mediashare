@@ -13,8 +13,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import com.example.demo.dao.FollowDao;
 import com.example.demo.dao.MediaDao;
 import com.example.demo.dao.PostDao;
+import com.example.demo.dao.ReelDao;
 import com.example.demo.model.Media;
 import com.example.demo.model.Post;
+import com.example.demo.model.Reel;
 import com.example.demo.model.User;
 
 import jakarta.servlet.http.HttpSession;
@@ -25,6 +27,9 @@ public class PageController {
 
     @Autowired
     private PostDao postDao; // DAO for Post entity
+
+    @Autowired
+    private ReelDao reelDao; // DAO for Reel entity
 
     @Autowired
     private FollowDao followDao; // DAO for followers/following
@@ -59,7 +64,8 @@ public String profilePage(HttpSession session, Model model) {
 
     // Fetch posts by user
     int postCount = postDao.countByUserId(user.getUser_id());
-    model.addAttribute("postCount", postCount);
+    int reelCount = reelDao.countByUserId(user.getUser_id()); 
+    model.addAttribute("postCount", postCount + reelCount);
 
     // Fetch followers and following count
     int followers = followDao.countFollowers(user.getUser_id()); // people who follow this user
@@ -86,6 +92,10 @@ public String profilePage(HttpSession session, Model model) {
 
     model.addAttribute("posts", posts);
     model.addAttribute("postMediaMap", postMediaMap);
+
+    List<Reel> reels = reelDao.findByUserId(user.getUser_id());
+model.addAttribute("reels", reels);
+
 
     // Optional: posts and media
     // model.addAttribute("posts", postDao.findByUserId(user.getUser_id()));
