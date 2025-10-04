@@ -208,11 +208,26 @@
 
         <!-- Posts Grid -->
         <div class="posts-grid">
-    <div class="post" th:each="post : ${posts}">
-        <div th:each="media : ${postMediaMap[post.postId]}">
-            <img th:if="${media.type.name() == 'PHOTO'}" th:src="@{${media.url}}" th:alt="${post.caption}" />
+            <div class="post" th:each="post : ${posts}">
+                <a th:href="@{/post/{id}(id=${post.postId})}">
+                    <div th:each="media : ${postMediaMap[post.postId]}">
+                        <img th:if="${media.type.name() == 'PHOTO'}"
+                            th:src="@{${media.url}}"
+                            th:alt="${post.caption}" />
+                    </div>
+                </a>
+            </div>
         </div>
-    </div>
+
+        <!-- Reels Grid -->
+        <h2 style="margin: 20px 0; font-size: 20px;">Reels</h2>
+        <div class="posts-grid">
+            <div class="post" th:each="reel : ${reels}">
+                <video th:src="@{${reel.videoFile}}" controls 
+                    style="width:100%; height:100%; object-fit:cover;"></video>
+                <div th:text="${reel.caption}" style="padding:5px; font-size:14px;"></div>
+            </div>
+        </div>
 
     <!-- Create Modal -->
     <div class="modal" id="create-modal">
@@ -272,14 +287,19 @@
 
 
         // Load follow status when page loads (only for other users' profiles)
+       // Load follow status when page loads (only for other users' profiles)
         document.addEventListener('DOMContentLoaded', function() {
             if (currentUserId && !isOwnProfile) {
                 loadFollowStatus();
-        // Open upload modal
-        postOption.addEventListener('click', () => {
-            createModal.style.display = 'none';
-            uploadModal.style.display = 'flex';
-        });
+            }
+
+            // Open upload modal
+            postOption.addEventListener('click', () => {
+                createModal.style.display = 'none';
+                uploadModal.style.display = 'flex';
+            });
+        });  // <-- this closes the outer document.addEventListener
+
 
         // Open reel modal
 reelOption.addEventListener('click', () => {

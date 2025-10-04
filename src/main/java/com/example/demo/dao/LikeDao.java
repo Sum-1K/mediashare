@@ -66,4 +66,9 @@ public class LikeDao extends BaseDao<Like, Long> {
         String sql = "SELECT * FROM like_table WHERE content_id = ?";
         return jdbcTemplate.query(sql, getRowMapper(), contentId);
     }
+
+    public int countByContentId(Long contentId) {
+        String sql = "SELECT COUNT(*) FROM like_table WHERE content_id = ?";
+        return jdbcTemplate.queryForObject(sql, Integer.class, contentId);
+    }
 }

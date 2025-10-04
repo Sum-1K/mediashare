@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${post.caption}">Post Detail</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fafafa;
+            margin: 0;
+            padding: 0;
+        }
+        .post-container {
+            max-width: 900px;
+            margin: 40px auto;
+            display: flex;
+            background: #fff;
+            border: 1px solid #dbdbdb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .post-media {
+            flex: 1;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+        .media-scroll {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            width: 100%;
+        }
+        .media-item {
+            flex: 0 0 100%;
+            scroll-snap-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .media-item img, .media-item video {
+            max-height: 600px;
+            max-width: 100%;
+            object-fit: contain;
+        }
+        .post-details {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+        .caption {
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .comments {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        .comment {
+            margin-bottom: 10px;
+        }
+        .likes {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .scroll-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 30px;
+    color: white;
+    background: rgba(0,0,0,0.3);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.scroll-arrow.left { left: 10px; }
+.scroll-arrow.right { right: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="post-container">
+    <!-- Media section -->
+
+    <div class="post-media">
+    <div class="media-scroll" id="mediaScroll">
+        <div class="media-item" th:each="media : ${mediaList}">
+            <img th:if="${media.type.name() == 'PHOTO'}"
+     th:src="@{${#strings.replace(media.url, 'src/main/resources/static', '')}}"
+     alt="Post image" />
+
+<video th:if="${media.type.name() == 'VIDEO'}" controls>
+    <source th:src="@{${#strings.replace(media.url, 'src/main/resources/static', '')}}" type="video/mp4"/>
+</video>
+
+
+        </div>
+    </div>
+
+    <div class="scroll-arrow left" onclick="scrollMedia(-1)">&#10094;</div>
+    <div class="scroll-arrow right" onclick="scrollMedia(1)">&#10095;</div>
+</div>
+
+    <!-- Details section -->
+    <div class="post-details">
+        <div class="caption">
+            <span th:text="${post.caption}"></span>
+        </div>
+
+        <div class="likes">
+            <span th:text="${likesCount}">0</span> likes
+            <form th:action="@{/like/add}" method="post" style="display:inline;">
+        <input type="hidden" name="postId" th:value="${post.postId}"/>
+        <button type="submit">❤️ Like</button>
+    </form>
+        </div>
+
+        <div class="comments">
+            <div class="comment" th:each="comment : ${comments}">
+                <b th:text="${comment.username}"></b>
+                <span th:text="${comment.text}"></span>
+            </div>
+        </div>
+
+        <form th:action="@{/comment/add}" method="post">
+            <input type="hidden" name="postId" th:value="${post.postId}"/>
+            <input type="text" name="text" placeholder="Add a comment..." required/>
+            <button type="submit">Post</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function scrollMedia(direction) {
+    const scrollBox = document.getElementById("mediaScroll");
+    const itemWidth = scrollBox.clientWidth;
+    scrollBox.scrollBy({ left: direction * itemWidth, behavior: 'smooth' });
+}
+</script>
+
+</body>
+</html>

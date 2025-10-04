@@ -1,12 +1,10 @@
 package com.example.demo.dao;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.stereotype.Repository;
-
-import java.util.List;
-import java.util.Optional;
 
 public abstract class BaseDao<T, ID> {
 
@@ -23,12 +21,12 @@ public abstract class BaseDao<T, ID> {
     }
 
     public T findById(ID id) {
-    String sql = "SELECT * FROM " + getTableName() + " WHERE id = ?";
+    String sql = "SELECT * FROM " + getTableName() + " WHERE " + getIdColumn() + " = ?";
     return jdbcTemplate.queryForObject(sql, getRowMapper(), id);
 }
 
     public int deleteById(ID id) {
-        String sql = "DELETE FROM " + getTableName() + " WHERE id = ?";
+        String sql = "DELETE FROM " + getTableName() + " WHERE " + getIdColumn() + " = ?";
         return jdbcTemplate.update(sql, id);
     }
 
