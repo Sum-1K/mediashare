@@ -59,13 +59,11 @@ public class PostDao extends BaseDao<Post, Long> {
     return jdbcTemplate.queryForObject(sql, Integer.class, userId);
     }
 
-    public int countPostsByUserId(Long userId) {
-    String sql = "SELECT COUNT(*) FROM posts WHERE user_id = ?";
-    return jdbcTemplate.queryForObject(sql, Integer.class, userId);
-    }
-
     public List<Post> findByUserId(Long userId) {
-        String sql = "SELECT * FROM posts WHERE user_id = ? ORDER BY created_at DESC";
+        String sql = "SELECT p.* FROM posts p " +
+                    "JOIN content c ON p.post_id = c.content_id " +
+                    "WHERE c.user_id = ? " +
+                    "ORDER BY c.created_at DESC";
         return jdbcTemplate.query(sql, getRowMapper(), userId);
     }
 }
