@@ -1,5 +1,10 @@
 package com.example.demo.controller;
 
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -8,9 +13,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import com.example.demo.dao.FollowDao;
 import com.example.demo.dao.MediaDao;
 import com.example.demo.dao.PostDao;
+import com.example.demo.model.Media;
+import com.example.demo.model.Post;
 import com.example.demo.model.User;
 
 import jakarta.servlet.http.HttpSession;
+
 
 @Controller
 public class PageController {
@@ -46,9 +54,9 @@ public class PageController {
         if (user == null) {
             return "redirect:/users/login";
         }
-        
+
         model.addAttribute("user", user);
-        model.addAttribute("currentUser", user); // Important for follow buttons
+        model.addAttribute("currentUser", user); // Keep this line for follow buttons
 
         // Fetch posts by user
         int postCount = postDao.countByUserId(user.getUser_id());
@@ -60,8 +68,30 @@ public class PageController {
         model.addAttribute("followers", followers);
         model.addAttribute("following", following);
 
+        // Fetch posts
+        List<Post> posts = postDao.findByUserId(user.getUser_id());
+
+        // Map each post -> its media list
+        Map<Long, List<Media>> postMediaMap = new HashMap<>();
+        for (Post post : posts) {
+            List<Media> mediaList = mediaDao.findByPostId(post.getPostId());
+
+            // Convert filesystem path to web path
+            for (Media media : mediaList) {
+                String fileName = Paths.get(media.getUrl()).getFileName().toString();
+                media.setUrl("/uploads/" + fileName);
+            }
+
+            postMediaMap.put(post.getPostId(), mediaList);
+        }
+
+        model.addAttribute("posts", posts);
+        model.addAttribute("postMediaMap", postMediaMap);
+
         return "profile";
     }
+
+
 
     @GetMapping("/settings")
     public String settingsPage() {

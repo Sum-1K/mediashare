@@ -149,7 +149,7 @@
         <!-- Profile Header -->
         <div class="profile-header">
             <div class="profile-pic">
-                <img th:src="${user.photo != null} ? @{${user.photo}} : @{'/user2.jpg'}" alt="Profile Picture">
+                <img th:src="${user.photo != null} ? @{/uploads/{file}(file=${user.photo})} : @{/uploads/default_dp.jpg}" alt="Profile Picture">
             </div>
             <div class="profile-info">
                 <div class="username-section">
@@ -208,13 +208,9 @@
 
         <!-- Posts Grid -->
         <div class="posts-grid">
-            <div class="post" th:each="post : ${posts}">
-                <div th:each="media : ${postMediaMap[post.postId]}">
-                    <img th:if="${media.type.name() == 'PHOTO'}"
-                         th:src="@{${media.url}}"
-                         th:alt="${post.caption}" />
-                </div>
-            </div>
+    <div class="post" th:each="post : ${posts}">
+        <div th:each="media : ${postMediaMap[post.postId]}">
+            <img th:if="${media.type.name() == 'PHOTO'}" th:src="@{${media.url}}" th:alt="${post.caption}" />
         </div>
     </div>
 
@@ -241,6 +237,21 @@
         </div>
     </div>
 
+    <!-- Reel Upload Modal -->
+<div class="upload-modal" id="reel-upload-modal">
+    <div class="upload-modal-content">
+        <div class="upload-preview" id="reel-preview-container"></div>
+        <div class="upload-caption">
+            <form th:action="@{/reels}" method="post" enctype="multipart/form-data">
+                <input type="file" name="videoFile" id="video-upload" accept="video/*" required style="margin-bottom:10px;">
+                <textarea name="caption" placeholder="Write a caption..."></textarea>
+                <button type="submit">Share Reel</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
     <!-- Scripts -->
     <script>
         const createPostBtn = document.getElementById('create-post');
@@ -249,16 +260,69 @@
         const uploadModal = document.getElementById('upload-modal');
         const photoUpload = document.getElementById('photo-upload');
         const previewContainer = document.getElementById('preview-container');
+        const reelOption = document.querySelector(".modal-option:nth-child(3)"); 
+        const reelUploadModal = document.getElementById('reel-upload-modal');
+        const videoUpload = document.getElementById('video-upload');    
+        const reelPreviewContainer = document.getElementById('reel-preview-container');
 
         // Follow/Unfollow functionality
         const userId = [[${user.user_id}]];
         const currentUserId = [[${currentUser != null ? currentUser.user_id : null}]];
         const isOwnProfile = [[${currentUser != null && currentUser.user_id == user.user_id}]];
 
+
         // Load follow status when page loads (only for other users' profiles)
         document.addEventListener('DOMContentLoaded', function() {
             if (currentUserId && !isOwnProfile) {
                 loadFollowStatus();
+        // Open upload modal
+        postOption.addEventListener('click', () => {
+            createModal.style.display = 'none';
+            uploadModal.style.display = 'flex';
+        });
+
+        // Open reel modal
+reelOption.addEventListener('click', () => {
+    createModal.style.display = 'none';
+    reelUploadModal.style.display = 'flex';
+});
+
+        // Multi-image preview
+        photoUpload.addEventListener('change', (event) => {
+            const files = event.target.files;
+            previewContainer.innerHTML = '';
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    previewContainer.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        // Reel preview
+videoUpload.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    reelPreviewContainer.innerHTML = '';
+    if (file) {
+        const video = document.createElement('video');
+        video.src = URL.createObjectURL(file);
+        video.controls = true;
+        video.width = 250;
+        reelPreviewContainer.appendChild(video);
+    }
+});
+
+        // Close modals on outside click
+        document.addEventListener('click', event => {
+            if(event.target === createModal) createModal.style.display = 'none';
+            if(event.target === uploadModal) {
+                uploadModal.style.display = 'none';
+                previewContainer.innerHTML = '';
+                photoUpload.value = '';
+
             }
             
             // Initialize modals
@@ -404,6 +468,14 @@
                 }
             });
         }
+        // Close reel modal
+document.addEventListener('click', event => {
+    if(event.target === reelUploadModal) {
+        reelUploadModal.style.display = 'none';
+        reelPreviewContainer.innerHTML = '';
+        videoUpload.value = '';
+    }
+});
     </script>
 </body>
 </html>
