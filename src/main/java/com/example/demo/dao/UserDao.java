@@ -52,7 +52,7 @@ public class UserDao extends BaseDao<User, Long> {
     }
 
     @Override
-    protected RowMapper<User> getRowMapper() {
+    public RowMapper<User> getRowMapper() {
         return rowMapper;
     }
 

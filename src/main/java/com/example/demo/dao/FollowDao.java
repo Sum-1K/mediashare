@@ -2,6 +2,8 @@ package com.example.demo.dao;
 
 import com.example.demo.model.Follow;
 import com.example.demo.model.User;
+
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
@@ -11,6 +13,11 @@ import java.util.List;
 
 @Repository
 public class FollowDao extends BaseDao<Follow, Long> {
+    private final UserDao userDao;
+
+    public FollowDao(UserDao userDao) { // ✅ inject both
+        this.userDao = userDao;
+    }
 
     @Override
     protected String getTableName() {
@@ -117,4 +124,30 @@ public class FollowDao extends BaseDao<Follow, Long> {
         String sql = "SELECT u.* FROM users u JOIN follows f ON u.user_id = f.followee_id WHERE f.follower_id = ?";
         return jdbcTemplate.query(sql, new UserDao(jdbcTemplate).getRowMapper(), userId);
     }
+
+    public List<User> searchFollowersAndFollowees(Long userId, String prefix) {
+    String sql = """
+        SELECT u.*
+        FROM follows f
+        JOIN users u ON u.user_id = f.followee_id
+        WHERE f.follower_id = ? AND u.user_name ILIKE ?
+        
+        UNION
+        
+        SELECT u.*
+        FROM follows f
+        JOIN users u ON u.user_id = f.follower_id
+        WHERE f.followee_id = ? AND u.user_name ILIKE ?
+    """;
+
+    String likePattern = prefix + "%";
+
+    return jdbcTemplate.query(
+        sql,
+        new Object[]{userId, likePattern, userId, likePattern},
+        userDao.getRowMapper()
+    );
+}
+
+
 }

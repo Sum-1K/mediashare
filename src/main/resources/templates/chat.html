@@ -14,66 +14,67 @@
 
 </head>
 <body>
+    
+    <nav class="bottom-nav">
+    <div class="nav-item">
+      <i class="fa-solid fa-house active"></i>
+      <span>Home</span>
+    </div>
+    <div class="nav-item">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <span>Search</span>
+    </div>
+
+    <div class="nav-item">
+      <i class="fa-solid fa-circle-plus"></i>
+      <span>Create</span>
+    </div>
+
+    <div class="nav-item" data-link="/chat">
+      <i class="fa-regular fa-comment" ></i>
+      <span>Messages</span>
+    </div>
+
+    <div class="nav-item" data-link="/profile">
+      <i class="fa-regular fa-user"></i>
+      <span>Profile</span>
+    </div>
+
+
+    <div class="nav-item" id="more-nav">
+      <i class="fa-solid fa-bars more-btn"></i>
+      <span>More</span>
+    </div>
+
+    <div class="menu-popup">
+      <a href="/settings" class="menu-item">Settings</a>
+      <div class="menu-item">Your activity</div>
+      <div class="menu-item">Saved</div>
+      <div class="menu-item">Switch appearance</div>
+      <div class="menu-item">Report a problem</div>
+      <div class="menu-item">Switch accounts</div>
+      <div class="menu-item">Log out</div>
+    </div>
+    
+  </nav>
+  
+
 
     <div class="container">
         <!-- Sidebar with Lessons -->
         <div class="sidebar">
             <h3>Chats</h3>
-            <ul>
-                <!-- {% for course in courses %}
-                    <li>
-                        <a href="{% url 'discussion' course.course_id %}">
-                             {{ course.course_name }}
-                        </a>
-                    </li>
-                {% endfor %} -->
-                <li><div class="profile-photo-mini">
-                            <img src="/ping.jpg" alt="Profile Picture">
-                            <i class="fas fa-user"></i> <!-- Font Awesome user icon -->
-                           
-                        </div>Mr_Ping</li>
-                
-                <li><div class="profile-photo-mini">
-                            <img src="/shifu.jpg" alt="Profile Picture">
-                            <i class="fas fa-user"></i> <!-- Font Awesome user icon -->
-                           
-                        </div>Master Shifu</li>
-                
-                <li><div class="profile-photo-mini">
-                            <img src="/oogway.jpg" alt="Profile Picture">
-                            <i class="fas fa-user"></i> <!-- Font Awesome user icon -->
-                           
-                        </div>Master Oogway</li>
-                
-                <li><div class="profile-photo-mini">
-                            <img src="/tiggr.jpg" alt="Profile Picture">
-                            <i class="fas fa-user"></i> <!-- Font Awesome user icon -->
-                           
-                        </div>Master Tiger</li>
-                
-                <li><div class="profile-photo-mini">
-                            <img src="/crane.jpg" alt="Profile Picture">
-                            <i class="fas fa-user"></i> <!-- Font Awesome user icon -->
-                           
-                        </div>Master Crane</li>
-                
-                <li><div class="profile-photo-mini">
-                            <img src="/mantis.jpg" alt="Profile Picture">
-                            <i class="fas fa-user"></i> <!-- Font Awesome user icon -->
-                           
-                        </div>Master Mantis</li>
-                
-                <li><div class="profile-photo-mini">
-                            <img src="/monke.jpg" alt="Profile Picture">
-                            <i class="fas fa-user"></i> <!-- Font Awesome user icon -->
-                           
-                        </div>Master Monkey</li>
-                
-                <li><div class="profile-photo-mini">
-                            <img src="/viper.jpg" alt="Profile Picture">
-                            <i class="fas fa-user"></i> <!-- Font Awesome user icon -->
-                           
-                        </div>Master Viper</li>
+
+            <div class="search-container">
+            <form method="post" action="{% url 'discussion' course_id=course.course_id %}" class="search-box"> 
+                <div class="search-icon">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                </div>
+            <input type="text" id="userSearch" placeholder="Search users...">
+            </form>
+            <div id="searchResults" class="search-results"></div>
+            </div>
+            <ul id="chatUserList"> 
             </ul>
         </div>
 
@@ -88,47 +89,26 @@
                 <div id="chat-container">
                     <div class="chat-header" >
                         <div class="profile-photo-mini">
-                            <img src="/shifu.jpg" alt="Profile Picture">
+                            <img th:src="${chatUser != null ? chatUser.photo ?: '/shifu.jpg' : '/shifu.jpg'}" alt="Profile Picture">
+
                             <i class="fas fa-user"></i> <!-- Font Awesome user icon -->
                            
                         </div>
-                        <h3>Master Shifu</h3> 
+                        <h3 th:if="${chatUser != null}" th:text="${chatUser.user_name}"></h3>
                     </div>
-                    <article class="content-section-user">
-                    <!-- <article class="content-section"> -->
+                    <div class="messages">
+                      <div th:each="msg : ${messages}" >
                         <div class="media-body">
-                            <div class="article-metadata">
-                                <!-- <a class="mr-2" href="{% url 'profile' %}">{{ post.user.username }}</a>
-                                <small class="text-muted">{{ post.date_posted }}</small>
-                                <small class="text-muted">
-                                    {% if post.parent_post %}
-                                    <p>replied to {{ post.parent_post.user.username }}</p>
-                                    {% else %}
-                                    <br>
-                                    {% endif %}
-                                </small> -->
-                                <small class="text-muted">21:08</small>
-                                <small class="text-muted">
-                                    
-                                </small>
-                            </div>
-                            <p class="article-content">Hi Master Shifu, nice profile pic!</p>
+                          <small class="text-muted" th:text="${#dates.format(msg.sent_at, 'HH:mm')}"></small>
+                          <p class="article-content" th:text="${msg.message}"></p>
                         </div>
-                    </article>
-
-                    <article class="content-section">
-                    <!-- <article class="content-section"> -->
+                      </div>
+                    </div>
+                <!--<article class="content-section">
+                   
                         <div class="media-body">
                             <div class="article-metadata">
-                                <!-- <a class="mr-2" href="{% url 'profile' %}">{{ post.user.username }}</a>
-                                <small class="text-muted">{{ post.date_posted }}</small>
-                                <small class="text-muted">
-                                    {% if post.parent_post %}
-                                    <p>replied to {{ post.parent_post.user.username }}</p>
-                                    {% else %}
-                                    <br>
-                                    {% endif %}
-                                </small> -->
+                                
                                 <small class="text-muted">21:09</small>
                                 <small class="text-muted">
                                     Replied to: Hi Master Shifu, nice profile pic! 
@@ -137,172 +117,200 @@
                             <p class="article-content">Haha thanks</p>
                         </div>
                     </article>
-
-                    <article class="content-section-user">
-                    <!-- <article class="content-section"> -->
-                        <div class="media-body">
-                            <div class="article-metadata">
-                                <!-- <a class="mr-2" href="{% url 'profile' %}">{{ post.user.username }}</a>
-                                <small class="text-muted">{{ post.date_posted }}</small>
-                                <small class="text-muted">
-                                    {% if post.parent_post %}
-                                    <p>replied to {{ post.parent_post.user.username }}</p>
-                                    {% else %}
-                                    <br>
-                                    {% endif %}
-                                </small> -->
-                                <small class="text-muted">21:10</small>
-                                <small class="text-muted">
-                                    
-                                </small>
-                            </div>
-                            <p class="article-content">where have you been?</p>
-                        </div>
-                    </article>
-
-                    <article class="content-section">
-                    <!-- <article class="content-section"> -->
-                        <div class="media-body">
-                            <div class="article-metadata">
-                                <!-- <a class="mr-2" href="{% url 'profile' %}">{{ post.user.username }}</a>
-                                <small class="text-muted">{{ post.date_posted }}</small>
-                                <small class="text-muted">
-                                    {% if post.parent_post %}
-                                    <p>replied to {{ post.parent_post.user.username }}</p>
-                                    {% else %}
-                                    <br>
-                                    {% endif %}
-                                </small> -->
-                                <small class="text-muted">21:10</small>
-                                <small class="text-muted">
-                                </small>
-                            </div>
-                            <p class="article-content">Was in the Himalayas recently, had a lot of fun! 😉</p>
-                        </div>
-                    </article>
-
-                    <article class="content-section">
-                    <!-- <article class="content-section"> -->
-                        <div class="media-body">
-                            <div class="article-metadata">
-                                <!-- <a class="mr-2" href="{% url 'profile' %}">{{ post.user.username }}</a>
-                                <small class="text-muted">{{ post.date_posted }}</small>
-                                <small class="text-muted">
-                                    {% if post.parent_post %}
-                                    <p>replied to {{ post.parent_post.user.username }}</p>
-                                    {% else %}
-                                    <br>
-                                    {% endif %}
-                                </small> -->
-                                <small class="text-muted">21:10</small>
-                                <small class="text-muted">
-                                </small>
-                            </div>
-                            <p class="article-content">Wanna meetup?</p>
-                        </div>
-                    </article>
-
-                    <article class="content-section-user">
-                    <!-- <article class="content-section"> -->
-                        <div class="media-body">
-                            <div class="article-metadata">
-                                <!-- <a class="mr-2" href="{% url 'profile' %}">{{ post.user.username }}</a>
-                                <small class="text-muted">{{ post.date_posted }}</small>
-                                <small class="text-muted">
-                                    {% if post.parent_post %}
-                                    <p>replied to {{ post.parent_post.user.username }}</p>
-                                    {% else %}
-                                    <br>
-                                    {% endif %}
-                                </small> -->
-                                <small class="text-muted">21:11</small>
-                                <small class="text-muted">
-                                    Replied to: Wanna meetup?
-                                </small>
-                            </div>
-                            <p class="article-content">Yes!! I want to hear all about it. Did you see yaks? They're so cute! Also I've even heard of Yak races taking place in the Himalayas, did you get to see one?</p>
-                        </div>
-                    </article>
-                
+                 -->
             
-                 <!-- <form class="typing-box">
-                    {% csrf_token %}
-                    {{ form.content }}
-                    <input type="text" placeholder="Type your message..." class="form-control">
-                    <button type="submit" class="btn btn-primary">Send</button>
-                </form>  -->
             
-                <form method="post" action="{% url 'discussion' course_id=course.course_id %}" class="typing-box"> 
-                    <!-- so i had to write course.course_id instead of course_id!! -->
-                    <!-- {% csrf_token %}
-                    {{ form.content }} -->
-                    <input type="text" name="content" placeholder="Type your message...">
+                <form id="chatForm" class="typing-box"> 
+                    <input type="text" id="messageInput" placeholder="Type your message...">
                     <button type="submit" class="btn btn-primary">Send</button>
                 </form> 
             </div>
-                
-                    
-            
-            
             </div>
         </div>
     </div>
-    <!-- Navbar -->
-    <nav class="navbar">
-        <ul class="nav-left">
-           
-            <li>
-                <div class="tag_name">
-                    <a href="/dashboard">Home</a>
-                </div>
-               </li>
-               <li class="dropdown tag_name">
-                <a href="/courses" class="dropbtn">Make a Post</a>
-                <div class="dropdown-content">
-                    <a href="#">Post</a>
-                    
-                    <a href="/courses">Story</a>
-                    <a href="#">Reel</a>
-                </div>
-            </li>
-            <li>
-            <!-- <div class="tag_name">
-                <a>About Us</a>
-            </div> -->
-           </li>
-            <li>
-                <div class="tag_name">
-                    <a href="#">Chats</a>
-                </div>
-                </li>
-        </ul>
-        <ul class="nav-right">
-
-         
-                    <li class="profile-dropdown">
-                        <div class="profile-photo-mini">
-                            <img src="/po.jpg" alt="Profile Picture">
-                            <i class="fas fa-user"></i> <!-- Font Awesome user icon -->
-                           
-                        </div>
-                        <div class="dropdown-content-profile">
-                            <div class="tag_name">
-                                <a href="/profile">My Profile</a>
-                            </div>
-                            <div class="tag_name">
-                                <a href="/home_unregistered">Logout</a>
-                            </div>
-                            <div class="tag_name">
-                                <a href="#">Notifications</a>
-                            </div>
-                        </div>
-                      
-                    </li>
-                  
-        </ul>
-    </nav>
-  
     
-
 </body>
 </html>
+
+
+
+<script>
+  // Menu toggle
+  document.querySelector('.more-btn').addEventListener('click', () => {
+    document.querySelector('.menu-popup').classList.toggle('active');
+  });
+
+  // Bottom nav active state
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(item => {
+    const link = item.getAttribute('data-link');
+    item.addEventListener('click', () => {
+      navItems.forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+      if (link) window.location.href = link;
+    });
+  });
+
+  // Search functionality
+  const searchInput = document.getElementById("userSearch");
+  const searchResults = document.getElementById("searchResults");
+  let timeout = null;
+
+  searchInput.addEventListener("input", () => {
+    clearTimeout(timeout);
+    const query = searchInput.value.trim();
+
+    if (query.length === 0) {
+      searchResults.innerHTML = "";
+      return;
+    }
+
+    timeout = setTimeout(async () => {
+      try {
+        const res = await fetch(`/follow/users?prefix=${encodeURIComponent(query)}`);
+        const data = await res.json();
+
+        searchResults.innerHTML = "";
+        data.forEach(user => {
+          const div = document.createElement("div");
+          div.classList.add("search-result-item");
+          div.innerHTML = `
+            <img src="${user.photo}" alt="Profile Picture">
+            <span>${user.user_name}</span>
+          `;
+          
+          // Load chat messages on click
+          div.addEventListener("click", async () => {
+            loadChatMessages(user.user_id, user.user_name);
+          });
+
+          searchResults.appendChild(div);
+        });
+      } catch (err) {
+        console.error("Search error:", err);
+      }
+    }, 300);
+  });
+
+  // Load chat users list
+  document.addEventListener("DOMContentLoaded", async () => {
+    try {
+      const res = await fetch("/chat/users");
+      const users = await res.json();
+
+      const list = document.getElementById("chatUserList");
+      list.innerHTML = "";
+
+      users.forEach(user => {
+        const li = document.createElement("li");
+        li.classList.add("chat-user-item");
+        li.innerHTML = `
+          <div class="profile-photo-mini">
+            <img src="${user.photo}" alt="Profile Picture">
+            <i class="fas fa-user"></i>
+          </div>
+          ${user.user_name}
+        `;
+
+        li.addEventListener("click", () => {
+          loadChatMessages(user.user_id, user.user_name);
+        });
+
+        list.appendChild(li);
+      });
+    } catch (err) {
+      console.error("Failed to load chat users:", err);
+    }
+  });
+
+  const CURRENT_USER_ID = /*[[${session.loggedInUser.user_id}]]*/ null;
+  console.log("Current user ID:", CURRENT_USER_ID);
+
+  // Function to load chat messages into container
+  async function loadChatMessages(userId, userName) {
+    try {
+      CURRENT_CHAT_USER_ID = userId; 
+      console.log("Fetching messages for user:", userId);
+      const res = await fetch(`/chat/messages/${userId}`);
+      const messages = await res.json();
+      const chatContainer = document.getElementById("chat-container");
+      //chatContainer.innerHTML = ""; // clear previous messages
+
+      const messagesContainer = chatContainer.querySelector(".messages");
+      messagesContainer.innerHTML = "";
+
+      messages.forEach(msg => {
+        const msgDiv = document.createElement("div");
+        
+        if (msg.sender_id != CURRENT_CHAT_USER_ID) { // <-- replace with actual current user ID
+          msgDiv.classList.add("content-section-user");
+        }
+        else
+        {
+          msgDiv.classList.add("content-section");
+        }
+
+        msgDiv.innerHTML = `<div class="media-body">
+          <small class="text-muted">${new Date(msg.sent_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</small>
+          <p class="article-content">${msg.message}</p>
+        </div>`;
+        messagesContainer.appendChild(msgDiv);
+      });
+
+      // Optional: scroll to bottom
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+      console.log("Loaded chat with:", userName);
+    } catch (err) {
+      console.error("Failed to load messages:", err);
+    }
+  }
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  console.log("Script loaded and DOM ready");
+  const chatForm = document.getElementById("chatForm");
+  const messageInput = document.getElementById("messageInput");
+
+  if (!chatForm) console.error("chatForm not found");
+  if (!messageInput) console.error("messageInput not found");
+
+  chatForm.addEventListener("submit", async (e) => {
+    e.preventDefault(); // stop page refresh
+  console.log("📨 Submit triggered"); 
+  
+  const message = messageInput.value.trim();
+  const userId = CURRENT_CHAT_USER_ID;
+  console.log("✉️ Message:", message);
+  console.log("👤 User ID:", userId);
+
+  if (!message || !userId) {
+    console.error("❌ Missing message or userId");
+    return;}
+
+  try {
+      console.log("📡 Sending request...");
+
+      const res = await fetch(`/chat/send/${userId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ message }).toString()
+      });
+
+
+      console.log("✅ Response status:", res.status);
+
+      if (res.ok) {
+        messageInput.value = "";
+      } else
+      {
+        console.error("Failed to send message");
+      }}
+      catch (err)
+      {
+        console.error("Error sending message:", err);
+      }
+    });
+  });
+
+</script>

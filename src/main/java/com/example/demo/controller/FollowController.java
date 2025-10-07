@@ -7,6 +7,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import com.example.demo.dao.FollowDao;
+
 
 import jakarta.servlet.http.HttpSession;
 import java.util.HashMap;
@@ -16,6 +18,9 @@ import java.util.Map;
 @Controller
 @RequestMapping("/follow")
 public class FollowController {
+
+    @Autowired
+    private FollowDao followDao;
     
     @Autowired
     private FollowService followService;
@@ -222,4 +227,43 @@ public class FollowController {
             return "Error: " + e.getMessage();
         }
     }
+
+    @GetMapping("/users")
+    @ResponseBody
+    public List<User> searchUsers(
+            @RequestParam String prefix,
+            HttpSession session
+    ) {
+        // Get current logged-in user from session
+        User loggedInUser = (User) session.getAttribute("loggedInUser");
+        if (loggedInUser == null) {
+            throw new RuntimeException("User not logged in");
+        }
+
+        Long userId = loggedInUser.getUser_id();
+        return followDao.searchFollowersAndFollowees(userId, prefix);
+    }    
 }
+
+// @RestController
+// @RequestMapping("/api/search")
+// public class UserSearchController {
+
+//     @Autowired
+//     private FollowDao followDao;
+
+//     @GetMapping("/users")
+//     public List<User> searchUsers(
+//             @RequestParam String prefix,
+//             HttpSession session
+//     ) {
+//         // Get current logged-in user from session
+//         User loggedInUser = (User) session.getAttribute("loggedInUser");
+//         if (loggedInUser == null) {
+//             throw new RuntimeException("User not logged in");
+//         }
+
+//         Long userId = loggedInUser.getUser_id();
+//         return followDao.searchFollowersAndFollowees(userId, prefix);
+//     }
+// }
