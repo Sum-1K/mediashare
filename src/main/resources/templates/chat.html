@@ -331,7 +331,12 @@ function appendMessage(msg) {
   const msgDiv = document.createElement("div");
   msgDiv.classList.add("content-section");
 
-  if (msg.sender_id != CURRENT_CHAT_USER_ID) { // <-- replace with actual current user ID
+  const sender_id = msg.sender_id ?? msg.senderId;
+  const receiver_id = msg.receiver_id ?? msg.receiverId;
+  const message = msg.message ?? msg.content;
+  const sent_at = msg.sent_at ?? new Date().toISOString();
+
+  if (sender_id != CURRENT_CHAT_USER_ID) { // <-- replace with actual current user ID
     msgDiv.classList.add("content-section-user");
   }
   else
@@ -341,8 +346,8 @@ function appendMessage(msg) {
 
   msgDiv.innerHTML = `
     <div class="media-body">
-      <small class="text-muted">${new Date(msg.sent_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</small>
-      <p class="article-content">${msg.message}</p>
+      <small class="text-muted">${new Date(sent_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</small>
+      <p class="article-content">${message}</p>
     </div>
   `;
 
