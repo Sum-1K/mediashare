@@ -12,6 +12,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&family=Oxygen:wght@300;400;700&family=Quicksand:wght@300..700&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
 
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+
 </head>
 <body>
     
@@ -223,8 +227,16 @@
     }
   });
 
-  const CURRENT_USER_ID = /*[[${session.loggedInUser.user_id}]]*/ null;
-  console.log("Current user ID:", CURRENT_USER_ID);
+  let CURRENT_USER_ID = null;
+
+  async function fetchCurrentUserId() {
+    const res = await fetch("/session/currentUser");
+    const data = await res.json();
+    CURRENT_USER_ID = data.userId;
+    console.log("Current user ID:", CURRENT_USER_ID);
+  }
+
+  
 
   // Function to load chat messages into container
   async function loadChatMessages(userId, userName) {
@@ -266,51 +278,149 @@
     }
   }
 
-document.addEventListener("DOMContentLoaded", () => {
+// document.addEventListener("DOMContentLoaded", () => {
 
-  console.log("Script loaded and DOM ready");
+//   console.log("Script loaded and DOM ready");
+//   const chatForm = document.getElementById("chatForm");
+//   const messageInput = document.getElementById("messageInput");
+
+//   if (!chatForm) console.error("chatForm not found");
+//   if (!messageInput) console.error("messageInput not found");
+
+//   chatForm.addEventListener("submit", async (e) => {
+//     e.preventDefault(); // stop page refresh
+//   console.log("📨 Submit triggered"); 
+  
+//   const message = messageInput.value.trim();
+//   const userId = CURRENT_CHAT_USER_ID;
+//   console.log("✉️ Message:", message);
+//   console.log("👤 User ID:", userId);
+
+//   if (!message || !userId) {
+//     console.error("❌ Missing message or userId");
+//     return;}
+
+//   try {
+//       console.log("📡 Sending request...");
+
+//       const res = await fetch(`/chat/send/${userId}`, {
+//         method: "POST",
+//         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+//         body: new URLSearchParams({ message }).toString()
+//       });
+
+
+//       console.log("✅ Response status:", res.status);
+
+//       if (res.ok) {
+//         messageInput.value = "";
+//       } else
+//       {
+//         console.error("Failed to send message");
+//       }}
+//       catch (err)
+//       {
+//         console.error("Error sending message:", err);
+//       }
+//     });
+//   });
+
+// This can be placed at the top of your JS file
+function appendMessage(msg) {
+  const messagesContainer = document.querySelector(".messages");
+  const msgDiv = document.createElement("div");
+  msgDiv.classList.add("content-section");
+
+  if (msg.sender_id != CURRENT_CHAT_USER_ID) { // <-- replace with actual current user ID
+    msgDiv.classList.add("content-section-user");
+  }
+  else
+  {
+    msgDiv.classList.add("content-section");
+  }
+
+  msgDiv.innerHTML = `
+    <div class="media-body">
+      <small class="text-muted">${new Date(msg.sent_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</small>
+      <p class="article-content">${msg.message}</p>
+    </div>
+  `;
+
+  messagesContainer.appendChild(msgDiv);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+
+//   document.addEventListener("DOMContentLoaded", () => {
+//   const socket = new SockJS("/ws-chat");
+//   const stompClient = Stomp.over(socket);
+
+//   stompClient.connect({}, () => {
+//     console.log("✅ Connected to WebSocket");
+
+//     // Subscribe to messages sent *to the current user*
+//     stompClient.subscribe(`/topic/messages/${CURRENT_USER_ID}`, (message) => {
+//       const msg = JSON.parse(message.body);
+//       appendMessage(msg);
+//     });
+//   });
+
+//   // send a message
+//   document.getElementById("chatForm").addEventListener("submit", (e) => {
+//     e.preventDefault();
+//     const messageText = document.getElementById("messageInput").value;
+
+//     stompClient.send("/app/chat.sendMessage", {}, JSON.stringify({
+//       senderId: CURRENT_USER_ID,
+//       receiverId: CURRENT_CHAT_USER_ID,
+//       content: messageText
+//     }));
+
+//     document.getElementById("messageInput").value = "";
+//   });
+// });  //GPT WALLA
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await fetchCurrentUserId();
+
+  const socket = new SockJS("/ws-chat");
+  const stompClient = Stomp.over(socket);
+
+  stompClient.connect({}, () => {
+    console.log("✅ Connected to WebSocket");
+
+    stompClient.subscribe(`/topic/messages/${CURRENT_USER_ID}`, (message) => {
+      const msg = JSON.parse(message.body);
+      appendMessage(msg);
+    });
+  });
+
   const chatForm = document.getElementById("chatForm");
   const messageInput = document.getElementById("messageInput");
 
-  if (!chatForm) console.error("chatForm not found");
-  if (!messageInput) console.error("messageInput not found");
+  chatForm.addEventListener("submit", (e) => {
+    e.preventDefault();
 
-  chatForm.addEventListener("submit", async (e) => {
-    e.preventDefault(); // stop page refresh
-  console.log("📨 Submit triggered"); 
-  
-  const message = messageInput.value.trim();
-  const userId = CURRENT_CHAT_USER_ID;
-  console.log("✉️ Message:", message);
-  console.log("👤 User ID:", userId);
+    const messageText = messageInput.value.trim();
+    if (!messageText || !CURRENT_CHAT_USER_ID) return;
 
-  if (!message || !userId) {
-    console.error("❌ Missing message or userId");
-    return;}
+    stompClient.send("/app/chat.sendMessage", {}, JSON.stringify({
+      senderId: CURRENT_USER_ID,
+      receiverId: CURRENT_CHAT_USER_ID,
+      content: messageText
+    }));
 
-  try {
-      console.log("📡 Sending request...");
-
-      const res = await fetch(`/chat/send/${userId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ message }).toString()
-      });
-
-
-      console.log("✅ Response status:", res.status);
-
-      if (res.ok) {
-        messageInput.value = "";
-      } else
-      {
-        console.error("Failed to send message");
-      }}
-      catch (err)
-      {
-        console.error("Error sending message:", err);
-      }
+    appendMessage({
+      sender_id: CURRENT_USER_ID,
+      receiver_id: CURRENT_CHAT_USER_ID,
+      message: messageText,
+      sent_at: new Date().toISOString()
     });
+
+    messageInput.value = "";
   });
+
+});
+
 
 </script>
