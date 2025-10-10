@@ -119,6 +119,35 @@
             .follow-btn, .unfollow-btn, .requested-btn, .edit-profile-btn { width: 100%; }
         }
         .flash-message { color: green; text-align: center; margin-bottom: 10px; }
+
+        .reel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px; /* reduced spacing between reels */
+    margin-top: 10px;
+}
+
+.reel-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 10px;
+    background: #000;
+    aspect-ratio: 9 / 16; /* ensures no white space */
+    cursor: pointer;
+}
+
+.reel-item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.reel-item:hover video {
+    transform: scale(1.05);
+}
+
     </style>
 </head>
 <body>
@@ -220,14 +249,41 @@
         </div>
 
         <!-- Reels Grid -->
-        <h2 style="margin: 20px 0; font-size: 20px;">Reels</h2>
+        <!-- <h2 style="margin: 20px 0; font-size: 20px;">Reels</h2>
         <div class="posts-grid">
             <div class="post" th:each="reel : ${reels}">
-                <video th:src="@{${reel.videoFile}}" controls 
-                    style="width:100%; height:100%; object-fit:cover;"></video>
+                <a th:href="@{/reels/{id}(id=${reel.reelId})}">
+                <video th:src="@{'/uploads/' + ${#strings.substringAfter(reel.videoFile, '/uploads/')}}"
+       preload="metadata"
+       muted
+       loop
+       style="width:100%; height:100%; object-fit:cover;"
+       onloadedmetadata="this.currentTime=1">
+</video>
+
                 <div th:text="${reel.caption}" style="padding:5px; font-size:14px;"></div>
             </div>
-        </div>
+        </div> -->
+
+        <!-- Reels Section -->
+<h2>Reels</h2>
+<div class="reel-grid">
+    <div class="reel-item" th:each="reel : ${reels}">
+        <a th:href="@{'/reels/' + ${reel.reelId}}">
+            <video
+                th:src="@{'/uploads/' + ${#strings.substringAfter(reel.videoFile, '/uploads/')}}"
+                muted
+                playsinline
+                preload="metadata"
+                poster=""
+                style="width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 10px;"
+                onmouseover="this.play()"
+                onmouseout="this.pause(); this.currentTime=0;"
+            ></video>
+        </a>
+    </div>
+</div>
+
 
     <!-- Create Modal -->
     <div class="modal" id="create-modal">
