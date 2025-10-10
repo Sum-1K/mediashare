@@ -8,11 +8,16 @@ import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.demo.dao.CommentDao;
 import com.example.demo.dao.ContentDao;
+import com.example.demo.dao.LikeDao;
 import com.example.demo.dao.ReelDao;
 import com.example.demo.model.Content;
 import com.example.demo.model.Reel;
@@ -25,11 +30,15 @@ public class ReelController {
 
     private final ContentDao contentDao;
     private final ReelDao reelDao;
+    private final LikeDao likeDao;
+    private final CommentDao commentDao;
 
     @Autowired
-    public ReelController(ContentDao contentDao, ReelDao reelDao) {
+    public ReelController(ContentDao contentDao, ReelDao reelDao, LikeDao likeDao, CommentDao commentDao) {
         this.contentDao = contentDao;
         this.reelDao = reelDao;
+        this.likeDao = likeDao;
+        this.commentDao = commentDao;
     }
 
     @PostMapping("/reels")
@@ -57,13 +66,12 @@ public class ReelController {
             String fileName = System.currentTimeMillis() + "_" + videoFile.getOriginalFilename();
             Path path = Paths.get(uploadDir, fileName);
             Files.write(path, videoFile.getBytes());
-            String videoPath = "src/main/resources/static/uploads/" + fileName;
 
             // 4️⃣ Insert into reel table
             Reel reel = new Reel();
             reel.setReelId(contentId); // PK = content_id
             reel.setCaption(caption);
-            reel.setVideoFile(videoPath);
+            reel.setVideoFile(fileName);
             reelDao.save(reel);
 
             // 5️⃣ Redirect to profile
@@ -74,4 +82,19 @@ public class ReelController {
             return "redirect:/profile?error";
         }
     }
+
+    @GetMapping("/reels/{id}")
+public String getReelDetail(@PathVariable("id") Long id, Model model) {
+    Reel reel = reelDao.findById(id);
+    if (reel == null) {
+        throw new RuntimeException("Reel not found");
+    }
+
+    // Add the reel to the model
+    model.addAttribute("reel", reel);
+    model.addAttribute("likesCount", likeDao.countByContentId(id));
+    model.addAttribute("comments", commentDao.findByContentId(id));
+    return "reelDetail";  // this must match reelDetail.html in /templates
+}
+
 }
