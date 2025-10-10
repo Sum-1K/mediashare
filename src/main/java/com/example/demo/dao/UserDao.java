@@ -121,16 +121,23 @@ public class UserDao extends BaseDao<User, Long> {
     return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
     }
 
-        // Add this method to your existing UserDao.java
+    // Add this method to your existing UserDao.java
     public User findById(Long userId) {
         String sql = "SELECT * FROM " + getTableName() + " WHERE user_id = ?";
         List<User> users = jdbcTemplate.query(sql, getRowMapper(), userId);
         return users.isEmpty() ? null : users.get(0);
     }
 
+    // SINGLE searchUsers method - corrected to use your User model's getter/setter names
     public List<User> searchUsers(String query) {
-    String sql = "SELECT * FROM users WHERE user_name ILIKE ? OR first_name ILIKE ? OR last_name ILIKE ?";
-    String searchTerm = "%" + query + "%";
-    return jdbcTemplate.query(sql, getRowMapper(), searchTerm, searchTerm, searchTerm);
-}
+        String sql = "SELECT * FROM users WHERE " +
+                    "user_name ILIKE ? OR " +
+                    "first_name ILIKE ? OR " +
+                    "last_name ILIKE ? " +
+                    "ORDER BY user_name LIMIT 20";
+        
+        String searchPattern = "%" + query + "%";
+        
+        return jdbcTemplate.query(sql, rowMapper, searchPattern, searchPattern, searchPattern);
+    }
 }
