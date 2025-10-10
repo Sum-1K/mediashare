@@ -12,32 +12,51 @@
   <header class="top-nav">
     <div class="logo">MediaShare</div>
     <div class="top-icons">
-      <a href = "/notifications"> <i class="fa-regular fa-heart top-icon"></i> </a>
+      <a href="/notifications"><i class="fa-regular fa-heart top-icon"></i></a>
       <i class="fa-regular fa-paper-plane top-icon"></i>
     </div>
   </header>
 
-  <!-- Stories Section -->
-  <section class="stories">
-    <!-- User's own story with + icon -->
-    <div class="story" id="user-story">
-      <img src="/priyamvada.jpg" alt="User 1">
-      <span>priyamvada</span>
-      <i class="fa-solid fa-circle-plus story-add-btn"></i>
+<section class="stories">
+  <div class="story-group">
+    <!-- Add story item (always first) with null check -->
+    <div class="story-item story-add" th:if="${currentUser != null}">
+      <img th:src="@{${currentUser.photo != null ? currentUser.photo : '/default.png'}}" alt="Add Story">
+      <span>+</span>
     </div>
 
-    <!-- Other users' stories -->
-    <div class="story"><img src="/user2.jpg" alt="User 2"><span>user2</span></div>
-    <div class="story"><img src="/user3.jpg" alt="User 3"><span>user3</span></div>
-    <div class="story"><img src="/user4.jpg" alt="User 4"><span>user4</span></div>
-    <div class="story"><img src="/user5.jpg" alt="User 5"><span>user5</span></div>
-
-    <!-- Loop through stories dynamically -->
-    <div th:each="story : ${stories}" class="story">
-      <img th:src="@{${story.mediaFile}}" alt="Story">
-      <span th:text="${story.highlightTopic}">Caption</span>
+    <!-- Current user's story (if any) with null check -->
+    <div th:if="${currentUser != null and not #lists.isEmpty(userStories)}" class="story-item has-story">
+      <img th:src="@{${#lists.isEmpty(userStories) ? (currentUser.photo != null ? currentUser.photo : '/default.png') : userStories[0].mediaFile}}" alt="Your Story">
+      <span th:text="${currentUser.user_name}">You</span>
     </div>
-  </section>
+
+    <!-- Stories of followed users with debug -->
+    <div th:each="story, stat : ${followingStories}" th:if="${currentUser != null}" class="story-item has-story"
+         th:attr="data-index=${stat.index}, data-total=${stat.count}"
+         th:error="true">
+      <img th:src="@{${story.mediaFile != null ? story.mediaFile : '/default.png'}}" alt="Story">
+      <span th:text="${#strings.toString(story.userId)}">User</span>
+      <!-- Debug info -->
+      <span th:text="'Debug: userId=' + ${#strings.toString(story.userId)} + ', mediaFile=' + ${story.mediaFile}" style="color: red; font-size: 10px;"></span>
+    </div>
+
+    <!-- Debug if no following stories -->
+    <div th:if="${currentUser != null and #lists.isEmpty(followingStories)}" th:text="'No following stories found.'" style="color: red;"></div>
+  </div>
+</section>
+
+  <!-- Fullscreen Story Overlay -->
+  <div id="storyOverlay" class="story-overlay" style="display:none;">
+    <span id="closeStoryOverlay" class="close">&times;</span>
+    <button id="storyPrev" class="story-nav">&lt;</button>
+    <div class="story-content">
+      <img id="storyImage" src="" alt="Story">
+      <video id="storyVideo" src="" controls style="display:none;"></video>
+      <div id="storyUsername"></div>
+    </div>
+    <button id="storyNext" class="story-nav">&gt;</button>
+  </div>
 
   <!-- Feed Section -->
   <main class="feed">
@@ -159,23 +178,18 @@
       <i class="fa-solid fa-magnifying-glass"></i>
       <span>Search</span>
     </div>
-
     <div class="nav-item">
       <i class="fa-solid fa-circle-plus"></i>
       <span>Create</span>
     </div>
-
     <div class="nav-item" data-link="/chat">
-      <i class="fa-regular fa-comment" ></i>
+      <i class="fa-regular fa-comment"></i>
       <span>Messages</span>
     </div>
-
     <div class="nav-item" data-link="/profile">
       <i class="fa-regular fa-user"></i>
       <span>Profile</span>
     </div>
-
-
     <div class="nav-item" id="more-nav">
       <i class="fa-solid fa-bars more-btn"></i>
       <span>More</span>
@@ -197,11 +211,7 @@
       <div class="story-upload-header">
         <span class="close-btn" id="storyCloseBtn">&times;</span>
       </div>
-      <form id="storyForm"
-            th:action="@{/stories}"
-            action="/stories"
-            method="post"
-            enctype="multipart/form-data">
+      <form id="storyForm" th:action="@{/stories}" action="/stories" method="post" enctype="multipart/form-data">
         <div class="story-preview" id="storyPreview"></div>
         <input type="file" id="storyFile" name="storyFile" accept="image/*,video/*" style="display:none;">
         <input type="text" name="highlightTopic" placeholder="Add a caption (optional)">
@@ -215,14 +225,12 @@
   </div>
 
   <!-- JavaScript -->
-  <script>
-    // Initialize modal state on page load
+  <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', () => {
       const storyUploadModal = document.querySelector('#storyUploadModal');
-      storyUploadModal.style.display = 'none'; // Ensure modal is hidden on page load
+      storyUploadModal.style.display = 'none';
     });
 
-    // Declare all variables at the top to avoid redeclaration
     const likes = document.querySelectorAll('.like-btn');
     const navItems = document.querySelectorAll('.nav-item');
     const commentBtns = document.querySelectorAll('.comment-btn');
@@ -237,7 +245,6 @@
     const storyPreview = document.querySelector('#storyPreview');
     const storyCloseBtn = document.querySelector('#storyCloseBtn');
 
-    // Like button functionality
     likes.forEach(like => {
       like.addEventListener('click', () => {
         like.classList.toggle('liked');
@@ -246,21 +253,15 @@
       });
     });
 
-    // Bottom nav active state
-navItems.forEach(item => {
-  const link = item.getAttribute('data-link'); // get link once
-  item.addEventListener('click', () => {
-    navItems.forEach(i => i.classList.remove('active'));
-    item.classList.add('active');
+    navItems.forEach(item => {
+      const link = item.getAttribute('data-link');
+      item.addEventListener('click', () => {
+        navItems.forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        if (link) window.location.href = link;
+      });
+    });
 
-    if (link) {
-      window.location.href = link; // navigate if link exists
-    }
-  });
-});
-
-
-    // Carousel functionality
     postMedias.forEach(media => {
       const carousel = media.querySelector('.carousel');
       const images = carousel.querySelectorAll('.carousel-img');
@@ -308,19 +309,16 @@ navItems.forEach(item => {
       updateCarousel();
     });
 
-    // Menu popup
     moreBtn.addEventListener('click', () => {
       menuPopup.classList.toggle('active');
     });
 
-    // Close popup when clicking outside
     document.addEventListener('click', (event) => {
       if (!moreBtn.contains(event.target) && !menuPopup.contains(event.target)) {
         menuPopup.classList.remove('active');
       }
     });
 
-    // Comment popup toggle
     commentBtns.forEach((btn, index) => {
       btn.addEventListener('click', () => {
         popups.forEach(popup => popup.classList.remove('active'));
@@ -340,8 +338,7 @@ navItems.forEach(item => {
       });
     });
 
-    // Story upload functionality
-    document.querySelectorAll('.story-add-btn').forEach(btn => {
+    document.querySelectorAll('.story-add').forEach(btn => {
       btn.addEventListener('click', () => {
         storyUploadModal.style.display = 'flex';
       });
@@ -368,6 +365,69 @@ navItems.forEach(item => {
       storyPreview.innerHTML = '';
       storyFileInput.value = '';
     }
+
+    let currentUserStories = /*[[${userStories}]]*/ [];
+    let currentUser = /*[[${currentUser}]]*/ {};
+    let currentStoryIndex = 0;
+
+    document.querySelectorAll('.story-item.has-story').forEach(storyDiv => {
+      storyDiv.addEventListener('click', () => {
+        currentStoryIndex = 0;
+        showStory(currentStoryIndex);
+        document.getElementById('storyOverlay').style.display = 'flex';
+      });
+    });
+
+    function showStory(index) {
+      const story = currentUserStories[index];
+      const storyImage = document.getElementById('storyImage');
+      const storyVideo = document.getElementById('storyVideo');
+      const storyUsername = document.getElementById('storyUsername');
+      const overlay = document.getElementById('storyOverlay');
+
+      if (!story || !story.mediaFile) {
+        overlay.style.display = 'none';
+        return;
+      }
+
+      storyUsername.textContent = currentUser.user_name;
+      overlay.style.display = 'flex';
+
+      if (story.mediaFile.endsWith('.mp4')) {
+        storyVideo.src = story.mediaFile;
+        storyVideo.style.display = 'block';
+        storyImage.style.display = 'none';
+        storyVideo.play();
+      } else {
+        storyImage.src = story.mediaFile;
+        storyImage.style.display = 'block';
+        storyVideo.style.display = 'none';
+        storyVideo.pause();
+        storyVideo.src = '';
+      }
+    }
+
+    document.getElementById('storyNext').addEventListener('click', () => {
+      if (currentStoryIndex < currentUserStories.length - 1) {
+        currentStoryIndex++;
+        showStory(currentStoryIndex);
+      }
+    });
+
+    document.getElementById('storyPrev').addEventListener('click', () => {
+      if (currentStoryIndex > 0) {
+        currentStoryIndex--;
+        showStory(currentStoryIndex);
+      }
+    });
+
+    document.getElementById('closeStoryOverlay').addEventListener('click', () => {
+      const overlay = document.getElementById('storyOverlay');
+      overlay.style.display = 'none';
+      const storyVideo = document.getElementById('storyVideo');
+      storyVideo.pause();
+      storyVideo.src = '';
+    });
   </script>
 </body>
 </html>

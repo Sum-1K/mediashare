@@ -13,6 +13,7 @@ body {
   flex-direction: column;
   min-height: 100vh;
   overflow-x: hidden;
+  position: relative; /* Ensure stacking context for fixed elements */
 }
 
 /* Top Navbar */
@@ -24,7 +25,7 @@ body {
   background: #fff;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 200;
   border-bottom: 1px solid #dbdbdb;
   max-width: 975px;
   margin: 0 auto;
@@ -118,7 +119,7 @@ body {
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid #dbdbdb;
-  position: relative; /* Ensure positioning context for popup */
+  position: relative;
   transition: transform 0.3s, box-shadow 0.3s;
 }
 
@@ -223,7 +224,7 @@ body {
   padding: 12px 16px;
   font-size: 1.5rem;
   color: #262626;
-  position: relative; /* Ensure positioning context */
+  position: relative;
 }
 
 .post-actions i {
@@ -250,6 +251,7 @@ body {
 .liked {
   color: #ed4956 !important;
 }
+
 /* Bottom Navbar (Mobile) */
 .bottom-nav {
   display: flex;
@@ -263,7 +265,7 @@ body {
   max-width: 1075px;
   margin: 0 auto;
   border-top: 1px solid #dbdbdb;
-  z-index: 100;
+  z-index: 150; /* Below search sidebar but above main content */
 }
 
 .nav-item {
@@ -323,16 +325,16 @@ body {
   }
 
   .more-btn {
-    margin-top: auto; /* Push to bottom of sidebar */
+    margin-top: auto;
   }
 
   .feed {
-    margin-left: 200px; /* Offset for sidebar width + padding */
+    margin-left: 200px;
     max-width: 714px;
   }
 
   .top-nav, .stories {
-    margin-left: 222px; /* Offset for sidebar */
+    margin-left: 222px;
     max-width: calc(975px - 92px);
   }
 }
@@ -343,7 +345,7 @@ body {
   position: absolute;
   left: 24px;
   top: 420px;
-  background: #efeeeeff;
+  background: #efeeee;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   z-index: 200;
@@ -357,24 +359,24 @@ body {
 
 .menu-item {
   padding: 10px 16px;
-  color: #050505ff;
+  color: #050505;
   font-size: 0.9rem;
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .menu-item:hover {
-  background: #a4a4a4ff;
+  background: #a4a4a4;
 }
 
-/* Comment Popup (beside actions) */
+/* Comment Popup */
 .comment-popup {
-  display: none; /* Hidden by default */
+  display: none;
   position: absolute;
   top: -230px;
   right: 230px;
-  background: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
-  width: 340px; /* Reduced width to fit better */
+  background: rgba(0, 0, 0, 0.5);
+  width: 340px;
   max-height: 80vh;
   overflow-y: auto;
   z-index: 300;
@@ -474,7 +476,67 @@ body {
   display: none;
 }
 
-/* Responsive (Mobile) */
+/* Sidebar Search Panel */
+.search-sidebar {
+  position: fixed;
+  top: 0;
+  right: -300px;
+  width: 300px;
+  max-width: 90%;
+  height: 100vh; /* Explicitly set to full viewport height */
+  background: #fff;
+  box-shadow: -2px 0 12px rgba(0,0,0,0.3);
+  z-index: 1000; /* Reduced but still above .bottom-nav */
+  transition: right 0.3s ease-in-out;
+  padding: 20px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.search-sidebar.active {
+  right: 0;
+}
+
+.search-sidebar .search-input {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+}
+
+.search-sidebar .search-results {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+
+.search-sidebar .search-results div {
+  color: #262626;
+  font-size: 1rem;
+}
+
+/* Overlay */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh; /* Explicitly set to full viewport height */
+  background: rgba(0,0,0,0.4);
+  display: none;
+  z-index: 900; /* Below .search-sidebar but above .bottom-nav */
+}
+
+.overlay.active {
+  display: block;
+}
+
+/* Mobile adjustments */
 @media (max-width: 768px) {
   .top-nav, .bottom-nav {
     padding: 10px 15px;
@@ -505,20 +567,27 @@ body {
     justify-content: space-around;
   }
   .more-btn {
-    display: none; /* Hide on mobile */
+    display: none;
   }
   .menu-popup {
     left: auto;
     right: 10px;
-    top: 60px; /* Adjust based on top-nav height */
+    top: 60px;
   }
   .comment-popup {
-    right: -350px; /* Adjusted for mobile */
+    right: -350px;
     width: 90%;
     max-height: 70vh;
   }
   .comment-user-pic {
     width: 25px;
     height: 25px;
+  }
+  .search-sidebar {
+    width: 80vw;
+    right: -80vw;
+  }
+  .search-sidebar.active {
+    right: 0;
   }
 }
