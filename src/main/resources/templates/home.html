@@ -213,27 +213,51 @@
       </div>
     </header>
 
-    <!-- Stories Section -->
-    <section class="stories">
-      <!-- User's own story with + icon -->
-      <div class="story" id="user-story">
-        <img src="/priyamvada.jpg" alt="User 1">
-        <span>priyamvada</span>
-        <i class="fa-solid fa-circle-plus story-add-btn"></i>
+<!-- Stories Section -->
+  <section class="stories">
+    <div class="story-group">
+
+       <!-- Add story item -->
+      <div class="story-item story-add">
+        <img th:src="@{${currentUser.photo != null ? currentUser.photo : '/default.png'}}" alt="Add Story">
+        <span>+</span>
+      </div>
+      
+      <!-- Single story item if user has stories -->
+      <div class="story-item has-story" th:if="${not #lists.isEmpty(userStories)}">
+        <img th:src="@{${currentUser.photo != null ? currentUser.photo : '/default.png'}}" alt="Your Story">
+        <span th:text="${currentUser.user_name}">You</span>
       </div>
 
-      <!-- Other users' stories -->
-      <div class="story"><img src="/user2.jpg" alt="User 2"><span>user2</span></div>
-      <div class="story"><img src="/user3.jpg" alt="User 3"><span>user3</span></div>
-      <div class="story"><img src="/user4.jpg" alt="User 4"><span>user4</span></div>
-      <div class="story"><img src="/user5.jpg" alt="User 5"><span>user5</span></div>
+     
 
-      <!-- Loop through stories dynamically -->
-      <div th:each="story : ${stories}" class="story">
-        <img th:src="@{${story.mediaFile}}" alt="Story">
-        <span th:text="${story.highlightTopic}">Caption</span>
-      </div>
-    </section>
+
+     <!-- ✅ Stories of followed users -->
+<div class="story-item has-story"
+     th:each="row : ${followingStories}">
+
+  <!-- ✅ Fix image path -->
+  <img th:src="${row[7] != null ? row[7] : '/default.png'}"
+       th:alt="${row[6]}">
+
+  <!-- ✅ Username -->
+  <span th:text="${row[6]}">Username</span>
+</div>
+
+    </div>
+  </section>
+
+  <!-- Fullscreen Story Overlay -->
+  <div id="storyOverlay" class="story-overlay" style="display:none;">
+    <span id="closeStoryOverlay" class="close">&times;</span>
+    <button id="storyPrev" class="story-nav">&lt;</button>
+    <div class="story-content">
+      <img id="storyImage" src="" alt="Story">
+      <video id="storyVideo" src="" controls style="display:none;"></video>
+      <div id="storyUsername"></div>
+    </div>
+    <button id="storyNext" class="story-nav">&gt;</button>
+  </div>
 
     <!-- Feed Section -->
     <main class="feed">
@@ -702,6 +726,91 @@
       storyPreview.innerHTML = '';
       storyFileInput.value = '';
     }
+
+    /* Merge current user stories and following users' stories */
+  let allStories = [];
+
+  /* Current user's stories */
+  let userStories = /*[[${userStories}]]*/ [];
+  let currentUser = /*[[${currentUser}]]*/ {};
+
+  userStories.forEach(story => {
+    allStories.push({
+      mediaFile: story.mediaFile,
+      userName: currentUser.user_name
+    });
+  });
+
+  /* Following users' stories */
+  let followingStories = /*[[${followingStories}]]*/ [];
+  followingStories.forEach(row => {
+    allStories.push({
+      mediaFile: row[1],   // mediaFile
+      userName: row[6]     // userName
+    });
+  });
+
+  let currentStoryIndex = 0;
+
+  /* Add click listener to all story items */
+  document.querySelectorAll('.story-item.has-story').forEach((storyDiv, index) => {
+    storyDiv.addEventListener('click', () => {
+      currentStoryIndex = index; // Set index based on clicked story
+      showStory(currentStoryIndex);
+      document.getElementById('storyOverlay').style.display = 'flex';
+    });
+  });
+
+  function showStory(index) {
+    const story = allStories[index];
+    const storyImage = document.getElementById('storyImage');
+    const storyVideo = document.getElementById('storyVideo');
+    const storyUsername = document.getElementById('storyUsername');
+    const overlay = document.getElementById('storyOverlay');
+
+    if (!story || !story.mediaFile) {
+      overlay.style.display = 'none';
+      return;
+    }
+
+    storyUsername.textContent = story.userName;
+    overlay.style.display = 'flex';
+
+    if (story.mediaFile.endsWith('.mp4')) {
+      storyVideo.src = story.mediaFile;
+      storyVideo.style.display = 'block';
+      storyImage.style.display = 'none';
+      storyVideo.play();
+    } else {
+      storyImage.src = story.mediaFile;
+      storyImage.style.display = 'block';
+      storyVideo.style.display = 'none';
+      storyVideo.pause();
+      storyVideo.src = '';
+    }
+  }
+
+  document.getElementById('storyNext').addEventListener('click', () => {
+    if (currentStoryIndex < allStories.length - 1) {
+      currentStoryIndex++;
+      showStory(currentStoryIndex);
+    }
+  });
+
+  document.getElementById('storyPrev').addEventListener('click', () => {
+    if (currentStoryIndex > 0) {
+      currentStoryIndex--;
+      showStory(currentStoryIndex);
+    }
+  });
+
+  document.getElementById('closeStoryOverlay').addEventListener('click', () => {
+    const overlay = document.getElementById('storyOverlay');
+    overlay.style.display = 'none';
+    const storyVideo = document.getElementById('storyVideo');
+    storyVideo.pause();
+    storyVideo.src = '';
+  });
   </script>
 </body>
 </html>

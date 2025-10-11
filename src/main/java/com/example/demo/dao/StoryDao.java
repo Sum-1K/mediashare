@@ -80,4 +80,34 @@ public class StoryDao extends BaseDao<Story, Long> {
                 story.getIsArchived(),
                 story.getStoryId());
     }
+
+    public List<Object[]> findActiveStoriesWithUsersByUserIds(List<Long> userIds) {
+    if (userIds == null || userIds.isEmpty()) return List.of();
+
+    String sql = """
+        SELECT s.story_id, s.media_file, s.highlight_topic, s.is_highlighted, s.is_archived,
+               u.user_id, u.user_name, u.photo
+        FROM stories s
+        JOIN content c ON s.story_id = c.content_id
+        JOIN users u ON c.user_id = u.user_id
+        WHERE u.user_id IN (%s)
+        AND c.created_at >= NOW() - INTERVAL '24 hours'
+        ORDER BY c.created_at DESC
+    """;
+
+    String inSql = String.join(",", userIds.stream().map(id -> "?").toList());
+    sql = String.format(sql, inSql);
+
+    return jdbcTemplate.query(sql, (rs, rowNum) -> new Object[]{
+        rs.getLong("story_id"),
+        rs.getString("media_file"),
+        rs.getString("highlight_topic"),
+        rs.getBoolean("is_highlighted"),
+        rs.getBoolean("is_archived"),
+        rs.getLong("user_id"),
+        rs.getString("user_name"),
+        rs.getString("photo")
+    }, userIds.toArray());
+}
+
 }

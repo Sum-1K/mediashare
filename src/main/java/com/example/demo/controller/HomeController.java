@@ -1,14 +1,13 @@
 package com.example.demo.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.example.demo.dao.FollowDao;
 import com.example.demo.dao.StoryDao;
@@ -44,12 +43,11 @@ public class HomeController {
 
         // Fetch stories of users the current user is following
         List<User> followingUsers = followDao.getFollowing(currentUser.getUser_id());
-        List<Story> followingStories = new ArrayList<>();
-        for (User user : followingUsers) {
-            List<Story> stories = storyDao.findActiveStoriesByUser(user.getUser_id());
-            followingStories.addAll(stories);
-        }
+        List<Long> followingIds = followingUsers.stream().map(User::getUser_id).toList();
+
+        List<Object[]> followingStories = storyDao.findActiveStoriesWithUsersByUserIds(followingIds);
         model.addAttribute("followingStories", followingStories);
+
         logger.info("Following Users for {} (ID: {}): {}", currentUser.getUser_name(), currentUser.getUser_id(), followingUsers);
         logger.info("Following Stories for {} (ID: {}): {}", currentUser.getUser_name(), currentUser.getUser_id(), followingStories);
 
