@@ -9,11 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import com.example.demo.dao.FollowDao;
 import com.example.demo.dao.MediaDao;
 import com.example.demo.dao.PostDao;
 import com.example.demo.dao.ReelDao;
+import com.example.demo.dao.UserDao;
 import com.example.demo.model.Media;
 import com.example.demo.model.Post;
 import com.example.demo.model.Reel;
@@ -36,6 +38,10 @@ public class PageController {
 
     @Autowired
     private MediaDao mediaDao;
+
+    @Autowired
+    private UserDao userDao;
+
 
     //handler methods to handle /abc request
     @GetMapping("/")
@@ -124,4 +130,72 @@ public String settingsPage(HttpSession session, Model model) {
     public String notificationsPage() {
         return "notifications"; // notifications.html in templates/
     }
+
+    @GetMapping("/profile/{profileId}")
+public String viewProfile(@PathVariable Long profileId, Model model, HttpSession session) {
+    // Get currently logged-in user from session
+    User loggedInUser = (User) session.getAttribute("loggedInUser");
+    if (loggedInUser == null) {
+        return "redirect:/login"; // or show an error
+    }
+
+    Long loggedInUserId = loggedInUser.getUser_id(); // adjust based on your User class
+
+    // Fetch posts by user
+        int postCount = postDao.countByUserId(profileId);
+        int reelCount = reelDao.countByUserId(profileId); 
+        model.addAttribute("postCount", postCount + reelCount);
+
+        // Fetch followers and following count
+        int followers = followDao.countFollowers(profileId); // people who follow this user
+        int following = followDao.countFollowing(profileId); // people this user follows
+        model.addAttribute("followers", followers);
+        model.addAttribute("following", following);
+    
+    // Check if logged-in user is following this profile
+    boolean isFollowing = followDao.isFollowing(loggedInUserId, profileId);
+
+    if (!isFollowing && !loggedInUserId.equals(profileId)) {
+        model.addAttribute("error", "You must follow this user to see their posts.");
+        return "errorPage"; // or redirect to some info page
+    }
+
+    // Fetch posts and reels for the profile user
+    // Fetch posts
+        List<Post> posts = postDao.findByUserId(profileId);
+
+        // Map each post -> its media list
+        Map<Long, List<Media>> postMediaMap = new HashMap<>();
+        for (Post post : posts) {
+            List<Media> mediaList = mediaDao.findByPostId(post.getPostId());
+
+            // Convert filesystem path to web path
+            for (Media media : mediaList) {
+                String fileName = Paths.get(media.getUrl()).getFileName().toString();
+                media.setUrl("/uploads/" + fileName);
+            }
+
+            postMediaMap.put(post.getPostId(), mediaList);
+        }
+
+       
+        model.addAttribute("posts", posts);
+        model.addAttribute("postMediaMap", postMediaMap);
+
+        List<Reel> reels = reelDao.findByUserId(profileId);
+    model.addAttribute("reels", reels);
+
+        model.addAttribute("timestamp", System.currentTimeMillis());
+        // Optional: posts and media
+        // model.addAttribute("posts", postDao.findByUserId(user.getUser_id()));
+        // model.addAttribute("postMediaMap", mediaDao.findByUserId(user.getUser_id()));
+
+        // Fetch the profile user's full info (the person being visited)
+User profileUser = userDao.findById(profileId); // or userDao.findById(profileId)
+model.addAttribute("user", profileUser);
+model.addAttribute("currentUser", loggedInUser);
+
+        return "profile";
+}
+
 }

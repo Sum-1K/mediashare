@@ -519,7 +519,7 @@
             resultDiv.className = "search-result";
             
             const profilePicUrl = user.photo ? 
-                `/uploads/${user.photo}` : 
+                `/uploads/profile/${user.photo}` : 
                 '/uploads/default_dp.jpg';
             
             resultDiv.innerHTML = `
@@ -533,9 +533,22 @@
                 </div>
             `;
             
+             // Redirect to user profile when clicked
             resultDiv.addEventListener('click', () => {
+    fetch(`/follow/status/${user.user_id}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.isFollowing) {
+                window.location.href = `/profile/${user.user_id}`;
+            } else {
                 window.location.href = `/user/${user.user_id}`;
-            });
+            }
+        })
+        .catch(error => {
+            console.error("Error checking follow status:", error);
+            window.location.href = `/user/${user.user_id}`; // fallback
+        });
+});
             
             searchResults.appendChild(resultDiv);
         });
