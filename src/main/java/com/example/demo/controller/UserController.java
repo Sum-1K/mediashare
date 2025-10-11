@@ -102,7 +102,7 @@ public class UserController {
         session.setAttribute("loggedInUser", loggedInUser);
         session.setAttribute("user", loggedInUser); // For compatibility with follow system
 
-        return "redirect:/dashboard"; // redirect to home or dashboard
+        return "redirect:/home"; // redirect to home or dashboard
     }
 
     // ✅ View other users' profiles

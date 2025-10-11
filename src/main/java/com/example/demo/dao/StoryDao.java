@@ -60,6 +60,16 @@ public class StoryDao extends BaseDao<Story, Long> {
     return jdbcTemplate.query(sql, getRowMapper());
     }
 
+    public List<Story> findActiveStoriesByUser(Long userId) {
+    String sql = "SELECT s.* FROM stories s " +
+                 "JOIN content c ON s.story_id = c.content_id " +
+                 "WHERE c.user_id = ? " +
+                 "AND c.created_at >= NOW() - INTERVAL '24 hours' " +
+                 "ORDER BY c.created_at DESC";
+    return jdbcTemplate.query(sql, getRowMapper(), userId);
+    }
+
+
 
     public int update(Story story) {
         String sql = "UPDATE stories SET media_file=?, highlight_topic=?, is_highlighted=?, is_archived=? WHERE story_id=?";

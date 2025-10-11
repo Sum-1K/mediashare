@@ -6,190 +6,388 @@
   <title>MediaShare Home</title>
   <link rel="stylesheet" href="/home.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    /* Sidebar Styles */
+    .sidebar {
+      background-color: #fff;
+      border-right: 1px solid #dbdbdb;
+      width: 245px;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 70px 20px 20px;
+      z-index: 999;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-size: 18px;
+      padding: 12px 20px;
+      cursor: pointer;
+      color: #262626;
+      text-decoration: none;
+    }
+
+    .nav-item i {
+      font-size: 22px;
+      width: 24px;
+      text-align: center;
+    }
+
+    .nav-item:hover {
+      background-color: #fafafa;
+    }
+
+    .nav-item.active {
+      font-weight: 600;
+    }
+
+    /* Search Panel Styles */
+    .search-panel {
+        position: fixed;
+        top: 0;
+        left: 245px; /* Right next to sidebar */
+        width: 350px;
+        height: 100vh;
+        background-color: #fff;
+        border-right: 1px solid #dbdbdb;
+        z-index: 998;
+        display: none;
+        flex-direction: column;
+        padding: 70px 20px 20px;
+    }
+
+    .search-panel input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #dbdbdb;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        background-color: #fafafa;
+    }
+
+    .search-panel input:focus {
+        outline: none;
+        border-color: #a8a8a8;
+    }
+
+    .search-results {
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .search-result {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .search-result:hover {
+        background-color: #fafafa;
+    }
+
+    .search-result img {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .search-result span {
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    /* Main content wrapper */
+    .main-content {
+        margin-left: 335px; /* sidebar (245px) + extra space (90px) for centering */
+        margin-right: auto;
+        max-width: 630px; /* Instagram-like feed width */
+        transition: margin-left 0.3s ease;
+    }
+
+    /* When search is open, shift main content to the right of search panel */
+    body.search-open .main-content {
+        margin-left: 595px; /* sidebar (245px) + search panel (350px) */
+    }
+
+    /* Ensure proper z-index for navbar */
+    .top-nav {
+        z-index: 997;
+        position: relative;
+    }
+
+    /* Hide bottom nav on desktop if sidebar is present */
+    @media (min-width: 1265px) {
+        .bottom-nav {
+            display: none;
+        }
+    }
+
+    /* Show bottom nav on mobile/tablet */
+    @media (max-width: 1264px) {
+        .sidebar {
+            display: none;
+        }
+        .search-panel {
+            left: 0;
+        }
+        .main-content {
+            margin-left: auto;
+            margin-right: auto;
+        }
+        body.search-open .main-content {
+            margin-left: 350px; /* Only search panel */
+        }
+    }
+
+    /* Mobile styles */
+    @media (max-width: 768px) {
+        .main-content {
+            max-width: 100%;
+            padding: 0 10px;
+        }
+        body.search-open .main-content {
+            margin-left: 0;
+            transform: translateX(350px);
+        }
+        .search-panel {
+            width: 350px;
+        }
+    }
+  </style>
 </head>
 <body>
-  <!-- Top Navbar -->
-  <header class="top-nav">
-    <div class="logo">MediaShare</div>
-    <div class="top-icons">
-      <a href = "/notifications"> <i class="fa-regular fa-heart top-icon"></i> </a>
-      <i class="fa-regular fa-paper-plane top-icon"></i>
-    </div>
-  </header>
-
-  <!-- Stories Section -->
-  <section class="stories">
-    <!-- User's own story with + icon -->
-    <div class="story" id="user-story">
-      <img src="/priyamvada.jpg" alt="User 1">
-      <span>priyamvada</span>
-      <i class="fa-solid fa-circle-plus story-add-btn"></i>
-    </div>
-
-    <!-- Other users' stories -->
-    <div class="story"><img src="/user2.jpg" alt="User 2"><span>user2</span></div>
-    <div class="story"><img src="/user3.jpg" alt="User 3"><span>user3</span></div>
-    <div class="story"><img src="/user4.jpg" alt="User 4"><span>user4</span></div>
-    <div class="story"><img src="/user5.jpg" alt="User 5"><span>user5</span></div>
-
-    <!-- Loop through stories dynamically -->
-    <div th:each="story : ${stories}" class="story">
-      <img th:src="@{${story.mediaFile}}" alt="Story">
-      <span th:text="${story.highlightTopic}">Caption</span>
-    </div>
-  </section>
-
-  <!-- Feed Section -->
-  <main class="feed">
-    <!-- Post 1 -->
-    <div class="post" data-post-id="1">
-      <div class="post-header">
-        <img class="user-pic" src="/priyamvada.jpg" alt="Priyamvada">
-        <span class="username">@priyamvada</span>
-      </div>
-      <div class="post-media">
-        <div class="carousel">
-          <img class="carousel-img" src="/sunset1.jpg" alt="Sunset 1">
-          <img class="carousel-img" src="/sunset2.jpg" alt="Sunset 2">
-          <img class="carousel-img" src="/sunset3.jpg" alt="Sunset 3">
-        </div>
-        <button class="prev">&lt;</button>
-        <button class="next">&gt;</button>
-        <div class="carousel-indicators"></div>
-      </div>
-      <div class="post-actions">
-        <i class="fa-regular fa-heart like-btn"></i>
-        <i class="fa-regular fa-comment comment-btn" data-post-id="1"></i>
-        <i class="fa-regular fa-paper-plane"></i>
-        <div class="comment-popup" id="comment-popup-1">
-          <div class="comment-content">
-            <div class="comment-header">
-              <h3>Comments</h3>
-              <span class="close-btn">&times;</span>
-            </div>
-            <div class="comment-list">
-              <div class="comment">
-                <img src="/priyamvada.jpg" alt="Priyamvada" class="comment-user-pic">
-                <div class="comment-text">
-                  <span class="comment-username">priyamvada</span>
-                  Nice sunset! 🌅
-                </div>
-              </div>
-              <div class="comment">
-                <img src="/user2.jpg" alt="User 2" class="comment-user-pic">
-                <div class="comment-text">
-                  <span class="comment-username">user2</span>
-                  Beautiful view!
-                </div>
-              </div>
-            </div>
-            <div class="comment-input">
-              <input type="text" placeholder="Add a comment...">
-              <button class="post-comment">Post</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="post-caption">
-        <span class="username">priyamvada</span> Enjoying the sunset! 🌅
-      </div>
-    </div>
-
-    <!-- Post 2 -->
-    <div class="post" data-post-id="2">
-      <div class="post-header">
-        <img class="user-pic" src="/user2.jpg" alt="User 2">
-        <span class="username">user2</span>
-      </div>
-      <div class="post-media">
-        <div class="carousel">
-          <img class="carousel-img" src="/coffee1.jpg" alt="Coffee 1">
-          <img class="carousel-img" src="/coffee2.jpg" alt="Coffee 2">
-        </div>
-        <button class="prev">&lt;</button>
-        <button class="next">&gt;</button>
-        <div class="carousel-indicators"></div>
-      </div>
-      <div class="post-actions">
-        <i class="fa-regular fa-heart like-btn"></i>
-        <i class="fa-regular fa-comment comment-btn" data-post-id="2"></i>
-        <i class="fa-regular fa-paper-plane"></i>
-        <div class="comment-popup" id="comment-popup-2">
-          <div class="comment-content">
-            <div class="comment-header">
-              <h3>Comments</h3>
-              <span class="close-btn">&times;</span>
-            </div>
-            <div class="comment-list">
-              <div class="comment">
-                <img src="/user2.jpg" alt="User 2" class="comment-user-pic">
-                <div class="comment-text">
-                  <span class="comment-username">user2</span>
-                  Love this coffee! ☕
-                </div>
-              </div>
-              <div class="comment">
-                <img src="/priyamvada.jpg" alt="Priyamvada" class="comment-user-pic">
-                <div class="comment-text">
-                  <span class="comment-username">priyamvada</span>
-                  Looks delicious!
-                </div>
-              </div>
-            </div>
-            <div class="comment-input">
-              <input type="text" placeholder="Add a comment...">
-              <button class="post-comment">Post</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="post-caption">
-        <span class="username">user2</span> Coffee vibes ☕
-      </div>
-    </div>
-  </main>
-
-  <!-- Bottom Navbar -->
-  <nav class="bottom-nav">
-    <div class="nav-item">
-      <i class="fa-solid fa-house active"></i>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="nav-item active">
+      <i class="fa-solid fa-house"></i>
       <span>Home</span>
     </div>
-    <div class="nav-item">
+    <div class="nav-item" id="search-btn">
       <i class="fa-solid fa-magnifying-glass"></i>
       <span>Search</span>
     </div>
-
     <div class="nav-item">
       <i class="fa-solid fa-circle-plus"></i>
       <span>Create</span>
     </div>
-
     <div class="nav-item" data-link="/chat">
-      <i class="fa-regular fa-comment" ></i>
+      <i class="fa-regular fa-comment"></i>
       <span>Messages</span>
     </div>
-
     <div class="nav-item" data-link="/profile">
       <i class="fa-regular fa-user"></i>
       <span>Profile</span>
     </div>
-
-
     <div class="nav-item" id="more-nav">
       <i class="fa-solid fa-bars more-btn"></i>
       <span>More</span>
     </div>
-    <div class="menu-popup">
-      <a href="/settings" class="menu-item">Settings</a>
-      <div class="menu-item">Your activity</div>
-      <div class="menu-item">Saved</div>
-      <div class="menu-item">Switch appearance</div>
-      <div class="menu-item">Report a problem</div>
-      <div class="menu-item">Switch accounts</div>
-      <div class="menu-item">Log out</div>
-    </div>
-  </nav>
+  </div>
+
+  <!-- Search Panel -->
+  <div class="search-panel" id="search-panel">
+    <h3 style="margin-bottom: 20px; font-size: 18px;">Search</h3>
+    <input type="text" id="search-input" placeholder="Search usernames...">
+    <div class="search-results" id="search-results"></div>
+  </div>
+
+  <!-- Main Content Wrapper -->
+  <div class="main-content">
+    <!-- Top Navbar -->
+    <header class="top-nav">
+      <div class="logo">MediaShare</div>
+      <div class="top-icons">
+        <a href="/notifications"><i class="fa-regular fa-heart top-icon"></i></a>
+        <i class="fa-regular fa-paper-plane top-icon"></i>
+      </div>
+    </header>
+
+    <!-- Stories Section -->
+    <section class="stories">
+      <!-- User's own story with + icon -->
+      <div class="story" id="user-story">
+        <img src="/priyamvada.jpg" alt="User 1">
+        <span>priyamvada</span>
+        <i class="fa-solid fa-circle-plus story-add-btn"></i>
+      </div>
+
+      <!-- Other users' stories -->
+      <div class="story"><img src="/user2.jpg" alt="User 2"><span>user2</span></div>
+      <div class="story"><img src="/user3.jpg" alt="User 3"><span>user3</span></div>
+      <div class="story"><img src="/user4.jpg" alt="User 4"><span>user4</span></div>
+      <div class="story"><img src="/user5.jpg" alt="User 5"><span>user5</span></div>
+
+      <!-- Loop through stories dynamically -->
+      <div th:each="story : ${stories}" class="story">
+        <img th:src="@{${story.mediaFile}}" alt="Story">
+        <span th:text="${story.highlightTopic}">Caption</span>
+      </div>
+    </section>
+
+    <!-- Feed Section -->
+    <main class="feed">
+      <!-- Post 1 -->
+      <div class="post" data-post-id="1">
+        <div class="post-header">
+          <img class="user-pic" src="/priyamvada.jpg" alt="Priyamvada">
+          <span class="username">@priyamvada</span>
+        </div>
+        <div class="post-media">
+          <div class="carousel">
+            <img class="carousel-img" src="/sunset1.jpg" alt="Sunset 1">
+            <img class="carousel-img" src="/sunset2.jpg" alt="Sunset 2">
+            <img class="carousel-img" src="/sunset3.jpg" alt="Sunset 3">
+          </div>
+          <button class="prev">&lt;</button>
+          <button class="next">&gt;</button>
+          <div class="carousel-indicators"></div>
+        </div>
+        <div class="post-actions">
+          <i class="fa-regular fa-heart like-btn"></i>
+          <i class="fa-regular fa-comment comment-btn" data-post-id="1"></i>
+          <i class="fa-regular fa-paper-plane"></i>
+          <div class="comment-popup" id="comment-popup-1">
+            <div class="comment-content">
+              <div class="comment-header">
+                <h3>Comments</h3>
+                <span class="close-btn">&times;</span>
+              </div>
+              <div class="comment-list">
+                <div class="comment">
+                  <img src="/priyamvada.jpg" alt="Priyamvada" class="comment-user-pic">
+                  <div class="comment-text">
+                    <span class="comment-username">priyamvada</span>
+                    Nice sunset! 🌅
+                  </div>
+                </div>
+                <div class="comment">
+                  <img src="/user2.jpg" alt="User 2" class="comment-user-pic">
+                  <div class="comment-text">
+                    <span class="comment-username">user2</span>
+                    Beautiful view!
+                  </div>
+                </div>
+              </div>
+              <div class="comment-input">
+                <input type="text" placeholder="Add a comment...">
+                <button class="post-comment">Post</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="post-caption">
+          <span class="username">priyamvada</span> Enjoying the sunset! 🌅
+        </div>
+      </div>
+
+      <!-- Post 2 -->
+      <div class="post" data-post-id="2">
+        <div class="post-header">
+          <img class="user-pic" src="/user2.jpg" alt="User 2">
+          <span class="username">user2</span>
+        </div>
+        <div class="post-media">
+          <div class="carousel">
+            <img class="carousel-img" src="/coffee1.jpg" alt="Coffee 1">
+            <img class="carousel-img" src="/coffee2.jpg" alt="Coffee 2">
+          </div>
+          <button class="prev">&lt;</button>
+          <button class="next">&gt;</button>
+          <div class="carousel-indicators"></div>
+        </div>
+        <div class="post-actions">
+          <i class="fa-regular fa-heart like-btn"></i>
+          <i class="fa-regular fa-comment comment-btn" data-post-id="2"></i>
+          <i class="fa-regular fa-paper-plane"></i>
+          <div class="comment-popup" id="comment-popup-2">
+            <div class="comment-content">
+              <div class="comment-header">
+                <h3>Comments</h3>
+                <span class="close-btn">&times;</span>
+              </div>
+              <div class="comment-list">
+                <div class="comment">
+                  <img src="/user2.jpg" alt="User 2" class="comment-user-pic">
+                  <div class="comment-text">
+                    <span class="comment-username">user2</span>
+                    Love this coffee! ☕
+                  </div>
+                </div>
+                <div class="comment">
+                  <img src="/priyamvada.jpg" alt="Priyamvada" class="comment-user-pic">
+                  <div class="comment-text">
+                    <span class="comment-username">priyamvada</span>
+                    Looks delicious!
+                  </div>
+                </div>
+              </div>
+              <div class="comment-input">
+                <input type="text" placeholder="Add a comment...">
+                <button class="post-comment">Post</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="post-caption">
+          <span class="username">user2</span> Coffee vibes ☕
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Navbar (for mobile) -->
+    <nav class="bottom-nav">
+      <div class="nav-item">
+        <i class="fa-solid fa-house active"></i>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" id="mobile-search-btn">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <span>Search</span>
+      </div>
+
+      <div class="nav-item">
+        <i class="fa-solid fa-circle-plus"></i>
+        <span>Create</span>
+      </div>
+
+      <div class="nav-item" data-link="/chat">
+        <i class="fa-regular fa-comment" ></i>
+        <span>Messages</span>
+      </div>
+
+      <div class="nav-item" data-link="/profile">
+        <i class="fa-regular fa-user"></i>
+        <span>Profile</span>
+      </div>
+
+      <div class="nav-item" id="more-nav">
+        <i class="fa-solid fa-bars more-btn"></i>
+        <span>More</span>
+      </div>
+    </nav>
+  </div> <!-- End of main-content -->
+
+  <!-- More Menu Popup -->
+  <div class="menu-popup" id="menu-popup">
+    <a href="/settings" class="menu-item">Settings</a>
+    <div class="menu-item">Your activity</div>
+    <div class="menu-item">Saved</div>
+    <div class="menu-item">Switch appearance</div>
+    <div class="menu-item">Report a problem</div>
+    <div class="menu-item">Switch accounts</div>
+    <div class="menu-item">Log out</div>
+  </div>
 
   <!-- Story Upload Modal -->
   <div class="story-upload-modal" id="storyUploadModal">
@@ -220,16 +418,165 @@
     document.addEventListener('DOMContentLoaded', () => {
       const storyUploadModal = document.querySelector('#storyUploadModal');
       storyUploadModal.style.display = 'none'; // Ensure modal is hidden on page load
+      
+      // Initialize search functionality
+      initSearch();
+      initMoreMenu();
     });
 
-    // Declare all variables at the top to avoid redeclaration
+    // Search functionality elements
+    const searchBtn = document.getElementById('search-btn');
+    const mobileSearchBtn = document.getElementById('mobile-search-btn');
+    const searchPanel = document.getElementById('search-panel');
+    const searchInput = document.getElementById('search-input');
+    const searchResults = document.getElementById('search-results');
+
+    // More menu elements
+    const moreBtn = document.getElementById('more-nav');
+    const menuPopup = document.getElementById('menu-popup');
+
+    // Search functionality
+    function initSearch() {
+        // Toggle search panel from sidebar
+        if (searchBtn) {
+            searchBtn.addEventListener('click', () => {
+                toggleSearchPanel();
+            });
+        }
+
+        // Toggle search panel from mobile bottom nav
+        if (mobileSearchBtn) {
+            mobileSearchBtn.addEventListener('click', () => {
+                toggleSearchPanel();
+            });
+        }
+
+        // Debounce search to avoid too many requests
+        let searchTimeout;
+        searchInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            const query = searchInput.value.trim();
+            
+            if (query === "") {
+                searchResults.innerHTML = "";
+                return;
+            }
+            
+            searchTimeout = setTimeout(() => {
+                performSearch(query);
+            }, 300);
+        });
+
+        // Close search panel when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!searchPanel.contains(event.target) && 
+                !searchBtn?.contains(event.target) && 
+                !mobileSearchBtn?.contains(event.target)) {
+                closeSearchPanel();
+            }
+        });
+    }
+
+    // More menu functionality
+    function initMoreMenu() {
+        if (moreBtn) {
+            moreBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                menuPopup.classList.toggle('active');
+            });
+        }
+
+        // Close menu when clicking outside
+        document.addEventListener('click', () => {
+            menuPopup.classList.remove('active');
+        });
+    }
+
+    function toggleSearchPanel() {
+        if (searchPanel.style.display === "flex") {
+            closeSearchPanel();
+        } else {
+            openSearchPanel();
+        }
+    }
+
+    function openSearchPanel() {
+        searchPanel.style.display = "flex";
+        document.body.classList.add("search-open");
+        searchInput.focus();
+    }
+
+    function closeSearchPanel() {
+        searchPanel.style.display = "none";
+        document.body.classList.remove("search-open");
+    }
+
+    function performSearch(query) {
+        searchResults.innerHTML = "<div style='padding: 10px; text-align: center; color: #8e8e8e;'>Searching...</div>";
+        
+        fetch(`/search/users?q=${encodeURIComponent(query)}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                displaySearchResults(data);
+            })
+            .catch(error => {
+                console.error('Search error:', error);
+                searchResults.innerHTML = `
+                    <div style='padding: 10px; text-align: center; color: #8e8e8e;'>
+                        Error searching users. Please try again.
+                    </div>
+                `;
+            });
+    }
+
+    function displaySearchResults(users) {
+        searchResults.innerHTML = "";
+        
+        if (!users || users.length === 0) {
+            searchResults.innerHTML = "<div style='padding: 10px; text-align: center; color: #8e8e8e;'>No users found</div>";
+            return;
+        }
+        
+        users.forEach(user => {
+            const resultDiv = document.createElement("div");
+            resultDiv.className = "search-result";
+            
+            const profilePicUrl = user.photo ? 
+                `/uploads/${user.photo}` : 
+                '/uploads/default_dp.jpg';
+            
+            resultDiv.innerHTML = `
+                <img src="${profilePicUrl}" alt="${user.user_name}" 
+                     onerror="this.src='/uploads/default_dp.jpg'">
+                <div>
+                    <strong>${user.user_name}</strong>
+                    <div style="font-size: 12px; color: #8e8e8e;">
+                        ${user.first_name} ${user.last_name}
+                    </div>
+                </div>
+            `;
+            
+            // Redirect to user profile when clicked
+            resultDiv.addEventListener('click', () => {
+                window.location.href = `/user/${user.user_id}`;
+            });
+            
+            searchResults.appendChild(resultDiv);
+        });
+    }
+
+    // Rest of your existing JavaScript remains the same...
+    // (Like button functionality, carousel, etc.)
     const likes = document.querySelectorAll('.like-btn');
     const navItems = document.querySelectorAll('.nav-item');
     const commentBtns = document.querySelectorAll('.comment-btn');
     const popups = document.querySelectorAll('.comment-popup');
     const closeBtns = document.querySelectorAll('.close-btn');
-    const moreBtn = document.querySelector('.more-btn');
-    const menuPopup = document.querySelector('.menu-popup');
     const postMedias = document.querySelectorAll('.post-media');
     const storyUploadModal = document.querySelector('#storyUploadModal');
     const storyFileInput = document.querySelector('#storyFile');
@@ -247,18 +594,17 @@
     });
 
     // Bottom nav active state
-navItems.forEach(item => {
-  const link = item.getAttribute('data-link'); // get link once
-  item.addEventListener('click', () => {
-    navItems.forEach(i => i.classList.remove('active'));
-    item.classList.add('active');
+    navItems.forEach(item => {
+      const link = item.getAttribute('data-link'); // get link once
+      item.addEventListener('click', () => {
+        navItems.forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
 
-    if (link) {
-      window.location.href = link; // navigate if link exists
-    }
-  });
-});
-
+        if (link) {
+          window.location.href = link; // navigate if link exists
+        }
+      });
+    });
 
     // Carousel functionality
     postMedias.forEach(media => {
@@ -306,18 +652,6 @@ navItems.forEach(item => {
       });
 
       updateCarousel();
-    });
-
-    // Menu popup
-    moreBtn.addEventListener('click', () => {
-      menuPopup.classList.toggle('active');
-    });
-
-    // Close popup when clicking outside
-    document.addEventListener('click', (event) => {
-      if (!moreBtn.contains(event.target) && !menuPopup.contains(event.target)) {
-        menuPopup.classList.remove('active');
-      }
     });
 
     // Comment popup toggle
