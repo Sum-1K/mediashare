@@ -133,4 +133,10 @@ public class UserDao extends BaseDao<User, Long> {
     String searchTerm = "%" + query + "%";
     return jdbcTemplate.query(sql, getRowMapper(), searchTerm, searchTerm, searchTerm);
 }
+
+public void updatePhoto(User user) {
+    String sql = "UPDATE users SET photo = ? WHERE user_id = ?";
+    jdbcTemplate.update(sql, user.getPhoto(), user.getUser_id());
+}
+
 }

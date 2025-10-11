@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +10,26 @@
 <body>
     <div class="settings-container">
         <h1>MediaShare Settings</h1>
+
+        <!-- Profile Picture Upload -->
+<div class="profile-actions">
+    <img id="profilePreview" th:src="${user.photo != null} ? @{/uploads/{file}(file=${user.photo})} : @{/uploads/default-avatar.png}" alt="Profile Picture" class="profile-pic">
+    <form th:action="@{/settings/updateProfilePic}" method="post" enctype="multipart/form-data">
+        <input type="file" name="profilePic" id="profileUpload" accept="image/*" hidden onchange="this.form.submit()">
+        <button type="button" class="upload-btn" onclick="document.getElementById('profileUpload').click()">Change</button>
+    </form>
+</div>
+
+
+<!-- Username Update -->
+<div class="setting-item username-section">
+    <span class="setting-label">Username</span>
+    <div class="username-actions">
+        <input type="text" id="usernameInput" placeholder="Enter new username" class="username-input">
+        <button class="save-btn" onclick="saveUsername()">Update</button>
+    </div>
+</div>
+
 
         <div class="setting-item">
             <span class="setting-label">Saved</span>

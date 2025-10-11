@@ -98,7 +98,7 @@ public class PageController {
         List<Reel> reels = reelDao.findByUserId(user.getUser_id());
     model.addAttribute("reels", reels);
 
-
+        model.addAttribute("timestamp", System.currentTimeMillis());
         // Optional: posts and media
         // model.addAttribute("posts", postDao.findByUserId(user.getUser_id()));
         // model.addAttribute("postMediaMap", mediaDao.findByUserId(user.getUser_id()));
@@ -108,9 +108,17 @@ public class PageController {
 
 
     @GetMapping("/settings")
-    public String settingsPage() {
-        return "settings"; // settings.html in templates/
+public String settingsPage(HttpSession session, Model model) {
+    // Get current user
+    User user = (User) session.getAttribute("loggedInUser");
+    if (user == null) {
+        return "redirect:/users/login"; // redirect if not logged in
     }
+
+    model.addAttribute("user", user);
+    return "settings"; // Thymeleaf template: settings.html
+}
+
 
     @GetMapping("/notifications")
     public String notificationsPage() {
