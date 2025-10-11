@@ -12,13 +12,20 @@
         <h1>MediaShare Settings</h1>
 
         <!-- Profile Picture Upload -->
-<div class="profile-actions">
-    <img id="profilePreview" th:src="${user.photo != null} ? @{/uploads/{file}(file=${user.photo})} : @{/uploads/default-avatar.png}" alt="Profile Picture" class="profile-pic">
-    <form th:action="@{/settings/updateProfilePic}" method="post" enctype="multipart/form-data">
+        <div class="setting-item">
+    <!-- 🔸 Removed image + label wrapper -->
+    <span class="setting-label">Update Profile Picture</span> <!-- 🔹 Changed text -->
+
+    <form th:action="@{/settings/updateProfilePic}" 
+          method="post" 
+          enctype="multipart/form-data" 
+          class="profile-form">
+        <!-- 🔸 Same input logic -->
         <input type="file" name="profilePic" id="profileUpload" accept="image/*" hidden onchange="this.form.submit()">
-        <button type="button" class="upload-btn" onclick="document.getElementById('profileUpload').click()">Change</button>
+        <button type="button" class="change-btn" onclick="document.getElementById('profileUpload').click()">Change</button>
     </form>
 </div>
+
 
 
 <!-- Username Update -->

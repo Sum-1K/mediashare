@@ -64,7 +64,7 @@ public String updateProfilePic(@RequestParam("profilePic") MultipartFile file,
     // Always add user to model for Thymeleaf
     model.addAttribute("user", user);
 
-    return "settings";
+    return "redirect:/profile";
 }
 
 }
