@@ -1,17 +1,24 @@
 package com.example.demo.controller;
 
-import com.example.demo.model.User;
-import com.example.demo.service.FollowService;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.example.demo.dao.UserDao;
+import com.example.demo.model.User;
+import com.example.demo.service.FollowService;
 
 import jakarta.servlet.http.HttpSession;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Controller
 @RequestMapping("/follow")
@@ -22,6 +29,9 @@ public class FollowController {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private UserDao userDao;
     
     @PostMapping("/{userId}")
     @ResponseBody
@@ -179,12 +189,14 @@ public class FollowController {
             boolean hasPendingRequest = followService.hasPendingRequest(currentUser.getUser_id(), userId);
             int followerCount = followService.getFollowerCount(userId);
             int followingCount = followService.getFollowingCount(userId);
+            User.Privacy privacy = userDao.getPrivacy(userId);
             
             response.put("success", true);
             response.put("isFollowing", isFollowing);
             response.put("hasPendingRequest", hasPendingRequest);
             response.put("followerCount", followerCount);
             response.put("followingCount", followingCount);
+            response.put("privacy", privacy.name());
         } catch (Exception e) {
             e.printStackTrace();
             response.put("success", false);

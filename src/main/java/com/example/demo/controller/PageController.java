@@ -138,6 +138,8 @@ public String viewProfile(@PathVariable Long profileId, Model model, HttpSession
     if (loggedInUser == null) {
         return "redirect:/login"; // or show an error
     }
+    
+    User profileUser = userDao.findById(profileId); // or userDao.findById(profileId)
 
     Long loggedInUserId = loggedInUser.getUser_id(); // adjust based on your User class
 
@@ -153,12 +155,13 @@ public String viewProfile(@PathVariable Long profileId, Model model, HttpSession
         model.addAttribute("following", following);
     
     // Check if logged-in user is following this profile
+    User.Privacy privacy = profileUser.getPrivacy();
     boolean isFollowing = followDao.isFollowing(loggedInUserId, profileId);
 
-    if (!isFollowing && !loggedInUserId.equals(profileId)) {
-        model.addAttribute("error", "You must follow this user to see their posts.");
-        return "errorPage"; // or redirect to some info page
-    }
+    if (privacy == User.Privacy.PRIVATE && !isFollowing && !loggedInUserId.equals(profileId)) {
+    model.addAttribute("error", "You must follow this user to see their posts.");
+    return "errorPage";
+}
 
     // Fetch posts and reels for the profile user
     // Fetch posts
@@ -191,7 +194,7 @@ public String viewProfile(@PathVariable Long profileId, Model model, HttpSession
         // model.addAttribute("postMediaMap", mediaDao.findByUserId(user.getUser_id()));
 
         // Fetch the profile user's full info (the person being visited)
-User profileUser = userDao.findById(profileId); // or userDao.findById(profileId)
+
 model.addAttribute("user", profileUser);
 model.addAttribute("currentUser", loggedInUser);
 
