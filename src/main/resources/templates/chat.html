@@ -179,13 +179,13 @@
           const div = document.createElement("div");
           div.classList.add("search-result-item");
           div.innerHTML = `
-            <img src="${user.photo}" alt="Profile Picture">
+            <img src="/uploads/profile/${user.photo}" alt="Profile Picture">
             <span>${user.user_name}</span>
           `;
           
           // Load chat messages on click
           div.addEventListener("click", async () => {
-            loadChatMessages(user.user_id, user.user_name);
+            loadChatMessages(user.user_id, user.user_name, user.photo);
           });
 
           searchResults.appendChild(div);
@@ -210,14 +210,14 @@
         li.classList.add("chat-user-item");
         li.innerHTML = `
           <div class="profile-photo-mini">
-            <img src="${user.photo}" alt="Profile Picture">
+            <img src="/uploads/profile/${user.photo}" alt="Profile Picture">
             <i class="fas fa-user"></i>
           </div>
           ${user.user_name}
         `;
 
         li.addEventListener("click", () => {
-          loadChatMessages(user.user_id, user.user_name);
+          loadChatMessages(user.user_id, user.user_name, user.photo);
         });
 
         list.appendChild(li);
@@ -239,10 +239,21 @@
   
 
   // Function to load chat messages into container
-  async function loadChatMessages(userId, userName) {
+  async function loadChatMessages(userId, userName, photo) {
     try {
       CURRENT_CHAT_USER_ID = userId; 
       console.log("Fetching messages for user:", userId);
+
+      const chatHeaderImg = document.querySelector(".chat-header img");
+      const chatHeaderName = document.querySelector(".chat-header h3");
+
+      if (chatHeaderImg) {
+        chatHeaderImg.src = photo ? `/uploads/profile/${photo}` : '/shifu.jpg';
+      }
+      if (chatHeaderName) {
+        chatHeaderName.textContent = userName;
+      }
+
       const res = await fetch(`/chat/messages/${userId}`);
       const messages = await res.json();
       const chatContainer = document.getElementById("chat-container");
