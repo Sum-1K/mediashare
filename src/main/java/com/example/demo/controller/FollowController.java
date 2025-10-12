@@ -1,4 +1,8 @@
 package com.example.demo.controller;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 
 import com.example.demo.dao.FollowDao;
 import com.example.demo.model.User;
@@ -12,6 +16,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 import com.example.demo.dao.UserDao;
 import com.example.demo.model.User;
