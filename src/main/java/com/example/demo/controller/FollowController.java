@@ -1,9 +1,8 @@
 package com.example.demo.controller;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.example.demo.dao.FollowDao;
+import com.example.demo.model.User;
+import com.example.demo.service.FollowService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
@@ -26,6 +25,9 @@ public class FollowController {
     
     @Autowired
     private FollowService followService;
+
+    @Autowired
+    private FollowDao followDao;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -234,4 +236,20 @@ public class FollowController {
             return "Error: " + e.getMessage();
         }
     }
+
+    @GetMapping("/users")
+    @ResponseBody
+    public List<User> searchUsers(
+            @RequestParam String prefix,
+            HttpSession session
+    ) {
+        // Get current logged-in user from session
+        User loggedInUser = (User) session.getAttribute("loggedInUser");
+        if (loggedInUser == null) {
+            throw new RuntimeException("User not logged in");
+        }
+
+        Long userId = loggedInUser.getUser_id();
+        return followDao.searchFollowersAndFollowees(userId, prefix);
+    }  
 }
