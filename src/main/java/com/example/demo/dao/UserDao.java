@@ -56,8 +56,18 @@ public class UserDao extends BaseDao<User, Long> {
         return rowMapper;
     }
 
+    public JdbcTemplate getJdbcTemplate() {
+    return jdbcTemplate;
+}
+
     // Custom save method (returns generated id)
     public Long save(User user) {
+
+        if (user.getPrivacy() == null) {
+        user.setPrivacy(User.Privacy.PUBLIC);
+    }
+
+
         final String sql = "INSERT INTO users (user_name, first_name, last_name, dob, email, bio, privacy, photo, join_date, password) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -145,4 +155,16 @@ public class UserDao extends BaseDao<User, Long> {
     String sql = "UPDATE users SET photo = ? WHERE user_id = ?";
     jdbcTemplate.update(sql, user.getPhoto(), user.getUser_id());
 }
+
+public void updatePrivacy(Long userId, User.Privacy privacy) {
+        String sql = "UPDATE users SET privacy = ? WHERE user_id = ?";
+        jdbcTemplate.update(sql, privacy.name(), userId);
+    }
+
+    // Optionally get privacy for user
+    public User.Privacy getPrivacy(Long userId) {
+        String sql = "SELECT privacy FROM users WHERE user_id = ?";
+        return jdbcTemplate.queryForObject(sql, (rs, rowNum) ->
+                User.Privacy.valueOf(rs.getString("privacy")), userId);
+    }
 }
