@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saved Posts</title>
+    <link rel="stylesheet" href="/savedPosts.css">
+    <style>
+        body { font-family: Arial, sans-serif; background: #fafafa; margin: 0; padding: 0; }
+        h1 { text-align: center; margin: 20px 0; }
+        .posts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+        .post { width: 100%; padding-top: 100%; position: relative; background-color: #fff; border: 1px solid #dbdbdb; }
+        .post img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+
+        @media (max-width: 768px) {
+            .posts-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<h1>Saved Posts</h1>
+
+<div th:if="${#lists.isEmpty(posts)}" class="no-posts">
+    <p>No saved posts yet.</p>
+</div>
+
+<!-- Posts Grid -->
+<div class="posts-grid" th:if="${!#lists.isEmpty(posts)}">
+    <div class="post" th:each="post : ${posts}">
+        <a th:href="@{/post/{id}(id=${post.postId})}">
+            <div th:each="media : ${postMediaMap[post.postId]}">
+                <img th:src="@{${#strings.replace(media.url, 'src/main/resources/static', '')}}" 
+     th:alt="${post.caption}" />
+<video th:if="${media.type.name() == 'VIDEO'}" controls>
+    <source th:src="@{${#strings.replace(media.url, 'src/main/resources/static', '')}}" type="video/mp4"/>
+</video>
+            </div>
+        </a>
+    </div>
+</div>
+
+</body>
+</html>

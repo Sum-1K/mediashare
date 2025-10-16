@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 public class SavedPostDao extends BaseDao<SavedPost, Long> {
@@ -66,4 +67,20 @@ public class SavedPostDao extends BaseDao<SavedPost, Long> {
         String sql = "SELECT * FROM " + getTableName() + " WHERE saved_post_id = ?";
         return jdbcTemplate.query(sql, getRowMapper(), savedPostId);
     }
+
+    public List<Long> getSavedPostIds(Long userId) {
+    List<SavedPost> savedPosts = findAllByUser(userId);
+    return savedPosts.stream()
+                     .map(SavedPost::getSavedPostId)
+                     .collect(Collectors.toList());
+}
+
+public boolean isPostSaved(Long userId, Long postId) {
+    String sql = "SELECT COUNT(*) FROM saved_post WHERE user_id = ? AND saved_post_id = ?";
+    Integer count = jdbcTemplate.queryForObject(sql, Integer.class, userId, postId);
+    return count != null && count > 0;
+}
+
+
+
 }
