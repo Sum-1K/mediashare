@@ -121,8 +121,9 @@
 
         <div class="likes">
             <span th:text="${likesCount}">0</span> likes
-            <form th:action="@{/like/add}" method="post" style="display:inline;">
-        <input type="hidden" name="postId" th:value="${post.postId}"/>
+            <form th:action="@{/like/toggle}" method="post" style="display:inline;">
+            <input type="hidden" name="contentId" th:value="${post.postId}"/>
+            <input type="hidden" name="type" value="post" />
         <button type="submit">❤️ Like</button>
     </form>
         </div>
@@ -135,7 +136,7 @@
         <div class="comments">
             <div class="comment" th:each="comment : ${comments}">
                 <b th:text="${comment.username}"></b>
-                <span th:text="${comment.text}"></span>
+                <span th:text="${comment.content}"></span>
             </div>
         </div>
 

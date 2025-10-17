@@ -71,4 +71,11 @@ public class LikeDao extends BaseDao<Like, Long> {
         String sql = "SELECT COUNT(*) FROM like_table WHERE content_id = ?";
         return jdbcTemplate.queryForObject(sql, Integer.class, contentId);
     }
+
+    // Optional: delete by userId and contentId (unlike)
+    public int deleteByUserIdAndContentId(Long userId, Long contentId) {
+    String sql = "DELETE FROM like_table WHERE user_id = ? AND content_id = ?";
+    return jdbcTemplate.update(sql, userId, contentId);
+}
+
 }
