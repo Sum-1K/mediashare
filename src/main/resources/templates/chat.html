@@ -140,6 +140,8 @@
 
 <script>
   // Menu toggle
+  let CURRENT_CHAT_USER_ID = null;
+
   document.querySelector('.more-btn').addEventListener('click', () => {
     document.querySelector('.menu-popup').classList.toggle('active');
   });
@@ -196,36 +198,66 @@
     }, 300);
   });
 
-  // Load chat users list
-  document.addEventListener("DOMContentLoaded", async () => {
-    try {
-      const res = await fetch("/chat/users");
-      const users = await res.json();
+  async function loadChatUsers() {
+  try {
+    const res = await fetch("/chat/users");
+    const users = await res.json();
 
-      const list = document.getElementById("chatUserList");
-      list.innerHTML = "";
+    const list = document.getElementById("chatUserList");
+    list.innerHTML = "";
 
-      users.forEach(user => {
-        const li = document.createElement("li");
-        li.classList.add("chat-user-item");
-        li.innerHTML = `
-          <div class="profile-photo-mini">
-            <img src="/uploads/profile/${user.photo}" alt="Profile Picture">
-            <i class="fas fa-user"></i>
-          </div>
-          ${user.user_name}
-        `;
+    users.forEach(user => {
+      const li = document.createElement("li");
+      li.classList.add("chat-user-item");
+      li.innerHTML = `
+        <div class="profile-photo-mini">
+          <img src="/uploads/profile/${user.photo}" alt="Profile Picture">
+          <i class="fas fa-user"></i>
+        </div>
+        ${user.user_name}
+      `;
 
-        li.addEventListener("click", () => {
-          loadChatMessages(user.user_id, user.user_name, user.photo);
-        });
-
-        list.appendChild(li);
+      li.addEventListener("click", () => {
+        loadChatMessages(user.user_id, user.user_name, user.photo);
       });
-    } catch (err) {
-      console.error("Failed to load chat users:", err);
-    }
-  });
+
+      list.appendChild(li);
+    });
+  } catch (err) {
+    console.error("Failed to load chat users:", err);
+  }
+}
+
+  // // Load chat users list
+  // document.addEventListener("DOMContentLoaded", async () => {
+  //   try {
+  //     const res = await fetch("/chat/users");
+  //     const users = await res.json();
+
+  //     const list = document.getElementById("chatUserList");
+  //     list.innerHTML = "";
+
+  //     users.forEach(user => {
+  //       const li = document.createElement("li");
+  //       li.classList.add("chat-user-item");
+  //       li.innerHTML = `
+  //         <div class="profile-photo-mini">
+  //           <img src="/uploads/profile/${user.photo}" alt="Profile Picture">
+  //           <i class="fas fa-user"></i>
+  //         </div>
+  //         ${user.user_name}
+  //       `;
+
+  //       li.addEventListener("click", () => {
+  //         loadChatMessages(user.user_id, user.user_name, user.photo);
+  //       });
+
+  //       list.appendChild(li);
+  //     });
+  //   } catch (err) {
+  //     console.error("Failed to load chat users:", err);
+  //   }
+  // });
 
   let CURRENT_USER_ID = null;
 
@@ -398,6 +430,7 @@ function appendMessage(msg) {
 
 document.addEventListener("DOMContentLoaded", async () => {
   await fetchCurrentUserId();
+  await loadChatUsers();
 
   const socket = new SockJS("/ws-chat");
   const stompClient = Stomp.over(socket);
@@ -405,9 +438,23 @@ document.addEventListener("DOMContentLoaded", async () => {
   stompClient.connect({}, () => {
     console.log("✅ Connected to WebSocket");
 
-    stompClient.subscribe(`/topic/messages/${CURRENT_USER_ID}`, (message) => {
+    stompClient.subscribe(`/topic/messages/${CURRENT_USER_ID}`, async (message) => {
       const msg = JSON.parse(message.body);
-      appendMessage(msg);
+      console.log(CURRENT_CHAT_USER_ID);
+      
+      if ((msg.sender_id === CURRENT_USER_ID)||(msg.senderId === CURRENT_USER_ID)) {
+        console.log("I sent this message");
+        return;
+      }
+
+      // Case 2️⃣: If the message is from the user you’re currently chatting with
+      if ((msg.sender_id === CURRENT_CHAT_USER_ID)||(msg.senderId === CURRENT_CHAT_USER_ID)) {
+        appendMessage(msg);
+      } 
+      // Case 3️⃣: Message from another user (not the current chat)
+      else {
+        await loadChatUsers(); // just refresh list
+      }
     });
   });
 
