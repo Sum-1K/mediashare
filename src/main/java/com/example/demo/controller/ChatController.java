@@ -151,6 +151,7 @@ public List<Chat> getMessages(@PathVariable Long userId, HttpSession session) {
         // Long senderId = loggedInUser.getUser_id(); // real sender
 
         // chatMessage.setSenderId(senderId);
+        System.out.println("Received payload: " + chatMessage); 
 
         chatService.saveMessage(chatMessage.getSenderId(), chatMessage.getReceiverId(), chatMessage.getContent(), chatMessage.getRepliedToId());
 

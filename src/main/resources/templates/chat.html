@@ -739,31 +739,31 @@ let CURRENT_CHAT_USER_ID = null;
        
       messages.forEach(msg => appendMessage(msg));
 
-      messages.forEach(msg => {
-      if (msg.replied_to_id) {
-        const targetEl = document.getElementById(`message-${msg.replied_to_id}`);
-        const currentEl = document.getElementById(`message-${msg.chat_id}`);
-        if (targetEl && currentEl) {
-          const textEl = targetEl.querySelector(".article-content");
-          let text = textEl ? textEl.textContent.trim() : "";
-          if (text.length > 50) text = text.slice(0, 50) + "...";
+    //   messages.forEach(msg => {
+    //   if (msg.replied_to_id) {
+    //     const targetEl = document.getElementById(`message-${msg.replied_to_id}`);
+    //     const currentEl = document.getElementById(`message-${msg.chat_id}`);
+    //     if (targetEl && currentEl) {
+    //       const textEl = targetEl.querySelector(".article-content");
+    //       let text = textEl ? textEl.textContent.trim() : "";
+    //       if (text.length > 50) text = text.slice(0, 50) + "...";
 
-          const repliedHTML = `
-            <small class="text-muted replied-link" data-target="${msg.replied_to_id}">
-              Replied to: ${escapeHtml(text)}
-            </small>
-          `;
-          currentEl.querySelector(".article-metadata").insertAdjacentHTML("beforeend", repliedHTML);
+    //       const repliedHTML = `
+    //         <small class="text-muted replied-link" data-target="${msg.replied_to_id}">
+    //           Replied to: ${escapeHtml(text)}
+    //         </small>
+    //       `;
+    //       currentEl.querySelector(".article-metadata").insertAdjacentHTML("beforeend", repliedHTML);
 
-          // Add scroll-on-click
-          currentEl.querySelector(".replied-link").addEventListener("click", () => {
-            targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
-            targetEl.classList.add("highlight-replied");
-            setTimeout(() => targetEl.classList.remove("highlight-replied"), 1500);
-          });
-        }
-      }
-    });
+    //       // Add scroll-on-click
+    //       currentEl.querySelector(".replied-link").addEventListener("click", () => {
+    //         targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    //         targetEl.classList.add("highlight-replied");
+    //         setTimeout(() => targetEl.classList.remove("highlight-replied"), 1500);
+    //       });
+    //     }
+    //   }
+    // });
 
       // Optional: scroll to bottom
       messagesContainer.scrollTop = messagesContainer.scrollHeight;

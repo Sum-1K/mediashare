@@ -1,10 +1,14 @@
 package com.example.demo.dto;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class ChatMessage {
     private Long senderId;
     private Long receiverId;
     private String content;
+
+    @JsonProperty("replied_to_id")
     private Long repliedToId;
 
     public ChatMessage() {}
