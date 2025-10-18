@@ -22,7 +22,7 @@ public class ChatService {
     return chatDao.findMessagesBetween(currentUserId, otherUserId);
     }
 
-    public void saveMessage(Long senderId, Long recieverId, String text){
-        chatDao.saveMessage(senderId, recieverId, text);
+    public void saveMessage(Long senderId, Long recieverId, String text, Long repliedToId){
+        chatDao.saveMessage(senderId, recieverId, text, repliedToId);
     }
 }

@@ -9,6 +9,7 @@ public class Chat {
     private LocalDateTime sent_at;
     private Long sender_id;
     private Long receiver_id;
+    private Long replied_to_id;
 
     // Getters and Setters
     public Long getChat_id() { return chat_id; }
@@ -28,4 +29,8 @@ public class Chat {
 
     public Long getReceiver_id() { return receiver_id; }
     public void setReceiver_id(Long receiver_id) { this.receiver_id = receiver_id; }
+
+    public Long getReplied_to_id() { return replied_to_id; }
+    public void setReplied_to_id(Long replied_to_id) { this.replied_to_id = replied_to_id; }
+
 }

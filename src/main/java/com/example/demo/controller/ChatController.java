@@ -97,19 +97,19 @@ public List<Chat> getMessages(@PathVariable Long userId, HttpSession session) {
     return messages != null ? messages : new ArrayList<>();
 }
 
-@PostMapping("/chat/send/{receiverId}")
-@ResponseBody
-public ResponseEntity<String> sendMessage(@PathVariable Long receiverId, @RequestParam String message, HttpSession session) {
-    User sender = (User) session.getAttribute("loggedInUser");
+// @PostMapping("/chat/send/{receiverId}")
+// @ResponseBody
+// public ResponseEntity<String> sendMessage(@PathVariable Long receiverId, @RequestParam String message, HttpSession session) {
+//     User sender = (User) session.getAttribute("loggedInUser");
 
-    // Check if user is logged in
-    if (sender == null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
-    }
+//     // Check if user is logged in
+//     if (sender == null) {
+//         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
+//     }
     
-    chatService.saveMessage(sender.getUser_id(), receiverId, message);
-    return ResponseEntity.ok("Message sent successfully");
-}
+//     chatService.saveMessage(sender.getUser_id(), receiverId, message);
+//     return ResponseEntity.ok("Message sent successfully");
+// }
 
     // @MessageMapping("/sendMessage")
     // public void sendMessage(ChatMessage chatMessage) {
@@ -152,7 +152,7 @@ public ResponseEntity<String> sendMessage(@PathVariable Long receiverId, @Reques
 
         // chatMessage.setSenderId(senderId);
 
-        chatService.saveMessage(chatMessage.getSenderId(), chatMessage.getReceiverId(), chatMessage.getContent());
+        chatService.saveMessage(chatMessage.getSenderId(), chatMessage.getReceiverId(), chatMessage.getContent(), chatMessage.getRepliedToId());
 
         messagingTemplate.convertAndSend("/topic/messages/" + chatMessage.getReceiverId(), chatMessage);
     }

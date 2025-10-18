@@ -5,13 +5,15 @@ public class ChatMessage {
     private Long senderId;
     private Long receiverId;
     private String content;
+    private Long repliedToId;
 
     public ChatMessage() {}
 
-    public ChatMessage(Long sender, Long receiver, String content, LocalDateTime timestamp) {
+    public ChatMessage(Long sender, Long receiver, String content, LocalDateTime timestamp, Long repliedToId) {
         this.senderId = sender;
         this.receiverId = receiver;
         this.content = content;
+        this.repliedToId = repliedToId;
     }
 
     // getters and setters
@@ -23,4 +25,7 @@ public class ChatMessage {
 
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
+
+    public Long getRepliedToId() { return repliedToId; }
+    public void setRepliedToId(Long repliedToId) { this.repliedToId = repliedToId; }
 }

@@ -123,7 +123,9 @@
                     </article>
                  -->
             
-            
+                <div id="replyBox" style="display:none; padding: 5px 10px; background:#f0f0f0; border-left: 3px solid #007bff; margin-bottom:5px; font-size:0.9em;">
+                <!-- Filled dynamically -->
+                </div>
                 <form id="chatForm" class="typing-box"> 
                     <input type="text" id="messageInput" placeholder="Type your message...">
                     <button type="submit" class="btn btn-primary">Send</button>
@@ -138,7 +140,7 @@
 
 
 
-<script>
+<!-- <script>
   // Menu toggle
   let CURRENT_CHAT_USER_ID = null;
 
@@ -288,29 +290,59 @@
 
       const res = await fetch(`/chat/messages/${userId}`);
       const messages = await res.json();
+
+      messages.sort((a, b) => new Date(a.sent_at) - new Date(b.sent_at));
+
       const chatContainer = document.getElementById("chat-container");
       //chatContainer.innerHTML = ""; // clear previous messages
 
       const messagesContainer = chatContainer.querySelector(".messages");
       messagesContainer.innerHTML = "";
 
-      messages.forEach(msg => {
-        const msgDiv = document.createElement("div");
+      // messages.forEach(msg => {
+      //   const msgDiv = document.createElement("div");
         
-        if (msg.sender_id != CURRENT_CHAT_USER_ID) { // <-- replace with actual current user ID
-          msgDiv.classList.add("content-section-user");
-        }
-        else
-        {
-          msgDiv.classList.add("content-section");
-        }
+      //   if (msg.sender_id != CURRENT_CHAT_USER_ID) { // <-- replace with actual current user ID
+      //     msgDiv.classList.add("content-section-user");
+      //   }
+      //   else
+      //   {
+      //     msgDiv.classList.add("content-section");
+      //   }
 
-        msgDiv.innerHTML = `<div class="media-body">
-          <small class="text-muted">${new Date(msg.sent_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</small>
-          <p class="article-content">${msg.message}</p>
-        </div>`;
-        messagesContainer.appendChild(msgDiv);
-      });
+      //   msgDiv.innerHTML = `<div class="media-body">
+      //     <small class="text-muted">${new Date(msg.sent_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</small>
+      //     <p class="article-content">${msg.message}</p>
+      //   </div>`;
+      //   messagesContainer.appendChild(msgDiv);
+      // });
+      messages.forEach(msg => appendMessage(msg));
+
+      messages.forEach(msg => {
+      if (msg.replied_to_id) {
+        const targetEl = document.getElementById(`message-${msg.replied_to_id}`);
+        const currentEl = document.getElementById(`message-${msg.chat_id}`);
+        if (targetEl && currentEl) {
+          const textEl = targetEl.querySelector(".article-content");
+          let text = textEl ? textEl.textContent.trim() : "";
+          if (text.length > 50) text = text.slice(0, 50) + "...";
+
+          const repliedHTML = `
+            <small class="text-muted replied-link" data-target="${msg.replied_to_id}">
+              Replied to: ${escapeHtml(text)}
+            </small>
+          `;
+          currentEl.querySelector(".article-metadata").insertAdjacentHTML("beforeend", repliedHTML);
+
+          // Add scroll-on-click
+          currentEl.querySelector(".replied-link").addEventListener("click", () => {
+            targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
+            targetEl.classList.add("highlight-replied");
+            setTimeout(() => targetEl.classList.remove("highlight-replied"), 1500);
+          });
+        }
+      }
+    });
 
       // Optional: scroll to bottom
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -367,17 +399,42 @@
 //       }
 //     });
 //   });
+let REPLIED_MESSAGE = null;
+
+function showReplyBox() {
+  const replyBox = document.getElementById("replyBox"); // your preview container
+  if (REPLIED_MESSAGE) {
+    replyBox.innerHTML = `
+      Replied to: ${REPLIED_MESSAGE.text} 
+      <span id="cancelReply" style="cursor:pointer; margin-left:5px;">×</span>
+    `;
+    replyBox.style.display = "block";
+
+    document.getElementById("cancelReply").addEventListener("click", () => {
+      REPLIED_MESSAGE = null;
+      replyBox.style.display = "none";
+    });
+  } else {
+    replyBox.style.display = "none";
+  }
+}
+
+
 
 // This can be placed at the top of your JS file
 function appendMessage(msg) {
   const messagesContainer = document.querySelector(".messages");
   const msgDiv = document.createElement("div");
-  msgDiv.classList.add("content-section");
 
   const sender_id = msg.sender_id ?? msg.senderId;
   const receiver_id = msg.receiver_id ?? msg.receiverId;
   const message = msg.message ?? msg.content;
   const sent_at = msg.sent_at ?? new Date().toISOString();
+  //const replied_to_id = msg.replied_to_id || null;
+  //⤷
+  const msgId = msg.chat_id ?? `${sender_id}-${Date.parse(sent_at)}`;
+  msgDiv.id = `message-${msgId}`;
+  msgDiv.dataset.msgid = msgId;
 
   if (sender_id != CURRENT_CHAT_USER_ID) { // <-- replace with actual current user ID
     msgDiv.classList.add("content-section-user");
@@ -387,12 +444,61 @@ function appendMessage(msg) {
     msgDiv.classList.add("content-section");
   }
 
+  let repliedTextHTML = "";
+  if (msg.replied_to_id) {
+    // reply_to_id may be stored as plain msgId (not prefixed with 'message-')
+    const targetEl = document.getElementById(`message-${msg.replied_to_id}`);
+    if (targetEl) {
+      let text = "";
+      const contentEl = targetEl.querySelector(".article-content");
+      if (contentEl) text = contentEl.textContent.trim();
+      if (text.length > 50) text = text.slice(0, 50) + "...";
+      repliedTextHTML = `<small class="text-muted replied-link" data-target="${msg.replied_to_id}">Replied to: ${escapeHtml(text)}</small>`;
+    }
+  }
+
   msgDiv.innerHTML = `
     <div class="media-body">
+      <div class="article-metadata">
       <small class="text-muted">${new Date(sent_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</small>
+      ${repliedTextHTML}
+      </div>
       <p class="article-content">${message}</p>
+      <span class="reply-icon" style="display:none; cursor:pointer; float:right;">⤷</span>
     </div>
   `;
+
+  const link = msgDiv.querySelector(".replied-link");
+  if (link) {
+    link.addEventListener("click", (e) => {
+      const targetId = link.dataset.target;
+      const target = document.getElementById(`message-${targetId}`);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+        target.classList.add("highlight-replied");
+        setTimeout(() => target.classList.remove("highlight-replied"), 1500);
+      }
+    });
+  }
+
+  const replyIcon = msgDiv.querySelector(".reply-icon");
+  replyIcon.addEventListener("click", () => {
+    const textEl = msgDiv.querySelector(".article-content");
+    let text = textEl ? textEl.textContent.trim() : "";
+    if (text.length > 50) text = text.slice(0, 50) + "...";
+    REPLIED_MESSAGE = { id: msgId, text };
+    showReplyBox();
+  });
+
+  // hover behavior (if you still want JS hover show/hide instead of CSS)
+  msgDiv.addEventListener("mouseenter", () => {
+    const ic = msgDiv.querySelector(".reply-icon");
+    if (ic) ic.style.display = "inline-block";
+  });
+  msgDiv.addEventListener("mouseleave", () => {
+    const ic = msgDiv.querySelector(".reply-icon");
+    if (ic) ic.style.display = "none";
+  });
 
   messagesContainer.appendChild(msgDiv);
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -467,23 +573,389 @@ document.addEventListener("DOMContentLoaded", async () => {
     const messageText = messageInput.value.trim();
     if (!messageText || !CURRENT_CHAT_USER_ID) return;
 
-    stompClient.send("/app/chat.sendMessage", {}, JSON.stringify({
-      senderId: CURRENT_USER_ID,
-      receiverId: CURRENT_CHAT_USER_ID,
-      content: messageText
-    }));
+    const payload = {
+    senderId: CURRENT_USER_ID,
+    receiverId: CURRENT_CHAT_USER_ID,
+    content: messageText
+    };
+
+    if (REPLIED_MESSAGE) {
+    payload.replied_to_id = REPLIED_MESSAGE.id; // e.g. "ts1600000000000" or "local-..."
+    }
+
+    stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(payload));
 
     appendMessage({
       sender_id: CURRENT_USER_ID,
       receiver_id: CURRENT_CHAT_USER_ID,
       message: messageText,
-      sent_at: new Date().toISOString()
+      sent_at: new Date().toISOString(),
+      replied_to_id: REPLIED_MESSAGE ? REPLIED_MESSAGE.id : null
     });
 
+    REPLIED_MESSAGE = null;
+    showReplyBox();
     messageInput.value = "";
   });
 
 });
 
+function escapeHtml(text) {
+  return text
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+</script> -->
 
+<script>
+let CURRENT_CHAT_USER_ID = null;
+
+  document.querySelector('.more-btn').addEventListener('click', () => {
+    document.querySelector('.menu-popup').classList.toggle('active');
+  });
+
+  // Bottom nav active state
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(item => {
+    const link = item.getAttribute('data-link');
+    item.addEventListener('click', () => {
+      navItems.forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+      if (link) window.location.href = link;
+    });
+  });
+
+  // Search functionality
+  const searchInput = document.getElementById("userSearch");
+  const searchResults = document.getElementById("searchResults");
+  let timeout = null;
+
+  searchInput.addEventListener("input", () => {
+    clearTimeout(timeout);
+    const query = searchInput.value.trim();
+
+    if (query.length === 0) {
+      searchResults.innerHTML = "";
+      return;
+    }
+
+    timeout = setTimeout(async () => {
+      try {
+        const res = await fetch(`/follow/users?prefix=${encodeURIComponent(query)}`);
+        const data = await res.json();
+
+        searchResults.innerHTML = "";
+        data.forEach(user => {
+          const div = document.createElement("div");
+          div.classList.add("search-result-item");
+          div.innerHTML = `
+            <img src="/uploads/profile/${user.photo}" alt="Profile Picture">
+            <span>${user.user_name}</span>
+          `;
+          
+          // Load chat messages on click
+          div.addEventListener("click", async () => {
+            loadChatMessages(user.user_id, user.user_name, user.photo);
+          });
+
+          searchResults.appendChild(div);
+        });
+      } catch (err) {
+        console.error("Search error:", err);
+      }
+    }, 300);
+  });
+
+  async function loadChatUsers() {
+  try {
+    const res = await fetch("/chat/users");
+    const users = await res.json();
+
+    const list = document.getElementById("chatUserList");
+    list.innerHTML = "";
+
+    users.forEach(user => {
+      const li = document.createElement("li");
+      li.classList.add("chat-user-item");
+      li.innerHTML = `
+        <div class="profile-photo-mini">
+          <img src="/uploads/profile/${user.photo}" alt="Profile Picture">
+          <i class="fas fa-user"></i>
+        </div>
+        ${user.user_name}
+      `;
+
+      li.addEventListener("click", () => {
+        loadChatMessages(user.user_id, user.user_name, user.photo);
+      });
+
+      list.appendChild(li);
+    });
+  } catch (err) {
+    console.error("Failed to load chat users:", err);
+  }
+}
+
+  
+
+  let CURRENT_USER_ID = null;
+
+  async function fetchCurrentUserId() {
+    const res = await fetch("/session/currentUser");
+    const data = await res.json();
+    CURRENT_USER_ID = data.userId;
+    console.log("Current user ID:", CURRENT_USER_ID);
+  }
+
+  
+
+  // Function to load chat messages into container
+  async function loadChatMessages(userId, userName, photo) {
+    try {
+      CURRENT_CHAT_USER_ID = userId; 
+      console.log("Fetching messages for user:", userId);
+
+      const chatHeaderImg = document.querySelector(".chat-header img");
+      const chatHeaderName = document.querySelector(".chat-header h3");
+
+      if (chatHeaderImg) {
+        chatHeaderImg.src = photo ? `/uploads/profile/${photo}` : '/shifu.jpg';
+      }
+      if (chatHeaderName) {
+        chatHeaderName.textContent = userName;
+      }
+
+      const res = await fetch(`/chat/messages/${userId}`);
+      const messages = await res.json();
+      const chatContainer = document.getElementById("chat-container");
+      //chatContainer.innerHTML = ""; // clear previous messages
+
+      const messagesContainer = chatContainer.querySelector(".messages");
+      messagesContainer.innerHTML = "";
+
+       
+      messages.forEach(msg => appendMessage(msg));
+
+      messages.forEach(msg => {
+      if (msg.replied_to_id) {
+        const targetEl = document.getElementById(`message-${msg.replied_to_id}`);
+        const currentEl = document.getElementById(`message-${msg.chat_id}`);
+        if (targetEl && currentEl) {
+          const textEl = targetEl.querySelector(".article-content");
+          let text = textEl ? textEl.textContent.trim() : "";
+          if (text.length > 50) text = text.slice(0, 50) + "...";
+
+          const repliedHTML = `
+            <small class="text-muted replied-link" data-target="${msg.replied_to_id}">
+              Replied to: ${escapeHtml(text)}
+            </small>
+          `;
+          currentEl.querySelector(".article-metadata").insertAdjacentHTML("beforeend", repliedHTML);
+
+          // Add scroll-on-click
+          currentEl.querySelector(".replied-link").addEventListener("click", () => {
+            targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
+            targetEl.classList.add("highlight-replied");
+            setTimeout(() => targetEl.classList.remove("highlight-replied"), 1500);
+          });
+        }
+      }
+    });
+
+      // Optional: scroll to bottom
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+      console.log("Loaded chat with:", userName);
+    } catch (err) {
+      console.error("Failed to load messages:", err);
+    }
+  }
+
+
+let REPLIED_MESSAGE = null;
+
+function showReplyBox() {
+  const replyBox = document.getElementById("replyBox"); // your preview container
+  if (REPLIED_MESSAGE) {
+    replyBox.innerHTML = `
+      Replied to: ${REPLIED_MESSAGE.text} 
+      <span id="cancelReply" style="cursor:pointer; margin-left:5px;">×</span>
+    `;
+    replyBox.style.display = "block";
+
+    document.getElementById("cancelReply").addEventListener("click", () => {
+      REPLIED_MESSAGE = null;
+      replyBox.style.display = "none";
+    });
+  } else {
+    replyBox.style.display = "none";
+  }
+}
+
+
+
+// This can be placed at the top of your JS file
+function appendMessage(msg) {
+  const messagesContainer = document.querySelector(".messages");
+  const msgDiv = document.createElement("div");
+  msgDiv.style.position = "relative";
+
+  const sender_id = msg.sender_id ?? msg.senderId;
+  const receiver_id = msg.receiver_id ?? msg.receiverId;
+  const message = msg.message ?? msg.content;
+  const sent_at = msg.sent_at ?? new Date().toISOString();
+  //const replied_to_id = msg.replied_to_id || null;
+  //⤷
+  const msgId = msg.chat_id ?? `${sender_id}-${Date.parse(sent_at)}`;
+  msgDiv.id = `message-${msgId}`;
+  msgDiv.dataset.msgid = msgId;
+
+  if (sender_id != CURRENT_CHAT_USER_ID) { // <-- replace with actual current user ID
+    msgDiv.classList.add("content-section-user");
+  }
+  else
+  {
+    msgDiv.classList.add("content-section");
+  }
+
+  let repliedTextHTML = "";
+  if (msg.replied_to_id) {
+    // reply_to_id may be stored as plain msgId (not prefixed with 'message-')
+    const targetEl = document.getElementById(`message-${msg.replied_to_id}`);
+    if (targetEl) {
+      let text = "";
+      const contentEl = targetEl.querySelector(".article-content");
+      if (contentEl) text = contentEl.textContent.trim();
+      if (text.length > 50) text = text.slice(0, 50) + "...";
+      repliedTextHTML = `<small class="text-muted replied-link" data-target="${msg.replied_to_id}">Replied to: ${escapeHtml(text)}</small>`;
+    }
+  }
+
+  msgDiv.innerHTML = `
+    <div class="media-body">
+      <div class="article-metadata">
+      <small class="text-muted">${new Date(sent_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</small>
+      ${repliedTextHTML}
+      </div>
+      <p class="article-content">${message}</p>
+      <span class="reply-icon" style="display:none; cursor:pointer; float:right;">⤷</span>
+    </div>
+  `;
+
+  const link = msgDiv.querySelector(".replied-link");
+  if (link) {
+    link.addEventListener("click", (e) => {
+      const targetId = link.dataset.target;
+      const target = document.getElementById(`message-${targetId}`);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+        target.classList.add("highlight-replied");
+        setTimeout(() => target.classList.remove("highlight-replied"), 1500);
+      }
+    });
+  }
+
+  const replyIcon = msgDiv.querySelector(".reply-icon");
+  replyIcon.addEventListener("click", () => {
+    const textEl = msgDiv.querySelector(".article-content");
+    let text = textEl ? textEl.textContent.trim() : "";
+    if (text.length > 50) text = text.slice(0, 50) + "...";
+    REPLIED_MESSAGE = { id: msgId, text };
+    showReplyBox();
+  });
+
+  // hover behavior (if you still want JS hover show/hide instead of CSS)
+  msgDiv.addEventListener("mouseenter", () => {
+    const ic = msgDiv.querySelector(".reply-icon");
+    if (ic) ic.style.display = "inline-block";
+  });
+  msgDiv.addEventListener("mouseleave", () => {
+    const ic = msgDiv.querySelector(".reply-icon");
+    if (ic) ic.style.display = "none";
+  });
+
+  messagesContainer.appendChild(msgDiv);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+
+
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await fetchCurrentUserId();
+  await loadChatUsers();
+
+  const socket = new SockJS("/ws-chat");
+  const stompClient = Stomp.over(socket);
+
+  stompClient.connect({}, () => {
+    console.log("✅ Connected to WebSocket");
+
+    stompClient.subscribe(`/topic/messages/${CURRENT_USER_ID}`, async (message) => {
+      const msg = JSON.parse(message.body);
+      console.log(CURRENT_CHAT_USER_ID);
+      
+      if ((msg.sender_id === CURRENT_USER_ID)||(msg.senderId === CURRENT_USER_ID)) {
+        console.log("I sent this message");
+        return;
+      }
+
+      // Case 2️⃣: If the message is from the user you’re currently chatting with
+      if ((msg.sender_id === CURRENT_CHAT_USER_ID)||(msg.senderId === CURRENT_CHAT_USER_ID)) {
+        appendMessage(msg);
+      } 
+      // Case 3️⃣: Message from another user (not the current chat)
+      else {
+        await loadChatUsers(); // just refresh list
+      }
+    });
+  });
+
+  const chatForm = document.getElementById("chatForm");
+  const messageInput = document.getElementById("messageInput");
+
+  chatForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const messageText = messageInput.value.trim();
+    if (!messageText || !CURRENT_CHAT_USER_ID) return;
+
+    const payload = {
+    senderId: CURRENT_USER_ID,
+    receiverId: CURRENT_CHAT_USER_ID,
+    content: messageText
+    };
+
+    if (REPLIED_MESSAGE) {
+    payload.replied_to_id = REPLIED_MESSAGE.id; // e.g. "ts1600000000000" or "local-..."
+    }
+
+    stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(payload));
+
+    appendMessage({
+      sender_id: CURRENT_USER_ID,
+      receiver_id: CURRENT_CHAT_USER_ID,
+      message: messageText,
+      sent_at: new Date().toISOString(),
+      replied_to_id: REPLIED_MESSAGE ? REPLIED_MESSAGE.id : null
+    });
+
+    REPLIED_MESSAGE = null;
+    showReplyBox();
+    messageInput.value = "";
+  });
+
+});
+
+function escapeHtml(text) {
+  return text
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+} //see this script. every thing works except for the rendering of 'replied to: ..' in the older messages that are loaded, why?
 </script>

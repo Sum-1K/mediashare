@@ -40,6 +40,7 @@ public class ChatDao extends BaseDao<Chat, Long> {
                 chat.setSent_at(rs.getTimestamp("sent_at").toLocalDateTime());
                 chat.setSender_id(rs.getLong("sender_id"));
                 chat.setReceiver_id(rs.getLong("receiver_id"));
+                chat.setReplied_to_id(rs.getLong("replied_to_id"));
                 return chat;
             }
         };
@@ -72,8 +73,8 @@ public class ChatDao extends BaseDao<Chat, Long> {
     return jdbcTemplate.query(sql, getRowMapper(), user1, user2, user2, user1);
     }
 
-    public void saveMessage(Long senderId, Long receiverId, String text) {
-    String sql = "INSERT INTO chats (seen, message, sent_at, sender_id, receiver_id) VALUES (FALSE, ?, NOW(), ?, ?)";
-    jdbcTemplate.update(sql, text, senderId, receiverId);
+    public void saveMessage(Long senderId, Long receiverId, String text, Long repliedToId) {
+    String sql = "INSERT INTO chats (seen, message, sent_at, sender_id, receiver_id, replied_to_id) VALUES (FALSE, ?, NOW(), ?, ?, ?)";
+    jdbcTemplate.update(sql, text, senderId, receiverId, repliedToId);
     }
 }
