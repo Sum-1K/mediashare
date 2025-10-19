@@ -1,170 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MediaShare Home</title>
   <link rel="stylesheet" href="/home.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-  <style>
-    /* Sidebar Styles */
-    .sidebar {
-      background-color: #fff;
-      border-right: 1px solid #dbdbdb;
-      width: 245px;
-      height: 100vh;
-      position: fixed;
-      top: 0;
-      left: 0;
-      display: flex;
-      flex-direction: column;
-      padding: 70px 20px 20px;
-      z-index: 999;
-    }
-
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      font-size: 18px;
-      padding: 12px 20px;
-      cursor: pointer;
-      color: #262626;
-      text-decoration: none;
-    }
-
-    .nav-item i {
-      font-size: 22px;
-      width: 24px;
-      text-align: center;
-    }
-
-    .nav-item:hover {
-      background-color: #fafafa;
-    }
-
-    .nav-item.active {
-      font-weight: 600;
-    }
-
-    /* Search Panel Styles */
-    .search-panel {
-        position: fixed;
-        top: 0;
-        left: 245px; /* Right next to sidebar */
-        width: 350px;
-        height: 100vh;
-        background-color: #fff;
-        border-right: 1px solid #dbdbdb;
-        z-index: 998;
-        display: none;
-        flex-direction: column;
-        padding: 70px 20px 20px;
-    }
-
-    .search-panel input {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid #dbdbdb;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        font-size: 14px;
-        background-color: #fafafa;
-    }
-
-    .search-panel input:focus {
-        outline: none;
-        border-color: #a8a8a8;
-    }
-
-    .search-results {
-        flex: 1;
-        overflow-y: auto;
-    }
-
-    .search-result {
-        padding: 12px;
-        border-bottom: 1px solid #eee;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .search-result:hover {
-        background-color: #fafafa;
-    }
-
-    .search-result img {
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        object-fit: cover;
-    }
-
-    .search-result span {
-        font-size: 14px;
-        font-weight: 500;
-    }
-
-    /* Main content wrapper */
-    .main-content {
-        margin-left: 335px; /* sidebar (245px) + extra space (90px) for centering */
-        margin-right: auto;
-        max-width: 630px; /* Instagram-like feed width */
-        transition: margin-left 0.3s ease;
-    }
-
-    /* When search is open, shift main content to the right of search panel */
-    body.search-open .main-content {
-        margin-left: 595px; /* sidebar (245px) + search panel (350px) */
-    }
-
-    /* Ensure proper z-index for navbar */
-    .top-nav {
-        z-index: 997;
-        position: relative;
-    }
-
-    /* Hide bottom nav on desktop if sidebar is present */
-    @media (min-width: 1265px) {
-        .bottom-nav {
-            display: none;
-        }
-    }
-
-    /* Show bottom nav on mobile/tablet */
-    @media (max-width: 1264px) {
-        .sidebar {
-            display: none;
-        }
-        .search-panel {
-            left: 0;
-        }
-        .main-content {
-            margin-left: auto;
-            margin-right: auto;
-        }
-        body.search-open .main-content {
-            margin-left: 350px; /* Only search panel */
-        }
-    }
-
-    /* Mobile styles */
-    @media (max-width: 768px) {
-        .main-content {
-            max-width: 100%;
-            padding: 0 10px;
-        }
-        body.search-open .main-content {
-            margin-left: 0;
-            transform: translateX(350px);
-        }
-        .search-panel {
-            width: 350px;
-        }
-    }
-  </style>
 </head>
 <body>
   <!-- Sidebar -->
@@ -197,7 +38,7 @@
 
   <!-- Search Panel -->
   <div class="search-panel" id="search-panel">
-    <h3 style="margin-bottom: 20px; font-size: 18px;">Search</h3>
+    <h3>Search</h3>
     <input type="text" id="search-input" placeholder="Search usernames...">
     <div class="search-results" id="search-results"></div>
   </div>
@@ -213,194 +54,180 @@
       </div>
     </header>
 
-<!-- Stories Section -->
-  <section class="stories">
-    <div class="story-group">
-
-       <!-- Add story item -->
-      <div class="story-item story-add">
-        <img th:src="@{${currentUser.photo != null ? currentUser.photo : '/default.png'}}" alt="Add Story">
-        <span>+</span>
+    <!-- Stories Section -->
+    <section class="stories">
+      <div class="story-group">
+        <div class="story-item story-add" th:if="${currentUser != null}">
+          <img th:src="@{${currentUser.photo != null ? '/uploads/profile/' + currentUser.photo : '/default.png'}}" alt="Add Story">
+          <span>+</span>
+        </div>
+        <div class="story-item has-story" th:if="${currentUser != null and not #lists.isEmpty(userStories)}" th:attr="data-story-id=${userStories[0].storyId}">
+          <img th:src="@{${currentUser.photo != null ? '/uploads/profile/' + currentUser.photo : '/default.png'}}" alt="Your Story">
+          <span th:text="${currentUser.user_name}">You</span>
+        </div>
+        <div th:each="story : ${followingStories}" th:if="${currentUser != null and story != null}" class="story-item has-story" th:attr="data-story-id=${story.storyId}">
+          <img th:src="${story[7] != null ? '/uploads/profile/' + story[7] : '/default.png'}" th:alt="${story[6]}">
+          <span th:text="${story[6]}">Username</span>
+        </div>
       </div>
-      
-      <!-- Single story item if user has stories -->
-      <div class="story-item has-story" th:if="${not #lists.isEmpty(userStories)}">
-        <img th:src="@{${currentUser.photo != null ? currentUser.photo : '/default.png'}}" alt="Your Story">
-        <span th:text="${currentUser.user_name}">You</span>
+    </section>
+
+    <!-- Fullscreen Story Overlay -->
+    <div id="storyOverlay" class="story-overlay">
+      <span id="closeStoryOverlay" class="close">&times;</span>
+      <button id="storyPrev" class="story-nav">&lt;</button>
+      <div class="story-content">
+        <img id="storyImage" src="" alt="Story">
+        <video id="storyVideo" src="" controls style="display:none;"></video>
+        <div id="storyUsername"></div>
       </div>
-
-     
-
-
-     <!-- ✅ Stories of followed users -->
-<div class="story-item has-story"
-     th:each="row : ${followingStories}">
-
-  <!-- ✅ Fix image path -->
-  <img th:src="${row[7] != null ? row[7] : '/default.png'}"
-       th:alt="${row[6]}">
-
-  <!-- ✅ Username -->
-  <span th:text="${row[6]}">Username</span>
-</div>
-
+      <button id="storyNext" class="story-nav">&gt;</button>
     </div>
-  </section>
-
-  <!-- Fullscreen Story Overlay -->
-  <div id="storyOverlay" class="story-overlay" style="display:none;">
-    <span id="closeStoryOverlay" class="close">&times;</span>
-    <button id="storyPrev" class="story-nav">&lt;</button>
-    <div class="story-content">
-      <img id="storyImage" src="" alt="Story">
-      <video id="storyVideo" src="" controls style="display:none;"></video>
-      <div id="storyUsername"></div>
-    </div>
-    <button id="storyNext" class="story-nav">&gt;</button>
-  </div>
 
     <!-- Feed Section -->
     <main class="feed">
-      <!-- Post 1 -->
-      <div class="post" data-post-id="1">
-        <div class="post-header">
-          <img class="user-pic" src="/priyamvada.jpg" alt="Priyamvada">
-          <span class="username">@priyamvada</span>
-        </div>
-        <div class="post-media">
-          <div class="carousel">
-            <img class="carousel-img" src="/sunset1.jpg" alt="Sunset 1">
-            <img class="carousel-img" src="/sunset2.jpg" alt="Sunset 2">
-            <img class="carousel-img" src="/sunset3.jpg" alt="Sunset 3">
+      <div th:each="item : ${feedItems}" class="post" th:attr="data-post-id=${item.type == 'POST' ? item.content.postId : ''}, data-reel-id=${item.type == 'REEL' ? item.content.reelId : ''}">
+        <!-- Post -->
+        <div th:if="${item.type == 'POST'}">
+          <div class="post-header">
+            <img th:src="@{${postUserMap[item.content.postId].photo != null ? '/uploads/profile/' + postUserMap[item.content.postId].photo : '/default.png'}}" alt="User Photo" />
+            <span th:text="${postUserMap[item.content.postId].user_name}"></span>
           </div>
-          <button class="prev">&lt;</button>
-          <button class="next">&gt;</button>
-          <div class="carousel-indicators"></div>
-        </div>
-        <div class="post-actions">
-          <i class="fa-regular fa-heart like-btn"></i>
-          <i class="fa-regular fa-comment comment-btn" data-post-id="1"></i>
-          <i class="fa-regular fa-paper-plane"></i>
-          <div class="comment-popup" id="comment-popup-1">
-            <div class="comment-content">
-              <div class="comment-header">
-                <h3>Comments</h3>
-                <span class="close-btn">&times;</span>
+          <div class="post-media" th:if="${postMediaMap[item.content.postId] != null}">
+            <div class="carousel">
+              <div class="carousel-slide" th:each="media : ${postMediaMap[item.content.postId]}" th:if="${media != null}">
+                <img th:if="${media.type.name() == 'PHOTO'}" th:src="@{${#strings.replace(media.url, 'src/main/resources/static', '')}}" class="carousel-img" alt="Post image" />
+                <video th:if="${media.type.name() == 'VIDEO'}" class="carousel-img" controls>
+                  <source th:src="@{${#strings.replace(media.url, 'src/main/resources/static', '')}}" type="video/mp4"/>
+                </video>
               </div>
-              <div class="comment-list">
-                <div class="comment">
-                  <img src="/priyamvada.jpg" alt="Priyamvada" class="comment-user-pic">
-                  <div class="comment-text">
-                    <span class="comment-username">priyamvada</span>
-                    Nice sunset! 🌅
+            </div>
+            <button class="prev">&lt;</button>
+            <button class="next">&gt;</button>
+            <div class="carousel-indicators"></div>
+          </div>
+          <div class="post-actions">
+            <form th:action="@{/like/add}" method="post" style="display:inline;">
+              <input type="hidden" name="postId" th:value="${item.content.postId}"/>
+              <i class="fa-regular fa-heart like-btn"></i>
+            </form>
+            <i class="fa-regular fa-comment comment-btn"></i>
+            <i class="fa-regular fa-paper-plane"></i>
+            <div class="comment-popup">
+              <div class="comment-content">
+                <div class="comment-header">
+                  <h3>Comments</h3>
+                  <span class="close-btn">&times;</span>
+                </div>
+                <div class="comment-list">
+                  <div class="comment" th:each="comment : ${postCommentsMap[item.content.postId]}" th:if="${comment != null}">
+                    <div class="comment-text">
+                      <span class="comment-username" th:text="${commentUsernamesMap[comment.commentId]}"></span>
+                      <span th:text="${comment.content}"></span>
+                    </div>
                   </div>
                 </div>
-                <div class="comment">
-                  <img src="/user2.jpg" alt="User 2" class="comment-user-pic">
-                  <div class="comment-text">
-                    <span class="comment-username">user2</span>
-                    Beautiful view!
-                  </div>
+                <div class="comment-input">
+                  <form th:action="@{/comment/add}" method="post">
+                    <input type="hidden" name="postId" th:value="${item.content.postId}"/>
+                    <input type="text" name="text" placeholder="Add a comment...">
+                    <button class="post-comment">Post</button>
+                  </form>
                 </div>
-              </div>
-              <div class="comment-input">
-                <input type="text" placeholder="Add a comment...">
-                <button class="post-comment">Post</button>
               </div>
             </div>
           </div>
-        </div>
-        <div class="post-caption">
-          <span class="username">priyamvada</span> Enjoying the sunset! 🌅
-        </div>
-      </div>
-
-      <!-- Post 2 -->
-      <div class="post" data-post-id="2">
-        <div class="post-header">
-          <img class="user-pic" src="/user2.jpg" alt="User 2">
-          <span class="username">user2</span>
-        </div>
-        <div class="post-media">
-          <div class="carousel">
-            <img class="carousel-img" src="/coffee1.jpg" alt="Coffee 1">
-            <img class="carousel-img" src="/coffee2.jpg" alt="Coffee 2">
+          <div class="post-caption" th:if="${item.content.caption != null}">
+            <span class="username" th:text="${postUserMap[item.content.postId].user_name}"></span>
+            <span th:text="${item.content.caption}"></span>
           </div>
-          <button class="prev">&lt;</button>
-          <button class="next">&gt;</button>
-          <div class="carousel-indicators"></div>
+          <div class="post-meta" th:if="${postCreatedAtMap[item.content.postId] != null}">
+            <span th:text="${postLikesMap[item.content.postId] != null ? postLikesMap[item.content.postId] + ' likes' : '0 likes'}"></span>
+            <small th:text="${#dates.format(postCreatedAtMap[item.content.postId], 'dd MMM yyyy HH:mm')}"></small>
+          </div>
         </div>
-        <div class="post-actions">
-          <i class="fa-regular fa-heart like-btn"></i>
-          <i class="fa-regular fa-comment comment-btn" data-post-id="2"></i>
-          <i class="fa-regular fa-paper-plane"></i>
-          <div class="comment-popup" id="comment-popup-2">
-            <div class="comment-content">
-              <div class="comment-header">
-                <h3>Comments</h3>
-                <span class="close-btn">&times;</span>
-              </div>
-              <div class="comment-list">
-                <div class="comment">
-                  <img src="/user2.jpg" alt="User 2" class="comment-user-pic">
-                  <div class="comment-text">
-                    <span class="comment-username">user2</span>
-                    Love this coffee! ☕
+        <!-- Reel -->
+        <div th:if="${item.type == 'REEL'}">
+          <div class="post-header">
+            <img th:src="@{${reelUserMap[item.content.reelId].photo != null ? '/uploads/profile/' + reelUserMap[item.content.reelId].photo : '/default.png'}}" alt="User Photo" />
+            <span th:text="${reelUserMap[item.content.reelId].user_name}"></span>
+          </div>
+          <div class="reel-video">
+            <a th:href="@{/reels/{id}(id=${item.content.reelId})}">
+              <video th:src="@{${#strings.replace(item.content.videoFile, 'src/main/resources/static', '')}}" controls preload="metadata" onmouseover="this.play()" onmouseout="this.pause(); this.currentTime=0;"></video>
+            </a>
+          </div>
+          <div class="post-actions">
+            <form th:action="@{/reel/like}" method="post" style="display:inline;">
+              <input type="hidden" name="reelId" th:value="${item.content.reelId}"/>
+              <i class="fa-regular fa-heart like-btn"></i>
+            </form>
+            <i class="fa-regular fa-comment comment-btn"></i>
+            <i class="fa-regular fa-paper-plane"></i>
+            <div class="comment-popup">
+              <div class="comment-content">
+                <div class="comment-header">
+                  <h3>Comments</h3>
+                  <span class="close-btn">&times;</span>
+                </div>
+                <div class="comment-list">
+                  <div class="comment" th:each="comment : ${reelCommentsMap[item.content.reelId]}" th:if="${comment != null}">
+                    <div class="comment-text">
+                      <span class="comment-username" th:text="${commentUsernamesMap[comment.commentId]}"></span>
+                      <span th:text="${comment.content}"></span>
+                    </div>
                   </div>
                 </div>
-                <div class="comment">
-                  <img src="/priyamvada.jpg" alt="Priyamvada" class="comment-user-pic">
-                  <div class="comment-text">
-                    <span class="comment-username">priyamvada</span>
-                    Looks delicious!
-                  </div>
+                <div class="comment-input">
+                  <form th:action="@{/reel/comment}" method="post">
+                    <input type="hidden" name="reelId" th:value="${item.content.reelId}"/>
+                    <input type="text" name="text" placeholder="Add a comment...">
+                    <button class="post-comment">Post</button>
+                  </form>
                 </div>
-              </div>
-              <div class="comment-input">
-                <input type="text" placeholder="Add a comment...">
-                <button class="post-comment">Post</button>
               </div>
             </div>
           </div>
-        </div>
-        <div class="post-caption">
-          <span class="username">user2</span> Coffee vibes ☕
+          <div class="post-caption" th:if="${item.content.caption != null}">
+            <span class="username" th:text="${reelUserMap[item.content.reelId].user_name}"></span>
+            <span th:text="${item.content.caption}"></span>
+          </div>
+          <div class="post-meta" th:if="${reelCreatedAtMap[item.content.reelId] != null}">
+            <span th:text="${reelLikesMap[item.content.reelId] != null ? reelLikesMap[item.content.reelId] + ' likes' : '0 likes'}"></span>
+            <small th:text="${#dates.format(reelCreatedAtMap[item.content.reelId], 'dd MMM yyyy HH:mm')}"></small>
+          </div>
         </div>
       </div>
     </main>
 
-    <!-- Bottom Navbar (for mobile) -->
+    <!-- Bottom Navbar (Mobile) -->
     <nav class="bottom-nav">
-      <div class="nav-item">
-        <i class="fa-solid fa-house active"></i>
+      <div class="nav-item active">
+        <i class="fa-solid fa-house"></i>
         <span>Home</span>
       </div>
       <div class="nav-item" id="mobile-search-btn">
         <i class="fa-solid fa-magnifying-glass"></i>
         <span>Search</span>
       </div>
-
       <div class="nav-item">
         <i class="fa-solid fa-circle-plus"></i>
         <span>Create</span>
       </div>
-
       <div class="nav-item" data-link="/chat">
-        <i class="fa-regular fa-comment" ></i>
+        <i class="fa-regular fa-comment"></i>
         <span>Messages</span>
       </div>
-
       <div class="nav-item" data-link="/profile">
         <i class="fa-regular fa-user"></i>
         <span>Profile</span>
       </div>
-
       <div class="nav-item" id="more-nav">
         <i class="fa-solid fa-bars more-btn"></i>
         <span>More</span>
       </div>
     </nav>
-  </div> <!-- End of main-content -->
+  </div>
 
   <!-- More Menu Popup -->
   <div class="menu-popup" id="menu-popup">
@@ -419,11 +246,7 @@
       <div class="story-upload-header">
         <span class="close-btn" id="storyCloseBtn">&times;</span>
       </div>
-      <form id="storyForm"
-            th:action="@{/stories}"
-            action="/stories"
-            method="post"
-            enctype="multipart/form-data">
+      <form id="storyForm" th:action="@{/stories}" action="/stories" method="post" enctype="multipart/form-data">
         <div class="story-preview" id="storyPreview"></div>
         <input type="file" id="storyFile" name="storyFile" accept="image/*,video/*" style="display:none;">
         <input type="text" name="highlightTopic" placeholder="Add a caption (optional)">
@@ -437,13 +260,10 @@
   </div>
 
   <!-- JavaScript -->
-  <script>
-    // Initialize modal state on page load
+  <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', () => {
       const storyUploadModal = document.querySelector('#storyUploadModal');
-      storyUploadModal.style.display = 'none'; // Ensure modal is hidden on page load
-      
-      // Initialize search functionality
+      storyUploadModal.style.display = 'none';
       initSearch();
       initMoreMenu();
     });
@@ -459,163 +279,13 @@
     const moreBtn = document.getElementById('more-nav');
     const menuPopup = document.getElementById('menu-popup');
 
-    // Search functionality
-    function initSearch() {
-        // Toggle search panel from sidebar
-        if (searchBtn) {
-            searchBtn.addEventListener('click', () => {
-                toggleSearchPanel();
-            });
-        }
-
-        // Toggle search panel from mobile bottom nav
-        if (mobileSearchBtn) {
-            mobileSearchBtn.addEventListener('click', () => {
-                toggleSearchPanel();
-            });
-        }
-
-        // Debounce search to avoid too many requests
-        let searchTimeout;
-        searchInput.addEventListener('input', () => {
-            clearTimeout(searchTimeout);
-            const query = searchInput.value.trim();
-            
-            if (query === "") {
-                searchResults.innerHTML = "";
-                return;
-            }
-            
-            searchTimeout = setTimeout(() => {
-                performSearch(query);
-            }, 300);
-        });
-
-        // Close search panel when clicking outside
-        document.addEventListener('click', (event) => {
-            if (!searchPanel.contains(event.target) && 
-                !searchBtn?.contains(event.target) && 
-                !mobileSearchBtn?.contains(event.target)) {
-                closeSearchPanel();
-            }
-        });
-    }
-
-    // More menu functionality
-    function initMoreMenu() {
-        if (moreBtn) {
-            moreBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                menuPopup.classList.toggle('active');
-            });
-        }
-
-        // Close menu when clicking outside
-        document.addEventListener('click', () => {
-            menuPopup.classList.remove('active');
-        });
-    }
-
-    function toggleSearchPanel() {
-        if (searchPanel.style.display === "flex") {
-            closeSearchPanel();
-        } else {
-            openSearchPanel();
-        }
-    }
-
-    function openSearchPanel() {
-        searchPanel.style.display = "flex";
-        document.body.classList.add("search-open");
-        searchInput.focus();
-    }
-
-    function closeSearchPanel() {
-        searchPanel.style.display = "none";
-        document.body.classList.remove("search-open");
-    }
-
-    function performSearch(query) {
-        searchResults.innerHTML = "<div style='padding: 10px; text-align: center; color: #8e8e8e;'>Searching...</div>";
-        
-        fetch(`/search/users?q=${encodeURIComponent(query)}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                displaySearchResults(data);
-            })
-            .catch(error => {
-                console.error('Search error:', error);
-                searchResults.innerHTML = `
-                    <div style='padding: 10px; text-align: center; color: #8e8e8e;'>
-                        Error searching users. Please try again.
-                    </div>
-                `;
-            });
-    }
-
-    function displaySearchResults(users) {
-        searchResults.innerHTML = "";
-        
-        if (!users || users.length === 0) {
-            searchResults.innerHTML = "<div style='padding: 10px; text-align: center; color: #8e8e8e;'>No users found</div>";
-            return;
-        }
-        
-        users.forEach(user => {
-            const resultDiv = document.createElement("div");
-            resultDiv.className = "search-result";
-            
-            const profilePicUrl = user.photo ? 
-                `/uploads/profile/${user.photo}` : 
-                '/uploads/default_dp.jpg';
-            
-            resultDiv.innerHTML = `
-                <img src="${profilePicUrl}" alt="${user.user_name}" 
-                     onerror="this.src='/uploads/default_dp.jpg'">
-                <div>
-                    <strong>${user.user_name}</strong>
-                    <div style="font-size: 12px; color: #8e8e8e;">
-                        ${user.first_name} ${user.last_name}
-                    </div>
-                </div>
-            `;
-            
-            // Redirect to user profile when clicked
-            resultDiv.addEventListener('click', () => {
-    fetch(`/follow/status/${user.user_id}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.isFollowing) {
-                window.location.href = `/profile/${user.user_id}`;
-            } else {
-                window.location.href = `/user/${user.user_id}`;
-            }
-        })
-        .catch(error => {
-            console.error("Error checking follow status:", error);
-            window.location.href = `/user/${user.user_id}`; // fallback
-        });
-});
-
-            
-            searchResults.appendChild(resultDiv);
-        });
-    }
-
-    // Rest of your existing JavaScript remains the same...
-    // (Like button functionality, carousel, etc.)
+    // Like and other interactive elements
     const likes = document.querySelectorAll('.like-btn');
     const navItems = document.querySelectorAll('.nav-item');
     const commentBtns = document.querySelectorAll('.comment-btn');
     const popups = document.querySelectorAll('.comment-popup');
     const closeBtns = document.querySelectorAll('.close-btn');
     const postMedias = document.querySelectorAll('.post-media');
-    const storyUploadModal = document.querySelector('#storyUploadModal');
     const storyFileInput = document.querySelector('#storyFile');
     const addStoryBtn = document.querySelector('#addStoryBtn');
     const storyPreview = document.querySelector('#storyPreview');
@@ -627,37 +297,37 @@
         like.classList.toggle('liked');
         like.classList.toggle('fa-regular');
         like.classList.toggle('fa-solid');
+        if (like.closest('form')) {
+          like.closest('form').submit();
+        }
       });
     });
 
-    // Bottom nav active state
+    // Navigation active state
     navItems.forEach(item => {
-      const link = item.getAttribute('data-link'); // get link once
+      const link = item.getAttribute('data-link');
       item.addEventListener('click', () => {
         navItems.forEach(i => i.classList.remove('active'));
         item.classList.add('active');
-
-        if (link) {
-          window.location.href = link; // navigate if link exists
-        }
+        if (link) window.location.href = link;
       });
     });
 
     // Carousel functionality
     postMedias.forEach(media => {
       const carousel = media.querySelector('.carousel');
-      const images = carousel.querySelectorAll('.carousel-img');
+      const slides = carousel.querySelectorAll('.carousel-slide');
       const prevBtn = media.querySelector('.prev');
       const nextBtn = media.querySelector('.next');
       const indicatorsContainer = media.querySelector('.carousel-indicators');
 
-      if (images.length <= 1) {
+      if (slides.length <= 1) {
         prevBtn.style.display = 'none';
         nextBtn.style.display = 'none';
         return;
       }
 
-      images.forEach((_, index) => {
+      slides.forEach((_, index) => {
         const dot = document.createElement('span');
         dot.classList.add('dot');
         if (index === 0) dot.classList.add('active');
@@ -671,7 +341,7 @@
         carousel.style.transform = `translateX(-${currentIndex * 100}%)`;
         dots.forEach((dot, idx) => dot.classList.toggle('active', idx === currentIndex));
         prevBtn.style.display = currentIndex === 0 ? 'none' : 'block';
-        nextBtn.style.display = currentIndex === images.length - 1 ? 'none' : 'block';
+        nextBtn.style.display = currentIndex === slides.length - 1 ? 'none' : 'block';
       }
 
       prevBtn.addEventListener('click', () => {
@@ -682,7 +352,7 @@
       });
 
       nextBtn.addEventListener('click', () => {
-        if (currentIndex < images.length - 1) {
+        if (currentIndex < slides.length - 1) {
           currentIndex++;
           updateCarousel();
         }
@@ -692,10 +362,10 @@
     });
 
     // Comment popup toggle
-    commentBtns.forEach((btn, index) => {
+    commentBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         popups.forEach(popup => popup.classList.remove('active'));
-        const popup = popups[index];
+        const popup = btn.closest('.post-actions').querySelector('.comment-popup');
         popup.classList.add('active');
         const rect = popup.getBoundingClientRect();
         if (rect.right > window.innerWidth) {
@@ -712,7 +382,7 @@
     });
 
     // Story upload functionality
-    document.querySelectorAll('.story-add-btn').forEach(btn => {
+    document.querySelectorAll('.story-add').forEach(btn => {
       btn.addEventListener('click', () => {
         storyUploadModal.style.display = 'flex';
       });
@@ -728,7 +398,10 @@
       }
     });
 
-    storyCloseBtn.addEventListener('click', closeStoryModal);
+    storyCloseBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      closeStoryModal();
+    });
 
     window.addEventListener('click', (event) => {
       if (event.target === storyUploadModal) closeStoryModal();
@@ -740,90 +413,193 @@
       storyFileInput.value = '';
     }
 
-    /* Merge current user stories and following users' stories */
-  let allStories = [];
+    // Story overlay logic
+    let allStories = [];
+    let userStories = /*[[${userStories}]]*/ [];
+    let currentUser = /*[[${currentUser}]]*/ {};
 
-  /* Current user's stories */
-  let userStories = /*[[${userStories}]]*/ [];
-  let currentUser = /*[[${currentUser}]]*/ {};
-
-  userStories.forEach(story => {
-    allStories.push({
-      mediaFile: story.mediaFile,
-      userName: currentUser.user_name
+    userStories.forEach(story => {
+      allStories.push({
+        storyId: story.storyId,
+        mediaFile: story.mediaFile,
+        userName: currentUser.user_name
+      });
     });
-  });
 
-  /* Following users' stories */
-  let followingStories = /*[[${followingStories}]]*/ [];
-  followingStories.forEach(row => {
-    allStories.push({
-      mediaFile: row[1],   // mediaFile
-      userName: row[6]     // userName
+    let followingStories = /*[[${followingStories}]]*/ [];
+    followingStories.forEach(story => {
+      allStories.push({
+        storyId: story.storyId,
+        mediaFile: story.mediaFile,
+        userName: story[6]
+      });
     });
-  });
 
-  let currentStoryIndex = 0;
+    let currentStoryIndex = 0;
 
-  /* Add click listener to all story items */
-  document.querySelectorAll('.story-item.has-story').forEach((storyDiv, index) => {
-    storyDiv.addEventListener('click', () => {
-      currentStoryIndex = index; // Set index based on clicked story
-      showStory(currentStoryIndex);
-      document.getElementById('storyOverlay').style.display = 'flex';
+    document.querySelectorAll('.story-item.has-story').forEach((storyDiv) => {
+      const storyId = storyDiv.getAttribute('data-story-id');
+      storyDiv.addEventListener('click', () => {
+        const story = allStories.find(s => s.storyId === parseInt(storyId));
+        if (story) {
+          currentStoryIndex = allStories.indexOf(story);
+          showStory(currentStoryIndex);
+          document.getElementById('storyOverlay').style.display = 'flex';
+        }
+      });
     });
-  });
 
-  function showStory(index) {
-    const story = allStories[index];
-    const storyImage = document.getElementById('storyImage');
-    const storyVideo = document.getElementById('storyVideo');
-    const storyUsername = document.getElementById('storyUsername');
-    const overlay = document.getElementById('storyOverlay');
+    function showStory(index) {
+      const story = allStories[index];
+      const storyImage = document.getElementById('storyImage');
+      const storyVideo = document.getElementById('storyVideo');
+      const storyUsername = document.getElementById('storyUsername');
+      const overlay = document.getElementById('storyOverlay');
 
-    if (!story || !story.mediaFile) {
-      overlay.style.display = 'none';
-      return;
+      if (!story || !story.mediaFile) {
+        overlay.style.display = 'none';
+        return;
+      }
+
+      storyUsername.textContent = story.userName;
+      overlay.style.display = 'flex';
+
+      if (story.mediaFile.endsWith('.mp4')) {
+        storyVideo.src = story.mediaFile;
+        storyVideo.style.display = 'block';
+        storyImage.style.display = 'none';
+        storyVideo.play();
+      } else {
+        storyImage.src = story.mediaFile;
+        storyImage.style.display = 'block';
+        storyVideo.style.display = 'none';
+        storyVideo.pause();
+        storyVideo.src = '';
+      }
     }
 
-    storyUsername.textContent = story.userName;
-    overlay.style.display = 'flex';
+    document.getElementById('storyNext').addEventListener('click', () => {
+      if (currentStoryIndex < allStories.length - 1) {
+        currentStoryIndex++;
+        showStory(currentStoryIndex);
+      }
+    });
 
-    if (story.mediaFile.endsWith('.mp4')) {
-      storyVideo.src = story.mediaFile;
-      storyVideo.style.display = 'block';
-      storyImage.style.display = 'none';
-      storyVideo.play();
-    } else {
-      storyImage.src = story.mediaFile;
-      storyImage.style.display = 'block';
-      storyVideo.style.display = 'none';
+    document.getElementById('storyPrev').addEventListener('click', () => {
+      if (currentStoryIndex > 0) {
+        currentStoryIndex--;
+        showStory(currentStoryIndex);
+      }
+    });
+
+    document.getElementById('closeStoryOverlay').addEventListener('click', () => {
+      const overlay = document.getElementById('storyOverlay');
+      overlay.style.display = 'none';
+      const storyVideo = document.getElementById('storyVideo');
       storyVideo.pause();
       storyVideo.src = '';
-    }
-  }
+    });
 
-  document.getElementById('storyNext').addEventListener('click', () => {
-    if (currentStoryIndex < allStories.length - 1) {
-      currentStoryIndex++;
-      showStory(currentStoryIndex);
-    }
-  });
+    // Search functionality
+    function initSearch() {
+      if (searchBtn) {
+        searchBtn.addEventListener('click', () => toggleSearchPanel());
+      }
+      if (mobileSearchBtn) {
+        mobileSearchBtn.addEventListener('click', () => toggleSearchPanel());
+      }
 
-  document.getElementById('storyPrev').addEventListener('click', () => {
-    if (currentStoryIndex > 0) {
-      currentStoryIndex--;
-      showStory(currentStoryIndex);
-    }
-  });
+      let searchTimeout;
+      searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        const query = searchInput.value.trim();
+        if (query === "") {
+          searchResults.innerHTML = "";
+          return;
+        }
+        searchTimeout = setTimeout(() => performSearch(query), 300);
+      });
 
-  document.getElementById('closeStoryOverlay').addEventListener('click', () => {
-    const overlay = document.getElementById('storyOverlay');
-    overlay.style.display = 'none';
-    const storyVideo = document.getElementById('storyVideo');
-    storyVideo.pause();
-    storyVideo.src = '';
-  });
+      document.addEventListener('click', (event) => {
+        if (!searchPanel.contains(event.target) && !searchBtn?.contains(event.target) && !mobileSearchBtn?.contains(event.target)) {
+          closeSearchPanel();
+        }
+      });
+    }
+
+    function toggleSearchPanel() {
+      searchPanel.style.display = searchPanel.style.display === 'flex' ? 'none' : 'flex';
+      document.body.classList.toggle('search-open');
+      if (searchPanel.style.display === 'flex') searchInput.focus();
+    }
+
+    function closeSearchPanel() {
+      searchPanel.style.display = 'none';
+      document.body.classList.remove('search-open');
+    }
+
+    function performSearch(query) {
+      searchResults.innerHTML = "<div style='padding: 10px; text-align: center; color: #8e8e8e;'>Searching...</div>";
+      fetch(`/search/users?q=${encodeURIComponent(query)}`)
+        .then(response => {
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          return response.json();
+        })
+        .then(data => displaySearchResults(data))
+        .catch(error => {
+          console.error('Search error:', error);
+          searchResults.innerHTML = `
+            <div style='padding: 10px; text-align: center; color: #8e8e8e;'>
+              Error searching users. Please try again.
+            </div>
+          `;
+        });
+    }
+
+    function displaySearchResults(users) {
+      searchResults.innerHTML = "";
+      if (!users || users.length === 0) {
+        searchResults.innerHTML = "<div style='padding: 10px; text-align: center; color: #8e8e8e;'>No users found</div>";
+        return;
+      }
+      users.forEach(user => {
+        const resultDiv = document.createElement("div");
+        resultDiv.className = "search-result";
+        const profilePicUrl = user.photo ? `/uploads/profile/${user.photo}` : '/uploads/default_dp.jpg';
+        resultDiv.innerHTML = `
+          <img src="${profilePicUrl}" alt="${user.user_name}" onerror="this.src='/uploads/default_dp.jpg'">
+          <div>
+            <strong>${user.user_name}</strong>
+            <div style="font-size: 12px; color: #8e8e8e;">
+              ${user.first_name} ${user.last_name}
+            </div>
+          </div>
+        `;
+        resultDiv.addEventListener('click', () => {
+          fetch(`/follow/status/${user.user_id}`)
+            .then(response => response.json())
+            .then(data => {
+              window.location.href = data.isFollowing ? `/profile/${user.user_id}` : `/user/${user.user_id}`;
+            })
+            .catch(error => {
+              console.error("Error checking follow status:", error);
+              window.location.href = `/user/${user.user_id}`;
+            });
+        });
+        searchResults.appendChild(resultDiv);
+      });
+    }
+
+    // More menu functionality
+    function initMoreMenu() {
+      if (moreBtn) {
+        moreBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          menuPopup.classList.toggle('active');
+        });
+      }
+      document.addEventListener('click', () => menuPopup.classList.remove('active'));
+    }
   </script>
 </body>
 </html>
