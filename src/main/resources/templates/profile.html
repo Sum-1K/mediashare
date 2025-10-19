@@ -317,16 +317,15 @@
 
         <!-- Posts Grid -->
         <div class="posts-grid">
-            <div class="post" th:each="post : ${posts}">
-                <a th:href="@{/post/{id}(id=${post.postId})}">
-                    <div th:each="media : ${postMediaMap[post.postId]}">
-                        <img th:if="${media.type.name() == 'PHOTO'}"
-                            th:src="@{${media.url}}"
-                            th:alt="${post.caption}" />
-                    </div>
-                </a>
-            </div>
-        </div>
+    <div class="post" th:each="post : ${posts}">
+        <a th:href="@{/post/{id}(id=${post.postId})}">
+            <img th:if="${postMediaMap[post.postId] != null and !postMediaMap[post.postId].isEmpty()}"
+                 th:src="@{${postMediaMap[post.postId][0].url}}"
+                 th:alt="${post.caption}" />
+        </a>
+    </div>
+</div>
+
 
         <!-- Reels Grid -->
         <!-- <h2 style="margin: 20px 0; font-size: 20px;">Reels</h2>
