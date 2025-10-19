@@ -9,8 +9,15 @@
         body { font-family: Arial, sans-serif; background: #fafafa; margin: 0; padding: 0; }
         h1 { text-align: center; margin: 20px 0; }
         .posts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
-        .post { width: 100%; padding-top: 100%; position: relative; background-color: #fff; border: 1px solid #dbdbdb; }
-        .post img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+        .post { width: 100%; padding-top: 100%; position: relative; background-color: #fff; border: 1px solid #dbdbdb; overflow: hidden; }
+        .post img, .post video { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+        }
 
         @media (max-width: 768px) {
             .posts-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -25,16 +32,23 @@
     <p>No saved posts yet.</p>
 </div>
 
-<!-- Posts Grid -->
+<!-- ✅ Fixed Posts Grid -->
 <div class="posts-grid" th:if="${!#lists.isEmpty(posts)}">
     <div class="post" th:each="post : ${posts}">
         <a th:href="@{/post/{id}(id=${post.postId})}">
-            <div th:each="media : ${postMediaMap[post.postId]}">
-                <img th:src="@{${#strings.replace(media.url, 'src/main/resources/static', '')}}" 
-     th:alt="${post.caption}" />
-<video th:if="${media.type.name() == 'VIDEO'}" controls>
-    <source th:src="@{${#strings.replace(media.url, 'src/main/resources/static', '')}}" type="video/mp4"/>
-</video>
+            <!-- Only show the first media item -->
+            <div th:if="${postMediaMap[post.postId] != null and !postMediaMap[post.postId].isEmpty()}">
+                
+                <!-- If first media is an image -->
+                <img th:if="${postMediaMap[post.postId][0].type.name() == 'PHOTO'}"
+                     th:src="@{${#strings.replace(postMediaMap[post.postId][0].url, 'src/main/resources/static', '')}}"
+                     th:alt="${post.caption}" />
+
+                <!-- If first media is a video -->
+                <video th:if="${postMediaMap[post.postId][0].type.name() == 'VIDEO'}" muted playsinline>
+                    <source th:src="@{${#strings.replace(postMediaMap[post.postId][0].url, 'src/main/resources/static', '')}}" type="video/mp4"/>
+                </video>
+
             </div>
         </a>
     </div>
