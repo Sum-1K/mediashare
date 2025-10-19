@@ -65,7 +65,7 @@
           <img th:src="@{${currentUser.photo != null ? '/uploads/profile/' + currentUser.photo : '/default.png'}}" alt="Your Story">
           <span th:text="${currentUser.user_name}">You</span>
         </div>
-        <div th:each="story : ${followingStories}" th:if="${currentUser != null and story != null}" class="story-item has-story" th:attr="data-story-id=${story.storyId}">
+        <div th:each="story : ${followingStories}" th:if="${currentUser != null and story != null}" class="story-item has-story" th:attr="data-story-id=${story[0]}">
           <img th:src="${story[7] != null ? '/uploads/profile/' + story[7] : '/default.png'}" th:alt="${story[6]}">
           <span th:text="${story[6]}">Username</span>
         </div>
