@@ -91,6 +91,11 @@ public class User {
     private LocalDateTime join_date;
     private String password;
 
+    // ✅ Default constructor
+    public User() {
+        this.privacy = Privacy.PUBLIC; // default to PUBLIC
+    }
+
     // Getters & setters
     public Long getUser_id() { return user_id; }
     public void setUser_id(Long user_id) { this.user_id = user_id; }

@@ -121,16 +121,22 @@
 
         <div class="likes">
             <span th:text="${likesCount}">0</span> likes
-            <form th:action="@{/like/add}" method="post" style="display:inline;">
-        <input type="hidden" name="postId" th:value="${post.postId}"/>
+            <form th:action="@{/like/toggle}" method="post" style="display:inline;">
+            <input type="hidden" name="contentId" th:value="${post.postId}"/>
+            <input type="hidden" name="type" value="post" />
         <button type="submit">❤️ Like</button>
     </form>
         </div>
 
+        <div class="save-post" style="margin-bottom: 20px;">
+            <button id="saveBtn">💾 Save</button>
+        </div>
+
+
         <div class="comments">
             <div class="comment" th:each="comment : ${comments}">
                 <b th:text="${comment.username}"></b>
-                <span th:text="${comment.text}"></span>
+                <span th:text="${comment.content}"></span>
             </div>
         </div>
 
@@ -149,6 +155,104 @@ function scrollMedia(direction) {
     scrollBox.scrollBy({ left: direction * itemWidth, behavior: 'smooth' });
 }
 </script>
+
+<!-- <script th:inline="javascript">
+document.addEventListener("DOMContentLoaded", () => {
+    const saveBtn = document.getElementById("saveBtn");
+    const postId = /*[[${post.postId}]]*/ '0';
+    console.log("Post ID:", postId);
+
+    fetch(`/saved/status?postId=${postId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.saved) saveBtn.textContent = "✅ Saved";
+        });
+
+    saveBtn.addEventListener("click", () => {
+        const action = saveBtn.textContent === "💾 Save" ? "save" : "unsave";
+
+        fetch(`/saved/${action}/${postId}`, {  // ✅ URL changed to match @PathVariable {postId}
+    method: "POST"
+})
+.then(res => res.json())
+.then(data => {
+    if (data.success) {                   // ✅ now checks JSON success field
+        saveBtn.textContent = action === "save" ? "✅ Saved" : "💾 Save"; // ✅ updated text
+    } else {
+        alert(data.message);              // ✅ display JSON message
+    }
+})
+
+        .catch(err => console.error(err));
+    });
+});
+</script> -->
+
+<script th:inline="javascript">
+document.addEventListener("DOMContentLoaded", () => {
+    const saveBtn = document.getElementById("saveBtn");
+    const postId = /*[[${post.postId}]]*/ '0';
+    console.log("Post ID:", postId);
+
+    // ✅ Step 1: Check current save status
+    fetch(`/saved/status?postId=${postId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.saved) {
+                saveBtn.textContent = "✅ Saved";
+            } else {
+                saveBtn.textContent = "💾 Save";
+            }
+        });
+
+    // // ✅ Step 2: Toggle save/unsave
+    // saveBtn.addEventListener("click", () => {
+    //     const isSaved = saveBtn.textContent === "✅ Saved";
+    //     const action = isSaved ? "unsave" : "save";
+
+    //     fetch(`/saved/${action}/${postId}`, {
+    //         method: "POST"
+    //     })
+    //     .then(res => res.json())
+    //     .then(data => {
+    //         if (data.success) {
+    //             saveBtn.textContent = action === "save" ? "✅ Saved" : "💾 Save";
+    //         } else {
+    //             alert(data.message);
+    //         }
+    //     })
+    //     .catch(err => console.error(err));
+    // });
+
+    // ✅ Step 2: Toggle save/unsave
+saveBtn.addEventListener("click", () => {
+    const isSaved = saveBtn.textContent === "✅ Saved";
+    const action = isSaved ? "unsave" : "save";
+
+    fetch(`/saved/${action}/${postId}`, {
+        method: "POST"
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            if (action === "save") {
+                saveBtn.textContent = "✅ Saved";
+            } else {
+                saveBtn.textContent = "💾 Save";
+                // Redirect to saved posts to see updated list
+                window.location.href = "/saved/my";
+            }
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(err => console.error(err));
+});
+
+});
+</script>
+
+
 
 </body>
 </html>

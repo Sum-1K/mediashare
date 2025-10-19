@@ -22,6 +22,7 @@ import com.example.demo.dao.LikeDao;
 import com.example.demo.dao.MediaDao;
 import com.example.demo.dao.PostDao;
 import com.example.demo.model.Comment;
+import com.example.demo.dto.CommentDTO;
 import com.example.demo.model.Content;
 import com.example.demo.model.Media;
 import com.example.demo.model.Media.MediaType;
@@ -50,8 +51,8 @@ public class PostController {
 
     @PostMapping("/posts")
     public String uploadPost(@RequestParam("mediaFiles") List<MultipartFile> mediaFiles,
-                             @RequestParam(required = false) String caption,
-                             HttpSession session) {
+                            @RequestParam(required = false) String caption,
+                            HttpSession session) {
 
         try {
             // 1️⃣ Get logged-in user
@@ -115,7 +116,7 @@ public class PostController {
     }
 
     @GetMapping("/post/{id}")
-public String viewPost(@PathVariable Long id, Model model) {
+    public String viewPost(@PathVariable Long id, Model model) {
     Post post = postDao.findById(id);
     if (post == null) {
         throw new RuntimeException("Post not found");
@@ -128,7 +129,9 @@ public String viewPost(@PathVariable Long id, Model model) {
     // Get number of likes for this post
     int likesCount = likeDao.countByContentId(post.getPostId());
 
-    List<Comment> comments = commentDao.findByContentId(id);
+    List<CommentDTO> comments = commentDao.findWithUsernameByContentId(id);
+    model.addAttribute("comments", comments);
+
 
     model.addAttribute("post", post);
     model.addAttribute("mediaList", mediaList); // ✅ add this line

@@ -1,17 +1,29 @@
 package com.example.demo.controller;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+
+import com.example.demo.dao.FollowDao;
 import com.example.demo.model.User;
 import com.example.demo.service.FollowService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RequestParam;
+
+
+import com.example.demo.dao.UserDao;
+import com.example.demo.model.User;
+import com.example.demo.service.FollowService;
 
 import jakarta.servlet.http.HttpSession;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Controller
 @RequestMapping("/follow")
@@ -21,7 +33,13 @@ public class FollowController {
     private FollowService followService;
 
     @Autowired
+    private FollowDao followDao;
+
+    @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private UserDao userDao;
     
     @PostMapping("/{userId}")
     @ResponseBody
@@ -179,12 +197,14 @@ public class FollowController {
             boolean hasPendingRequest = followService.hasPendingRequest(currentUser.getUser_id(), userId);
             int followerCount = followService.getFollowerCount(userId);
             int followingCount = followService.getFollowingCount(userId);
+            User.Privacy privacy = userDao.getPrivacy(userId);
             
             response.put("success", true);
             response.put("isFollowing", isFollowing);
             response.put("hasPendingRequest", hasPendingRequest);
             response.put("followerCount", followerCount);
             response.put("followingCount", followingCount);
+            response.put("privacy", privacy.name());
         } catch (Exception e) {
             e.printStackTrace();
             response.put("success", false);
@@ -222,4 +242,20 @@ public class FollowController {
             return "Error: " + e.getMessage();
         }
     }
+
+    @GetMapping("/users")
+    @ResponseBody
+    public List<User> searchUsers(
+            @RequestParam String prefix,
+            HttpSession session
+    ) {
+        // Get current logged-in user from session
+        User loggedInUser = (User) session.getAttribute("loggedInUser");
+        if (loggedInUser == null) {
+            throw new RuntimeException("User not logged in");
+        }
+
+        Long userId = loggedInUser.getUser_id();
+        return followDao.searchFollowersAndFollowees(userId, prefix);
+    }  
 }

@@ -39,9 +39,10 @@
 
 
         <div class="setting-item">
-            <span class="setting-label">Saved</span>
-            <a href="#" class="link">View Saved</a>
-        </div>
+    <span class="setting-label">Saved</span>
+    <a th:href="@{/saved/my}" class="link">View Saved</a>
+</div>
+
 
         <div class="setting-item">
             <span class="setting-label">Story Archive Enabled</span>
@@ -65,16 +66,20 @@
         </div>
 
         <div class="setting-item">
-            <span class="setting-label">Account Privacy</span>
-            <div class="radio-group">
-                <label>
-                    <input type="radio" name="privacy" checked> Private
-                </label>
-                <label>
-                    <input type="radio" name="privacy"> Public
-                </label>
-            </div>
-        </div>
+  <span class="setting-label">Account Privacy</span>
+  <div class="radio-group">
+    <label>
+  <input type="radio" name="privacy" value="PRIVATE"
+         th:checked="${user.privacy == T(com.example.demo.model.User.Privacy).PRIVATE}"> Private
+</label>
+<label>
+  <input type="radio" name="privacy" value="PUBLIC"
+         th:checked="${user.privacy == T(com.example.demo.model.User.Privacy).PUBLIC}"> Public
+</label>
+
+  </div>
+</div>
+
 
         <div class="setting-item">
             <span class="setting-label">Close Friends</span>
@@ -210,6 +215,29 @@
                 popup.classList.remove('active');
             }
         });
-    </script>
+
+document.querySelectorAll('input[name="privacy"]').forEach(radio => {
+  radio.addEventListener('change', function() {
+    const selected = this.value; // now directly PRIVATE or PUBLIC
+
+    fetch('/settings/updatePrivacy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `privacy=${selected}`
+    })
+    .then(res => res.text())
+    .then(data => {
+      if (data === 'SUCCESS') {
+        alert(`Privacy updated to ${selected}`);
+      } else {
+        alert('Error updating privacy. Please try again.');
+      }
+    })
+    .catch(err => console.error('Privacy update failed:', err));
+  });
+});
+
+</script>
+
 </body>
 </html>

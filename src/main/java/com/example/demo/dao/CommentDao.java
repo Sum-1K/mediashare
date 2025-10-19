@@ -3,6 +3,7 @@ package com.example.demo.dao;
 import com.example.demo.model.Comment;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import com.example.demo.dto.CommentDTO;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,7 +19,7 @@ public class CommentDao extends BaseDao<Comment, Long> {
     }
 
     @Override
-    protected String getIdColumn() {
+    protected String getIdColumn() { 
         return "comment_id";
     }
 
@@ -40,13 +41,13 @@ public class CommentDao extends BaseDao<Comment, Long> {
 
     // Insert
     public int insert(Comment comment) {
-        String sql = "INSERT INTO comment (content, created_at, user_id, content_id) VALUES (?, ?, ?, ?)";
-        return jdbcTemplate.update(sql,
-                comment.getContent(),
-                Timestamp.valueOf(comment.getCreatedAt()),
-                comment.getUserId(),
-                comment.getContentId());
-    }
+    String sql = "INSERT INTO \"comment\" (content, created_at, content_id, user_id) VALUES (?, ?, ?, ?)";
+    return jdbcTemplate.update(sql,
+            comment.getContent(),
+            Timestamp.valueOf(comment.getCreatedAt()),
+            comment.getContentId(),
+            comment.getUserId());
+}
 
     // Update
     public int update(Comment comment) {
@@ -68,5 +69,25 @@ public class CommentDao extends BaseDao<Comment, Long> {
     public List<Comment> findByContentId(Long contentId) {
         String sql = "SELECT * FROM comment WHERE content_id = ?";
         return jdbcTemplate.query(sql, getRowMapper(), contentId);
+    }
+
+    // Fetch comments joined with usernames
+    public List<CommentDTO> findWithUsernameByContentId(Long contentId) {
+        String sql = """
+            SELECT c.comment_id, c.content, c.created_at, c.content_id, c.user_id, u.user_name AS username
+            FROM comment c
+            JOIN users u ON c.user_id = u.user_id
+            WHERE c.content_id = ?
+            ORDER BY c.created_at DESC
+        """;
+
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new CommentDTO(
+                rs.getLong("comment_id"),
+                rs.getString("content"),
+                rs.getTimestamp("created_at").toLocalDateTime(),
+                rs.getLong("content_id"),
+                rs.getLong("user_id"),
+                rs.getString("username")
+        ), contentId);
     }
 }

@@ -17,9 +17,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.example.demo.dao.FollowDao;
 import com.example.demo.dao.FollowRequestDao;
 import com.example.demo.dao.PostDao;
+import com.example.demo.dao.ReelDao;
+import com.example.demo.dao.MediaDao;
 import com.example.demo.dao.UserDao;
 import com.example.demo.model.User;
 import com.example.demo.service.FollowService;
+
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+import com.example.demo.model.Media;
+import com.example.demo.model.Post;
+import com.example.demo.model.Reel;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -40,6 +49,12 @@ public class UserController {
 
     @Autowired
     private PostDao postDao;
+
+    @Autowired
+    private MediaDao mediaDao;
+
+    @Autowired
+    private ReelDao reelDao;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -117,17 +132,39 @@ public class UserController {
         
         // Get post count for the profile user
         int postCount = postDao.countByUserId(userId);
-        
+        int reelCount = reelDao.countByUserId(userId); // get reel count too (ReelDao has this method)
+
         // Get follower and following counts
         int followerCount = followDao.getFollowerCount(userId);
         int followingCount = followDao.getFollowingCount(userId);
         
+        // Fetch posts by this profile user
+        List<Post> posts = postDao.findByUserId(userId);
+
+        // Build post -> media map (so template can show thumbnails)
+        Map<Long, List<Media>> postMediaMap = new HashMap<>();
+        for (Post post : posts) {
+            List<Media> mediaList = mediaDao.findByPostId(post.getPostId());
+            // convert filesystem path to web path (same as PageController)
+            for (Media media : mediaList) {
+                String fileName = Paths.get(media.getUrl()).getFileName().toString();
+                media.setUrl("/uploads/" + fileName);
+            }
+            postMediaMap.put(post.getPostId(), mediaList);
+        }
+
+        // Fetch reels by this profile user
+        List<Reel> reels = reelDao.findByUserId(userId);
+
         model.addAttribute("user", profileUser);
         model.addAttribute("currentUser", currentUser);
-        model.addAttribute("postCount", postCount);
+        model.addAttribute("postCount", postCount + reelCount); // total items (posts + reels)
         model.addAttribute("followers", followerCount);
         model.addAttribute("following", followingCount);
-        
+        model.addAttribute("posts", posts);
+        model.addAttribute("postMediaMap", postMediaMap);
+        model.addAttribute("reels", reels);
+                
         return "profile";
     }
 
@@ -143,7 +180,7 @@ public class UserController {
     // ✅ Search users
     @GetMapping("/search")
     public String searchUsers(@RequestParam(value = "query", required = false) String query, 
-                             HttpSession session, Model model) {
+                            HttpSession session, Model model) {
         User currentUser = (User) session.getAttribute("loggedInUser");
         if (currentUser == null) {
             return "redirect:/users/login";

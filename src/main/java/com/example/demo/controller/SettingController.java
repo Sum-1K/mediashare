@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dao.UserDao;
@@ -66,5 +67,33 @@ public String updateProfilePic(@RequestParam("profilePic") MultipartFile file,
 
     return "redirect:/profile";
 }
+
+@PostMapping("/updatePrivacy")
+@ResponseBody
+public String updatePrivacy(@RequestParam("privacy") String privacy, HttpSession session) {
+    try {
+        // Get the logged-in user from session
+        User user = (User) session.getAttribute("loggedInUser");
+        if (user == null) {
+            return "ERROR: User not logged in";
+        }
+
+        // Convert to enum
+        User.Privacy privacyEnum = User.Privacy.valueOf(privacy.toUpperCase());
+
+        // Update in DB
+        userDao.updatePrivacy(user.getUser_id(), privacyEnum);
+
+        // Update session object
+        user.setPrivacy(privacyEnum);
+        session.setAttribute("loggedInUser", user);
+
+        return "SUCCESS";
+    } catch (Exception e) {
+        e.printStackTrace();
+        return "ERROR: " + e.getMessage();
+    }
+}
+
 
 }
