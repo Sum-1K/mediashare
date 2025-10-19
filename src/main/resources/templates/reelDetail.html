@@ -115,7 +115,7 @@
     <!-- Reel video -->
     <div class="reel-video">
         <video controls>
-            <source th:src="@{'/uploads/' + ${#strings.substringAfter(reel.videoFile, '/uploads/')}}" type="video/mp4">
+             <source th:src="@{'/uploads/' + ${reel.videoFile}}" type="video/mp4">
             Your browser does not support the video tag.
         </video>
     </div>
@@ -127,9 +127,8 @@
 
             <div class="likes">
                 <span th:text="${likesCount}">0</span> likes
-                <form th:action="@{/like/toggle}" method="post" style="display:inline;">
-                    <input type="hidden" name="contentId" th:value="${reel.reelId}"/>
-                    <input type="hidden" name="type" value="reel" />
+                <form th:action="@{/reel/like}" method="post" style="display:inline;">
+                    <input type="hidden" name="reelId" th:value="${reel.reelId}"/>
                     <button type="submit">❤️ Like</button>
                 </form>
             </div>
@@ -137,12 +136,12 @@
             <div class="comments">
                 <div class="comment" th:each="comment : ${comments}">
                     <b th:text="${comment.username}"></b>:
-                    <span th:text="${comment.content}"></span>
+                    <span th:text="${comment.text}"></span>
                 </div>
             </div>
         </div>
 
-        <form th:action="@{/comment/addReel}" method="post">
+        <form th:action="@{/reel/comment}" method="post">
             <input type="hidden" name="reelId" th:value="${reel.reelId}"/>
             <input type="text" name="text" placeholder="Add a comment..." required/>
             <button type="submit">Post</button>
