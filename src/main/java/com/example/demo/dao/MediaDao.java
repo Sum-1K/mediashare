@@ -38,7 +38,6 @@ public class MediaDao extends BaseDao<Media, Long> {
         };
     }
 
-    // Insert
     public int insert(Media media) {
         String sql = "INSERT INTO media (type, url, post_id, media_order) VALUES (?, ?, ?, ?)";
         return jdbcTemplate.update(sql,
@@ -48,7 +47,6 @@ public class MediaDao extends BaseDao<Media, Long> {
                 media.getMediaOrder());
     }
 
-    // Update
     public int update(Media media) {
         String sql = "UPDATE media SET type = ?, url = ?, post_id = ?, media_order = ? WHERE media_id = ?";
         return jdbcTemplate.update(sql,
@@ -59,7 +57,6 @@ public class MediaDao extends BaseDao<Media, Long> {
                 media.getMediaId());
     }
 
-    // Optional: find all media for a post
     public List<Media> findByPostId(Long postId) {
         String sql = "SELECT * FROM media WHERE post_id = ?";
         return jdbcTemplate.query(sql, getRowMapper(), postId);
