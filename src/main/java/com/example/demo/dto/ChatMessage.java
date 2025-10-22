@@ -7,6 +7,7 @@ public class ChatMessage {
     private Long senderId;
     private Long receiverId;
     private String content;
+    private LocalDateTime sentAt;
 
     @JsonProperty("replied_to_id")
     private Long repliedToId;
@@ -20,7 +21,7 @@ public class ChatMessage {
         this.receiverId = receiver;
         this.content = content;
         this.repliedToId = repliedToId;
-
+        this.sentAt = timestamp;
     }
 
     // getters and setters
@@ -38,4 +39,7 @@ public class ChatMessage {
 
     public ChatMediaDTO getMedia() { return media; }
     public void setMedia(ChatMediaDTO media) { this.media = media; }
+
+    public LocalDateTime getSentAt() {return sentAt;}
+    public void setSentAt(LocalDateTime sentAt) {this.sentAt=sentAt; }
 }

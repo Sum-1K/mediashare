@@ -131,6 +131,10 @@ public class ChatDao extends BaseDao<Chat, Long> {
 
         // Use the column name 'message' (selected as c.message)
         msg.setContent(rs.getString("message"));
+        Timestamp ts = rs.getTimestamp("sent_at");
+        if (ts != null) {
+            msg.setSentAt(ts.toLocalDateTime());
+        }
 
         long repliedId = rs.getLong("replied_to_id");
         msg.setRepliedToId(rs.wasNull() ? null : repliedId);

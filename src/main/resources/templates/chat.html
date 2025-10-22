@@ -103,7 +103,7 @@
                     <div class="messages">
                       <div th:each="msg : ${messages}" >
                         <div class="media-body">
-                          <small class="text-muted" th:text="${#dates.format(msg.sent_at, 'HH:mm')}"></small>
+                          <small class="text-muted message-time"></small>
                           <p class="article-content" th:text="${msg.message}"></p>
                         </div>
                       </div>
@@ -817,7 +817,32 @@ function appendMessage(msg) {
   const sender_id = msg.sender_id ?? msg.senderId;
   const receiver_id = msg.receiver_id ?? msg.receiverId;
   const message = msg.message ?? msg.content;
-  const sent_at = msg.sent_at ?? new Date().toISOString();
+  const sent_at = msg.sent_at ?? msg.sentAt ?? new Date().toISOString()
+  const sentDate = new Date(sent_at);
+  console.log("sent_at:", sent_at, "parsed:", sentDate);
+
+  const now = new Date();
+  const isToday =
+    sentDate.getDate() === now.getDate() &&
+    sentDate.getMonth() === now.getMonth() &&
+    sentDate.getFullYear() === now.getFullYear();
+
+  let formattedTime;
+  if (isToday) {
+    // Same-day message → only show time
+    formattedTime = sentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } else {
+    // Older message → show date + time
+    const options = { day: '2-digit', month: 'short' };
+    if (sentDate.getFullYear() !== now.getFullYear()) {
+      options.year = 'numeric'; // Include year only if different
+    }
+    formattedTime =
+      sentDate.toLocaleDateString([], options) +
+      " " +
+      sentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
   //const replied_to_id = msg.replied_to_id || null;
   //⤷
   const msgId = msg.chat_id ?? `${sender_id}-${Date.parse(sent_at)}`;
@@ -848,7 +873,7 @@ function appendMessage(msg) {
   msgDiv.innerHTML = `
     <div class="media-body">
       <div class="article-metadata">
-      <small class="text-muted">${new Date(sent_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</small>
+      <small class="text-muted">${formattedTime}</small>
       ${repliedTextHTML}
       </div>
       <p class="article-content">${message}</p>
