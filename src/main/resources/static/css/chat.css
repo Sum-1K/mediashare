@@ -633,7 +633,7 @@ margin: 0;
 
 .search-container {
     position: relative; /* Make this the positioning context */
-    width: 250px; /* Adjust as needed */
+    width: 90%; /* Adjust as needed */
     margin: 0 auto;
 }
 
