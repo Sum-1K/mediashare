@@ -38,9 +38,8 @@ public class ChatMediaDao extends BaseDao<ChatMedia, Long> {
 
     // Insert a new media
     public int save(ChatMedia media) {
-        String sql = "INSERT INTO chat_media (chat_media_id, chat_id, file_type, file_url) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO chat_media (chat_id, file_type, file_url) VALUES (?, ?::chat_media_type, ?)";
         return jdbcTemplate.update(sql,
-                media.getChat_media_id(),
                 media.getChat_id(),
                 media.getFile_type().name(),
                 media.getFile_url());

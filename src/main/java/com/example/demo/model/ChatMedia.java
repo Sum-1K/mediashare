@@ -2,7 +2,7 @@ package com.example.demo.model;
 import java.time.LocalDateTime;
 
 public class ChatMedia {
-    public enum FileType { PHOTO, VIDEO }
+    public static enum FileType { PHOTO, VIDEO }
 
     private Long chat_media_id;
     private Long chat_id;

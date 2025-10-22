@@ -128,12 +128,23 @@
                 </div>
                 <form id="chatForm" class="typing-box"> 
                     <input type="text" id="messageInput" placeholder="Type your message...">
+                    <input type="file" id="mediaInput" accept="image/*,video/*" />
                     <button type="submit" class="btn btn-primary">Send</button>
                 </form> 
             </div>
             </div>
         </div>
     </div>
+
+    <!-- Media Viewer Modal -->
+<!-- Fullscreen Media Modal -->
+<div id="mediaModal" class="modal" style="display: none;">
+  <span class="close">&times;</span>
+  <img id="modalImage" style="display: none;" />
+  <video id="modalVideo" controls style="display: none;"></video>
+</div>
+
+
     
 </body>
 </html>
@@ -845,6 +856,37 @@ function appendMessage(msg) {
     </div>
   `;
 
+  if (msg.media && msg.media.fileUrl) {
+  const { fileUrl, fileType } = msg.media;
+  const mediaContainer = document.createElement("div");
+  mediaContainer.classList.add("chat-media");
+
+  if (fileType === "PHOTO" || fileType.startsWith("image/")) {
+    mediaContainer.innerHTML = `
+      <img src="${fileUrl}" alt="sent image">
+    `;
+  } else if (fileType === "VIDEO" || fileType.startsWith("video/")) {
+    mediaContainer.innerHTML = `
+      <video src="${fileUrl}" muted></video>
+    `;
+  } else {
+    mediaContainer.innerHTML = `
+      <a href="${fileUrl}" target="_blank" style="display:block; margin-top:5px; color:#007bff;">
+        📎 View Attachment
+      </a>
+    `;
+  }
+
+  // Attach click event for full-screen preview
+  const mediaEl = mediaContainer.querySelector("img, video");
+  if (mediaEl) {
+    mediaEl.addEventListener("click", () => openMediaModal(fileUrl, fileType));
+  }
+
+  msgDiv.querySelector(".article-content").after(mediaContainer);
+}
+
+
   const link = msgDiv.querySelector(".replied-link");
   if (link) {
     link.addEventListener("click", (e) => {
@@ -917,36 +959,99 @@ document.addEventListener("DOMContentLoaded", async () => {
   const chatForm = document.getElementById("chatForm");
   const messageInput = document.getElementById("messageInput");
 
-  chatForm.addEventListener("submit", (e) => {
-    e.preventDefault();
+  // chatForm.addEventListener("submit", (e) => {
+  //   e.preventDefault();
 
-    const messageText = messageInput.value.trim();
-    if (!messageText || !CURRENT_CHAT_USER_ID) return;
+  //   const messageText = messageInput.value.trim();
+  //   if (!messageText || !CURRENT_CHAT_USER_ID) return;
 
-    const payload = {
+  //   const payload = {
+  //   senderId: CURRENT_USER_ID,
+  //   receiverId: CURRENT_CHAT_USER_ID,
+  //   content: messageText
+  //   };
+
+  //   if (REPLIED_MESSAGE) {
+  //   payload.replied_to_id = REPLIED_MESSAGE.id; // e.g. "ts1600000000000" or "local-..."
+  //   }
+
+  //   stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(payload));
+
+  //   appendMessage({
+  //     sender_id: CURRENT_USER_ID,
+  //     receiver_id: CURRENT_CHAT_USER_ID,
+  //     message: messageText,
+  //     sent_at: new Date().toISOString(),
+  //     replied_to_id: REPLIED_MESSAGE ? REPLIED_MESSAGE.id : null
+  //   });
+
+  //   REPLIED_MESSAGE = null;
+  //   showReplyBox();
+  //   messageInput.value = "";
+  // });
+  chatForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const messageText = messageInput.value.trim();
+  const mediaFile = document.getElementById("mediaInput").files[0];
+
+  if (!messageText && !mediaFile) return;
+  if (!CURRENT_CHAT_USER_ID) return;
+
+  let mediaData = null;
+
+  // 🖼 Upload file first (if exists)
+  if (mediaFile) {
+    const formData = new FormData();
+    formData.append("file", mediaFile);
+
+    try {
+      const res = await fetch("/api/media/upload", {
+        method: "POST",
+        body: formData,
+      });
+      mediaData = await res.json(); // expect { fileUrl, fileType }
+
+      if (mediaData.fileType.startsWith("image/")) {
+        mediaData.fileType = "PHOTO";
+      } else if (mediaData.fileType.startsWith("video/")) {
+        mediaData.fileType = "VIDEO";
+      } else {
+        mediaData = null; // unsupported
+      }
+    } catch (err) {
+      console.error("Media upload failed:", err);
+      return;
+    }
+  }
+
+  // 📤 Build message payload
+  const payload = {
     senderId: CURRENT_USER_ID,
     receiverId: CURRENT_CHAT_USER_ID,
-    content: messageText
-    };
+    content: messageText || null,
+    replied_to_id: REPLIED_MESSAGE ? REPLIED_MESSAGE.id : null,
+    media: mediaData ? mediaData : null,
+  };
 
-    if (REPLIED_MESSAGE) {
-    payload.replied_to_id = REPLIED_MESSAGE.id; // e.g. "ts1600000000000" or "local-..."
-    }
+  stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(payload));
 
-    stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(payload));
-
-    appendMessage({
-      sender_id: CURRENT_USER_ID,
-      receiver_id: CURRENT_CHAT_USER_ID,
-      message: messageText,
-      sent_at: new Date().toISOString(),
-      replied_to_id: REPLIED_MESSAGE ? REPLIED_MESSAGE.id : null
-    });
-
-    REPLIED_MESSAGE = null;
-    showReplyBox();
-    messageInput.value = "";
+  appendMessage({
+    sender_id: CURRENT_USER_ID,
+    receiver_id: CURRENT_CHAT_USER_ID,
+    message: messageText || "",
+    sent_at: new Date().toISOString(),
+    replied_to_id: REPLIED_MESSAGE ? REPLIED_MESSAGE.id : null,
+    media: mediaData,
   });
+
+  // Reset input
+  REPLIED_MESSAGE = null;
+  showReplyBox();
+  messageInput.value = "";
+  document.getElementById("mediaInput").value = "";
+});
+
 
 });
 
@@ -957,5 +1062,40 @@ function escapeHtml(text) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
-} //see this script. every thing works except for the rendering of 'replied to: ..' in the older messages that are loaded, why?
+}
+
+function openMediaModal(fileUrl, fileType) {
+  const modal = document.getElementById("mediaModal");
+  const modalImg = document.getElementById("modalImage");
+  const modalVideo = document.getElementById("modalVideo");
+  const closeBtn = document.querySelector(".close-modal");
+
+  // Hide both, then show the correct one
+  modalImg.style.display = "none";
+  modalVideo.style.display = "none";
+
+  if (fileType === "PHOTO" || fileType.startsWith("image/")) {
+    modalImg.src = fileUrl;
+    modalImg.style.display = "block";
+  } else if (fileType === "VIDEO" || fileType.startsWith("video/")) {
+    modalVideo.src = fileUrl;
+    modalVideo.style.display = "block";
+  }
+
+  modal.style.display = "flex";
+
+  closeBtn.onclick = () => {
+    modal.style.display = "none";
+    modalVideo.pause();
+  };
+
+  modal.onclick = (e) => {
+    if (e.target === modal) {
+      modal.style.display = "none";
+      modalVideo.pause();
+    }
+  };
+}
+
+ //see this script. every thing works except for the rendering of 'replied to: ..' in the older messages that are loaded, why?
 </script>
