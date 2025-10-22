@@ -316,6 +316,7 @@
         </div>
 
         <!-- Posts Grid -->
+         <div th:if="${canViewPosts}">
         <div class="posts-grid">
     <div class="post" th:each="post : ${posts}">
         <a th:href="@{/post/{id}(id=${post.postId})}">
@@ -324,6 +325,7 @@
                  th:alt="${post.caption}" />
         </a>
     </div>
+</div>
 </div>
 
 
@@ -345,6 +347,8 @@
         </div> -->
 
         <!-- Reels Section -->
+
+<div th:if="${canViewPosts}">
 <h2>Reels</h2>
 <div class="reel-grid">
     <div class="reel-item" th:each="reel : ${reels}">
@@ -361,6 +365,7 @@
             ></video>
         </a>
     </div>
+</div>
 </div>
 
 
@@ -562,6 +567,8 @@ resultDiv.addEventListener('click', () => {
             searchResults.appendChild(resultDiv);
         });
     }
+
+    
 
         // Open reel modal
         reelOption.addEventListener('click', () => {

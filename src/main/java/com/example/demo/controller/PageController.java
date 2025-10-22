@@ -109,6 +109,8 @@ public class PageController {
         // model.addAttribute("posts", postDao.findByUserId(user.getUser_id()));
         // model.addAttribute("postMediaMap", mediaDao.findByUserId(user.getUser_id()));
 
+        model.addAttribute("canViewPosts", true);
+
         return "profile";
 }
 
@@ -140,8 +142,25 @@ public String viewProfile(@PathVariable Long profileId, Model model, HttpSession
     }
     
     User profileUser = userDao.findById(profileId); // or userDao.findById(profileId)
+    if (profileUser == null) { // ✅ handle missing user
+        model.addAttribute("error", "User not found.");
+        model.addAttribute("canViewPosts", false); // always set
+        return "errorPage";
+    }
 
     Long loggedInUserId = loggedInUser.getUser_id(); // adjust based on your User class
+        // Check if logged-in user is following this profile
+    User.Privacy privacy = profileUser.getPrivacy();
+    boolean isFollowing = followDao.isFollowing(loggedInUserId, profileId);
+     boolean canViewPosts = (profileUser.getPrivacy() == User.Privacy.PUBLIC)
+                           || isFollowing
+                           || loggedInUserId.equals(profileId);
+    model.addAttribute("canViewPosts", canViewPosts);
+
+    if (privacy == User.Privacy.PRIVATE && !isFollowing && !loggedInUserId.equals(profileId)) {
+    model.addAttribute("error", "You must follow this user to see their posts.");
+    return "errorPage";
+}
 
     // Fetch posts by user
         int postCount = postDao.countByUserId(profileId);
@@ -154,14 +173,6 @@ public String viewProfile(@PathVariable Long profileId, Model model, HttpSession
         model.addAttribute("followers", followers);
         model.addAttribute("following", following);
     
-    // Check if logged-in user is following this profile
-    User.Privacy privacy = profileUser.getPrivacy();
-    boolean isFollowing = followDao.isFollowing(loggedInUserId, profileId);
-
-    if (privacy == User.Privacy.PRIVATE && !isFollowing && !loggedInUserId.equals(profileId)) {
-    model.addAttribute("error", "You must follow this user to see their posts.");
-    return "errorPage";
-}
 
     // Fetch posts and reels for the profile user
     // Fetch posts
@@ -197,6 +208,9 @@ public String viewProfile(@PathVariable Long profileId, Model model, HttpSession
 
 model.addAttribute("user", profileUser);
 model.addAttribute("currentUser", loggedInUser);
+
+
+
 
         return "profile";
 }

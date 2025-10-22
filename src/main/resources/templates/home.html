@@ -575,19 +575,35 @@
             </div>
           </div>
         `;
-        resultDiv.addEventListener('click', () => {
-          fetch(`/follow/status/${user.user_id}`)
-            .then(response => response.json())
-            .then(data => {
-              window.location.href = data.isFollowing ? `/profile/${user.user_id}` : `/user/${user.user_id}`;
-            })
-            .catch(error => {
-              console.error("Error checking follow status:", error);
-              window.location.href = `/user/${user.user_id}`;
-            });
+        // Redirect to user profile when clicked
+resultDiv.addEventListener('click', () => {
+    fetch(`/follow/status/${user.user_id}`)
+        .then(response => response.json())
+        .then(data => {
+            // data should contain: { isFollowing: true/false, privacy: "PUBLIC"/"PRIVATE" }
+            if (data.privacy === "PUBLIC") {
+                // Public account → always go to profile
+                window.location.href = `/profile/${user.user_id}`;
+            } else {
+                // Private account → only go to profile if following
+                if (data.isFollowing) {
+                    window.location.href = `/profile/${user.user_id}`;
+                } else {
+                    // Private and not followed → user page
+                    window.location.href = `/user/${user.user_id}`;
+                }
+            }
+        })
+        .catch(error => {
+            console.error("Error checking follow status:", error);
+            // fallback: go to user page
+            window.location.href = `/user/${user.user_id}`;
         });
-        searchResults.appendChild(resultDiv);
-      });
+});
+
+            
+            searchResults.appendChild(resultDiv);
+        });
     }
 
     // More menu functionality
