@@ -85,7 +85,18 @@ public class ChatDao extends BaseDao<Chat, Long> {
 
     public void saveMessage(Long senderId, Long receiverId, String text, Long repliedToId) {
     String sql = "INSERT INTO chats (seen, message, sent_at, sender_id, receiver_id, replied_to_id) VALUES (FALSE, ?, NOW(), ?, ?, ?)";
-    jdbcTemplate.update(sql, text, senderId, receiverId, repliedToId);
+    jdbcTemplate.update(connection -> {
+        var ps = connection.prepareStatement(sql);
+        ps.setString(1, text);
+        ps.setLong(2, senderId);
+        ps.setLong(3, receiverId);
+        if (repliedToId != null) {
+            ps.setLong(4, repliedToId);
+        } else {
+            ps.setNull(4, java.sql.Types.BIGINT);
+        }
+        return ps;
+    });
     }
 
     public Chat saveAndReturn(Chat chat) {
@@ -138,6 +149,8 @@ public class ChatDao extends BaseDao<Chat, Long> {
 
         long repliedId = rs.getLong("replied_to_id");
         msg.setRepliedToId(rs.wasNull() ? null : repliedId);
+
+        msg.setChatId(rs.getLong("chat_id"));
 
         String fileUrl = rs.getString("file_url");
         if (fileUrl != null) {

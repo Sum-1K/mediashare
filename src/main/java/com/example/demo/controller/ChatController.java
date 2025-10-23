@@ -152,6 +152,7 @@ public List<ChatMessage> getMessages(@PathVariable Long userId, HttpSession sess
 
         // chatMessage.setSenderId(senderId);
         System.out.println("Received payload: " + chatMessage); 
+        System.out.println("RepliedToId: " + chatMessage.getRepliedToId());
 
         if (chatMessage.getMedia() != null) {
             chatService.saveMessageAndMedia(

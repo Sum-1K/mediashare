@@ -4,12 +4,12 @@ import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ChatMessage {
+    private Long chatId;
     private Long senderId;
     private Long receiverId;
     private String content;
     private LocalDateTime sentAt;
 
-    @JsonProperty("replied_to_id")
     private Long repliedToId;
 
     private ChatMediaDTO media;
@@ -25,6 +25,9 @@ public class ChatMessage {
     }
 
     // getters and setters
+    public Long getChatId() { return chatId; }
+    public void setChatId(Long chat_id) { this.chatId = chat_id; }
+
     public Long getSenderId() { return senderId; }
     public void setSenderId(Long sender) { this.senderId = sender; }
 

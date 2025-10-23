@@ -792,7 +792,7 @@ function showReplyBox() {
   const replyBox = document.getElementById("replyBox"); // your preview container
   if (REPLIED_MESSAGE) {
     replyBox.innerHTML = `
-      Replied to: ${REPLIED_MESSAGE.text} 
+      Replied to: ${REPLIED_MESSAGE.text} ${REPLIED_MESSAGE.id}
       <span id="cancelReply" style="cursor:pointer; margin-left:5px;">×</span>
     `;
     replyBox.style.display = "block";
@@ -845,7 +845,7 @@ function appendMessage(msg) {
 
   //const replied_to_id = msg.replied_to_id || null;
   //⤷
-  const msgId = msg.chat_id ?? `${sender_id}-${Date.parse(sent_at)}`;
+  const msgId = msg.chatId ?? null;
   msgDiv.id = `message-${msgId}`;
   msgDiv.dataset.msgid = msgId;
 
@@ -858,15 +858,13 @@ function appendMessage(msg) {
   }
 
   let repliedTextHTML = "";
-  if (msg.replied_to_id) {
+  if (msg.repliedToId) {
     // reply_to_id may be stored as plain msgId (not prefixed with 'message-')
-    const targetEl = document.getElementById(`message-${msg.replied_to_id}`);
+    const targetEl = document.getElementById(`message-${msg.repliedToId}`);
     if (targetEl) {
-      let text = "";
-      const contentEl = targetEl.querySelector(".article-content");
-      if (contentEl) text = contentEl.textContent.trim();
+      let text = targetEl.querySelector(".article-content")?.textContent.trim() ?? "";
       if (text.length > 50) text = text.slice(0, 50) + "...";
-      repliedTextHTML = `<small class="text-muted replied-link" data-target="${msg.replied_to_id}">Replied to: ${escapeHtml(text)}</small>`;
+      repliedTextHTML = `<small class="text-muted replied-link" data-target="${msg.repliedToId}">Replied to: ${escapeHtml(text)}</small>`;
     }
   }
 
@@ -930,8 +928,16 @@ function appendMessage(msg) {
     const textEl = msgDiv.querySelector(".article-content");
     let text = textEl ? textEl.textContent.trim() : "";
     if (text.length > 50) text = text.slice(0, 50) + "...";
-    REPLIED_MESSAGE = { id: msgId, text };
-    showReplyBox();
+    // REPLIED_MESSAGE = { id: msgId, text };
+    // showReplyBox(); //this was earlier
+
+    if (msg.chatId) {
+        REPLIED_MESSAGE = { id: msg.chatId, text };
+        showReplyBox();
+    } 
+    else {
+    alert("Cannot reply to unsaved message yet.");
+    }
   });
 
   // hover behavior (if you still want JS hover show/hide instead of CSS)
@@ -1055,9 +1061,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     senderId: CURRENT_USER_ID,
     receiverId: CURRENT_CHAT_USER_ID,
     content: messageText || null,
-    replied_to_id: REPLIED_MESSAGE && !isNaN(REPLIED_MESSAGE.id)
-  ? Number(REPLIED_MESSAGE.id)
-  : null,
+    //repliedToId: REPLIED_MESSAGE ? parseInt(REPLIED_MESSAGE.id.replace('message-', '')) : null,  //this was earlier
+    repliedToId: REPLIED_MESSAGE ? REPLIED_MESSAGE.id : null,
     media: mediaData ? mediaData : null,
   };
 
@@ -1068,7 +1073,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     receiver_id: CURRENT_CHAT_USER_ID,
     message: messageText || "",
     sent_at: new Date().toISOString(),
-    replied_to_id: REPLIED_MESSAGE ? REPLIED_MESSAGE.id : null,
+    repliedToId: REPLIED_MESSAGE ? REPLIED_MESSAGE.id : null,
     media: mediaData,
   });
 
