@@ -18,12 +18,16 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dao.CommentDao;
 import com.example.demo.dao.ContentDao;
+import com.example.demo.dao.ContentHashtagDao;
+import com.example.demo.dao.HashtagDao;
 import com.example.demo.dao.LikeDao;
 import com.example.demo.dao.MediaDao;
 import com.example.demo.dao.PostDao;
 import com.example.demo.model.Comment;
 import com.example.demo.dto.CommentDTO;
 import com.example.demo.model.Content;
+import com.example.demo.model.ContentHashtag;
+import com.example.demo.model.Hashtag;
 import com.example.demo.model.Media;
 import com.example.demo.model.Media.MediaType;
 import com.example.demo.model.Post;
@@ -39,14 +43,18 @@ public class PostController {
     private final MediaDao mediaDao;
     private final LikeDao likeDao;
     private final CommentDao commentDao;
+    private final HashtagDao hashtagDao;
+    private final ContentHashtagDao contentHashtagDao;
 
     @Autowired
-    public PostController(ContentDao contentDao, PostDao postDao, MediaDao mediaDao, CommentDao commentDao, LikeDao likeDao) {
+    public PostController(ContentDao contentDao, PostDao postDao, MediaDao mediaDao, CommentDao commentDao, LikeDao likeDao, HashtagDao hashtagDao, ContentHashtagDao contentHashtagDao) {
         this.contentDao = contentDao;
         this.postDao = postDao;
         this.mediaDao = mediaDao;
         this.commentDao = commentDao;
         this.likeDao = likeDao;
+        this.hashtagDao = hashtagDao;
+        this.contentHashtagDao = contentHashtagDao;
     }
 
     @PostMapping("/posts")
@@ -105,6 +113,39 @@ public class PostController {
                     mediaDao.insert(media);
                 }
             }
+
+            if (caption != null && !caption.isEmpty()) {
+            // Use regex to find hashtags
+            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("#(\\w+)");
+            java.util.regex.Matcher matcher = pattern.matcher(caption);
+
+            while (matcher.find()) {
+                String hashtagText = matcher.group(1).toLowerCase();
+
+                Long hashtagId = null;
+                try {
+                    Hashtag existing = hashtagDao.findByText(hashtagText);
+                    hashtagId = existing.getHashtagId();
+                } catch (Exception e) {
+                    // Not found → insert new one
+                    Hashtag newTag = new Hashtag();
+                    newTag.setText(hashtagText);
+                    hashtagDao.insert(newTag);
+
+                    // Retrieve ID of inserted hashtag
+                    Hashtag inserted = hashtagDao.findByText(hashtagText);
+                    hashtagId = inserted.getHashtagId();
+                }
+
+                // Link content ↔ hashtag
+                if (hashtagId != null) {
+                    ContentHashtag contentHashtag=new ContentHashtag();
+                    contentHashtag.setHashtag_id(hashtagId);
+                    contentHashtag.setContent_id(contentId);
+                    contentHashtagDao.save(contentHashtag);
+                }
+            }
+        }
 
             // 5️⃣ Redirect to user's profile
             return "redirect:/profile"; // you can also do "/profile/" + user.getUsername()

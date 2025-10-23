@@ -68,7 +68,7 @@ public String openChat(@PathVariable Long userId, Model model, HttpSession sessi
     Long currentUserId = currentUser.getUser_id();
 
     // get messages between current user and userId
-    List<Chat> messages = chatService.getMessagesBetween(currentUserId, userId);
+    List<ChatMessage> messages = chatService.getMessagesBetween(currentUserId, userId);
 
     // get user info for display
     User chatUser = userDao.findById(userId);
@@ -82,7 +82,7 @@ public String openChat(@PathVariable Long userId, Model model, HttpSession sessi
 
 @GetMapping("/chat/messages/{userId}")
 @ResponseBody
-public List<Chat> getMessages(@PathVariable Long userId, HttpSession session) {
+public List<ChatMessage> getMessages(@PathVariable Long userId, HttpSession session) {
     User currentUser = (User) session.getAttribute("loggedInUser");
 
     // Check if user is logged in
@@ -93,7 +93,7 @@ public List<Chat> getMessages(@PathVariable Long userId, HttpSession session) {
     Long currentUserId = currentUser.getUser_id();
 
     // fetch messages between the two users
-    List<Chat> messages = chatService.getMessagesBetween(currentUserId, userId);
+    List<ChatMessage> messages = chatService.getMessagesBetween(currentUserId, userId);
     return messages != null ? messages : new ArrayList<>();
 }
 
@@ -152,8 +152,20 @@ public List<Chat> getMessages(@PathVariable Long userId, HttpSession session) {
 
         // chatMessage.setSenderId(senderId);
         System.out.println("Received payload: " + chatMessage); 
+        System.out.println("RepliedToId: " + chatMessage.getRepliedToId());
 
+        if (chatMessage.getMedia() != null) {
+            chatService.saveMessageAndMedia(
+                chatMessage.getSenderId(),
+                chatMessage.getReceiverId(),
+                chatMessage.getContent(),
+                chatMessage.getRepliedToId(),
+                chatMessage.getMedia()
+            );
+        } else
+        {
         chatService.saveMessage(chatMessage.getSenderId(), chatMessage.getReceiverId(), chatMessage.getContent(), chatMessage.getRepliedToId());
+        }
 
         messagingTemplate.convertAndSend("/topic/messages/" + chatMessage.getReceiverId(), chatMessage);
     }

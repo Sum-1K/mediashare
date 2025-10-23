@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 @Repository
 public class ContentHashtagDao extends BaseDao<ContentHashtag, Long> {
@@ -49,4 +50,16 @@ public class ContentHashtagDao extends BaseDao<ContentHashtag, Long> {
         String sql = "INSERT INTO " + getTableName() + " (content_id, hashtag_id) VALUES (?, ?)";
         return jdbcTemplate.update(sql, ch.getContent_id(), ch.getHashtag_id());
     }
+
+    public int countByHashtagId(Long hashtagId) {
+        String sql = "SELECT COUNT(*) FROM content_hashtag WHERE hashtag_id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, hashtagId);
+        return count != null ? count : 0;
+    }
+
+    public List<Long> findContentIdsByHashtagId(Long hashtagId) {
+        String sql = "SELECT content_id FROM content_hashtag WHERE hashtag_id = ?";
+        return jdbcTemplate.queryForList(sql, Long.class, hashtagId);
+    }
+
 }

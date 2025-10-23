@@ -103,7 +103,7 @@
                     <div class="messages">
                       <div th:each="msg : ${messages}" >
                         <div class="media-body">
-                          <small class="text-muted" th:text="${#dates.format(msg.sent_at, 'HH:mm')}"></small>
+                          <small class="text-muted message-time"></small>
                           <p class="article-content" th:text="${msg.message}"></p>
                         </div>
                       </div>
@@ -128,12 +128,23 @@
                 </div>
                 <form id="chatForm" class="typing-box"> 
                     <input type="text" id="messageInput" placeholder="Type your message...">
+                    <input type="file" id="mediaInput" accept="image/*,video/*" />
                     <button type="submit" class="btn btn-primary">Send</button>
                 </form> 
             </div>
             </div>
         </div>
     </div>
+
+    <!-- Media Viewer Modal -->
+<!-- Fullscreen Media Modal -->
+<div id="mediaModal" class="modal" style="display: none;">
+  <span class="close">&times;</span>
+  <img id="modalImage" style="display: none;" />
+  <video id="modalVideo" controls style="display: none;"></video>
+</div>
+
+
     
 </body>
 </html>
@@ -781,7 +792,7 @@ function showReplyBox() {
   const replyBox = document.getElementById("replyBox"); // your preview container
   if (REPLIED_MESSAGE) {
     replyBox.innerHTML = `
-      Replied to: ${REPLIED_MESSAGE.text} 
+      Replied to: ${REPLIED_MESSAGE.text} ${REPLIED_MESSAGE.id}
       <span id="cancelReply" style="cursor:pointer; margin-left:5px;">×</span>
     `;
     replyBox.style.display = "block";
@@ -806,10 +817,35 @@ function appendMessage(msg) {
   const sender_id = msg.sender_id ?? msg.senderId;
   const receiver_id = msg.receiver_id ?? msg.receiverId;
   const message = msg.message ?? msg.content;
-  const sent_at = msg.sent_at ?? new Date().toISOString();
+  const sent_at = msg.sent_at ?? msg.sentAt ?? new Date().toISOString()
+  const sentDate = new Date(sent_at);
+  //console.log("sent_at:", sent_at, "parsed:", sentDate);
+
+  const now = new Date();
+  const isToday =
+    sentDate.getDate() === now.getDate() &&
+    sentDate.getMonth() === now.getMonth() &&
+    sentDate.getFullYear() === now.getFullYear();
+
+  let formattedTime;
+  if (isToday) {
+    // Same-day message → only show time
+    formattedTime = sentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } else {
+    // Older message → show date + time
+    const options = { day: '2-digit', month: 'short' };
+    if (sentDate.getFullYear() !== now.getFullYear()) {
+      options.year = 'numeric'; // Include year only if different
+    }
+    formattedTime =
+      sentDate.toLocaleDateString([], options) +
+      " " +
+      sentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
   //const replied_to_id = msg.replied_to_id || null;
   //⤷
-  const msgId = msg.chat_id ?? `${sender_id}-${Date.parse(sent_at)}`;
+  const msgId = msg.chatId ?? null;
   msgDiv.id = `message-${msgId}`;
   msgDiv.dataset.msgid = msgId;
 
@@ -822,28 +858,57 @@ function appendMessage(msg) {
   }
 
   let repliedTextHTML = "";
-  if (msg.replied_to_id) {
+  if (msg.repliedToId) {
     // reply_to_id may be stored as plain msgId (not prefixed with 'message-')
-    const targetEl = document.getElementById(`message-${msg.replied_to_id}`);
+    const targetEl = document.getElementById(`message-${msg.repliedToId}`);
     if (targetEl) {
-      let text = "";
-      const contentEl = targetEl.querySelector(".article-content");
-      if (contentEl) text = contentEl.textContent.trim();
+      let text = targetEl.querySelector(".article-content")?.textContent.trim() ?? "";
       if (text.length > 50) text = text.slice(0, 50) + "...";
-      repliedTextHTML = `<small class="text-muted replied-link" data-target="${msg.replied_to_id}">Replied to: ${escapeHtml(text)}</small>`;
+      repliedTextHTML = `<small class="text-muted replied-link" data-target="${msg.repliedToId}">Replied to: ${escapeHtml(text)}</small>`;
     }
   }
 
   msgDiv.innerHTML = `
     <div class="media-body">
       <div class="article-metadata">
-      <small class="text-muted">${new Date(sent_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</small>
+      <small class="text-muted">${formattedTime}</small>
       ${repliedTextHTML}
       </div>
       <p class="article-content">${message}</p>
       <span class="reply-icon" style="display:none; cursor:pointer; float:right;">⤷</span>
     </div>
   `;
+
+  if (msg.media && msg.media.fileUrl) {
+  const { fileUrl, fileType } = msg.media;
+  const mediaContainer = document.createElement("div");
+  mediaContainer.classList.add("chat-media");
+
+  if (fileType === "PHOTO" || fileType.startsWith("image/")) {
+    mediaContainer.innerHTML = `
+      <img src="${fileUrl}" alt="sent image">
+    `;
+  } else if (fileType === "VIDEO" || fileType.startsWith("video/")) {
+    mediaContainer.innerHTML = `
+      <video src="${fileUrl}" muted></video>
+    `;
+  } else {
+    mediaContainer.innerHTML = `
+      <a href="${fileUrl}" target="_blank" style="display:block; margin-top:5px; color:#007bff;">
+        📎 View Attachment
+      </a>
+    `;
+  }
+
+  // Attach click event for full-screen preview
+  const mediaEl = mediaContainer.querySelector("img, video");
+  if (mediaEl) {
+    mediaEl.addEventListener("click", () => openMediaModal(fileUrl, fileType));
+  }
+
+  msgDiv.querySelector(".article-content").after(mediaContainer);
+}
+
 
   const link = msgDiv.querySelector(".replied-link");
   if (link) {
@@ -863,8 +928,16 @@ function appendMessage(msg) {
     const textEl = msgDiv.querySelector(".article-content");
     let text = textEl ? textEl.textContent.trim() : "";
     if (text.length > 50) text = text.slice(0, 50) + "...";
-    REPLIED_MESSAGE = { id: msgId, text };
-    showReplyBox();
+    // REPLIED_MESSAGE = { id: msgId, text };
+    // showReplyBox(); //this was earlier
+
+    if (msg.chatId) {
+        REPLIED_MESSAGE = { id: msg.chatId, text };
+        showReplyBox();
+    } 
+    else {
+    alert("Cannot reply to unsaved message yet.");
+    }
   });
 
   // hover behavior (if you still want JS hover show/hide instead of CSS)
@@ -888,7 +961,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await fetchCurrentUserId();
   await loadChatUsers();
 
-  const socket = new SockJS("/ws-chat");
+  const socket = new SockJS(`/ws-chat`);
   const stompClient = Stomp.over(socket);
 
   stompClient.connect({}, () => {
@@ -917,36 +990,100 @@ document.addEventListener("DOMContentLoaded", async () => {
   const chatForm = document.getElementById("chatForm");
   const messageInput = document.getElementById("messageInput");
 
-  chatForm.addEventListener("submit", (e) => {
-    e.preventDefault();
+  // chatForm.addEventListener("submit", (e) => {
+  //   e.preventDefault();
 
-    const messageText = messageInput.value.trim();
-    if (!messageText || !CURRENT_CHAT_USER_ID) return;
+  //   const messageText = messageInput.value.trim();
+  //   if (!messageText || !CURRENT_CHAT_USER_ID) return;
 
-    const payload = {
+  //   const payload = {
+  //   senderId: CURRENT_USER_ID,
+  //   receiverId: CURRENT_CHAT_USER_ID,
+  //   content: messageText
+  //   };
+
+  //   if (REPLIED_MESSAGE) {
+  //   payload.replied_to_id = REPLIED_MESSAGE.id; // e.g. "ts1600000000000" or "local-..."
+  //   }
+
+  //   stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(payload));
+
+  //   appendMessage({
+  //     sender_id: CURRENT_USER_ID,
+  //     receiver_id: CURRENT_CHAT_USER_ID,
+  //     message: messageText,
+  //     sent_at: new Date().toISOString(),
+  //     replied_to_id: REPLIED_MESSAGE ? REPLIED_MESSAGE.id : null
+  //   });
+
+  //   REPLIED_MESSAGE = null;
+  //   showReplyBox();
+  //   messageInput.value = "";
+  // });
+  chatForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const messageText = messageInput.value.trim();
+  const mediaFile = document.getElementById("mediaInput").files[0];
+
+  if (!messageText && !mediaFile) return;
+  if (!CURRENT_CHAT_USER_ID) return;
+
+  let mediaData = null;
+
+  // 🖼 Upload file first (if exists)
+  if (mediaFile) {
+    const formData = new FormData();
+    formData.append("file", mediaFile);
+
+    try {
+      const res = await fetch("/api/media/upload", {
+        method: "POST",
+        body: formData,
+      });
+      mediaData = await res.json(); // expect { fileUrl, fileType }
+
+      if (mediaData.fileType.startsWith("image/")) {
+        mediaData.fileType = "PHOTO";
+      } else if (mediaData.fileType.startsWith("video/")) {
+        mediaData.fileType = "VIDEO";
+      } else {
+        mediaData = null; // unsupported
+      }
+    } catch (err) {
+      console.error("Media upload failed:", err);
+      return;
+    }
+  }
+
+  // 📤 Build message payload
+  const payload = {
     senderId: CURRENT_USER_ID,
     receiverId: CURRENT_CHAT_USER_ID,
-    content: messageText
-    };
+    content: messageText || null,
+    //repliedToId: REPLIED_MESSAGE ? parseInt(REPLIED_MESSAGE.id.replace('message-', '')) : null,  //this was earlier
+    repliedToId: REPLIED_MESSAGE ? REPLIED_MESSAGE.id : null,
+    media: mediaData ? mediaData : null,
+  };
 
-    if (REPLIED_MESSAGE) {
-    payload.replied_to_id = REPLIED_MESSAGE.id; // e.g. "ts1600000000000" or "local-..."
-    }
+  stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(payload));
 
-    stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(payload));
-
-    appendMessage({
-      sender_id: CURRENT_USER_ID,
-      receiver_id: CURRENT_CHAT_USER_ID,
-      message: messageText,
-      sent_at: new Date().toISOString(),
-      replied_to_id: REPLIED_MESSAGE ? REPLIED_MESSAGE.id : null
-    });
-
-    REPLIED_MESSAGE = null;
-    showReplyBox();
-    messageInput.value = "";
+  appendMessage({
+    sender_id: CURRENT_USER_ID,
+    receiver_id: CURRENT_CHAT_USER_ID,
+    message: messageText || "",
+    sent_at: new Date().toISOString(),
+    repliedToId: REPLIED_MESSAGE ? REPLIED_MESSAGE.id : null,
+    media: mediaData,
   });
+
+  // Reset input
+  REPLIED_MESSAGE = null;
+  showReplyBox();
+  messageInput.value = "";
+  document.getElementById("mediaInput").value = "";
+});
+
 
 });
 
@@ -957,5 +1094,40 @@ function escapeHtml(text) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
-} //see this script. every thing works except for the rendering of 'replied to: ..' in the older messages that are loaded, why?
+}
+
+function openMediaModal(fileUrl, fileType) {
+  const modal = document.getElementById("mediaModal");
+  const modalImg = document.getElementById("modalImage");
+  const modalVideo = document.getElementById("modalVideo");
+  const closeBtn = document.querySelector(".close-modal");
+
+  // Hide both, then show the correct one
+  modalImg.style.display = "none";
+  modalVideo.style.display = "none";
+
+  if (fileType === "PHOTO" || fileType.startsWith("image/")) {
+    modalImg.src = fileUrl;
+    modalImg.style.display = "block";
+  } else if (fileType === "VIDEO" || fileType.startsWith("video/")) {
+    modalVideo.src = fileUrl;
+    modalVideo.style.display = "block";
+  }
+
+  modal.style.display = "flex";
+
+  closeBtn.onclick = () => {
+    modal.style.display = "none";
+    modalVideo.pause();
+  };
+
+  modal.onclick = (e) => {
+    if (e.target === modal) {
+      modal.style.display = "none";
+      modalVideo.pause();
+    }
+  };
+}
+
+ //see this script. every thing works except for the rendering of 'replied to: ..' in the older messages that are loaded, why?
 </script>

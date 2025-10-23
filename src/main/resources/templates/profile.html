@@ -500,56 +500,58 @@
     }
 
     function performSearch(query) {
-        searchResults.innerHTML = "<div style='padding: 10px; text-align: center; color: #8e8e8e;'>Searching...</div>";
-        
-        fetch(`/search/users?q=${encodeURIComponent(query)}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                displaySearchResults(data);
-            })
-            .catch(error => {
-                console.error('Search error:', error);
-                searchResults.innerHTML = `
-                    <div style='padding: 10px; text-align: center; color: #8e8e8e;'>
-                        Error searching users. Please try again.
-                    </div>
-                `;
-            });
+      searchResults.innerHTML = "<div style='padding: 10px; text-align: center; color: #8e8e8e;'>Searching...</div>";
+      query = query.trim();
+      if (query.startsWith("#")) {
+        const hashtagText = query.substring(1); // remove #
+        if (hashtagText.length === 0) {
+          searchResults.innerHTML = "<div style='padding: 10px; text-align: center; color: #8e8e8e;'>Type something after #</div>";
+          return;
+        }
+        searchHashtags(hashtagText);
+      } else {
+        searchUsers(query);
+      }
+    }
+
+    function searchUsers(query)
+    {
+      fetch(`/search/users?q=${encodeURIComponent(query)}`)
+        .then(response => {
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          return response.json();
+        })
+        .then(data => displaySearchResults(data))
+        .catch(error => {
+          console.error('Search error:', error);
+          searchResults.innerHTML = `
+            <div style='padding: 10px; text-align: center; color: #8e8e8e;'>
+              Error searching users. Please try again.
+            </div>
+          `;
+        });
     }
 
     function displaySearchResults(users) {
-        searchResults.innerHTML = "";
-        
-        if (!users || users.length === 0) {
-            searchResults.innerHTML = "<div style='padding: 10px; text-align: center; color: #8e8e8e;'>No users found</div>";
-            return;
-        }
-        
-        users.forEach(user => {
-            const resultDiv = document.createElement("div");
-            resultDiv.className = "search-result";
-            
-            const profilePicUrl = user.photo ? 
-                `/uploads/profile/${user.photo}` : 
-                '/uploads/default_dp.jpg';
-            
-            resultDiv.innerHTML = `
-                <img src="${profilePicUrl}" alt="${user.user_name}" 
-                    onerror="this.src='/uploads/default_dp.jpg'">
-                <div>
-                    <strong>${user.user_name}</strong>
-                    <div style="font-size: 12px; color: #8e8e8e;">
-                        ${user.first_name} ${user.last_name}
-                    </div>
-                </div>
-            `;
-            
-             // Redirect to user profile when clicked
+      searchResults.innerHTML = "";
+      if (!users || users.length === 0) {
+        searchResults.innerHTML = "<div style='padding: 10px; text-align: center; color: #8e8e8e;'>No users found</div>";
+        return;
+      }
+      users.forEach(user => {
+        const resultDiv = document.createElement("div");
+        resultDiv.className = "search-result";
+        const profilePicUrl = user.photo ? `/uploads/profile/${user.photo}` : '/uploads/default_dp.jpg';
+        resultDiv.innerHTML = `
+          <img src="${profilePicUrl}" alt="${user.user_name}" onerror="this.src='/uploads/default_dp.jpg'">
+          <div>
+            <strong>${user.user_name}</strong>
+            <div style="font-size: 12px; color: #8e8e8e;">
+              ${user.first_name} ${user.last_name}
+            </div>
+          </div>
+        `;
+        // Redirect to user profile when clicked
 resultDiv.addEventListener('click', () => {
     fetch(`/follow/status/${user.user_id}`)
         .then(response => response.json())
@@ -578,6 +580,48 @@ resultDiv.addEventListener('click', () => {
             
             searchResults.appendChild(resultDiv);
         });
+    }
+
+    function searchHashtags(hashtagText) {
+      fetch(`/search/hashtags?q=${encodeURIComponent(hashtagText)}`)
+        .then(response => {
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          return response.json();
+        })
+        .then(data => displayHashtagResults(data))
+        .catch(error => {
+          console.error('Search error (hashtags):', error);
+          searchResults.innerHTML = `
+            <div style='padding: 10px; text-align: center; color: #8e8e8e;'>
+              Error searching hashtags. Please try again.
+            </div>`;
+        });
+    }
+
+    function displayHashtagResults(hashtags) {
+      searchResults.innerHTML = "";
+      if (!hashtags || hashtags.length === 0) {
+        searchResults.innerHTML = "<div style='padding: 10px; text-align: center; color: #8e8e8e;'>No hashtags found</div>";
+        return;
+      }
+
+      hashtags.forEach(tag => {
+        const resultDiv = document.createElement("div");
+        resultDiv.className = "search-result";
+        resultDiv.innerHTML = `
+          <div style="padding: 8px;">
+            <strong>#${tag.text}</strong>
+            <div style="font-size: 12px; color: #8e8e8e;">
+              ${tag.post_count} post${tag.post_count === 1 ? '' : 's'}
+            </div>
+          </div>
+        `;
+        // Redirect to hashtag page when clicked
+        resultDiv.addEventListener('click', () => {
+          window.location.href = `/hashtag/${tag.text}`;
+        });
+        searchResults.appendChild(resultDiv);
+      });
     }
 
     
