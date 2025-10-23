@@ -51,4 +51,10 @@ public class HashtagDao extends BaseDao<Hashtag, Long> {
         String sql = "SELECT * FROM hashtags WHERE text = ?";
         return jdbcTemplate.queryForObject(sql, getRowMapper(), text);
     }
+
+    public List<Hashtag> searchByText(String query) {
+        String sql = "SELECT * FROM hashtags WHERE text ILIKE ? ORDER BY text ASC LIMIT 10";
+        return jdbcTemplate.query(sql, getRowMapper(), "%" + query + "%");
+    }
+
 }

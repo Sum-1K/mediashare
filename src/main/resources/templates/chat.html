@@ -819,7 +819,7 @@ function appendMessage(msg) {
   const message = msg.message ?? msg.content;
   const sent_at = msg.sent_at ?? msg.sentAt ?? new Date().toISOString()
   const sentDate = new Date(sent_at);
-  console.log("sent_at:", sent_at, "parsed:", sentDate);
+  //console.log("sent_at:", sent_at, "parsed:", sentDate);
 
   const now = new Date();
   const isToday =
@@ -955,7 +955,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await fetchCurrentUserId();
   await loadChatUsers();
 
-  const socket = new SockJS("/ws-chat");
+  const socket = new SockJS(`/ws-chat`);
   const stompClient = Stomp.over(socket);
 
   stompClient.connect({}, () => {
@@ -1055,7 +1055,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     senderId: CURRENT_USER_ID,
     receiverId: CURRENT_CHAT_USER_ID,
     content: messageText || null,
-    replied_to_id: REPLIED_MESSAGE ? REPLIED_MESSAGE.id : null,
+    replied_to_id: REPLIED_MESSAGE && !isNaN(REPLIED_MESSAGE.id)
+  ? Number(REPLIED_MESSAGE.id)
+  : null,
     media: mediaData ? mediaData : null,
   };
 
