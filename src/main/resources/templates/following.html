@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>followings</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #fafafa; }
+        h2 { margin-bottom: 20px; }
+        .user-list { display: flex; flex-direction: column; gap: 15px; }
+        .user-item { display: flex; align-items: center; gap: 15px; background: #fff; padding: 10px; border-radius: 8px; }
+        .user-item img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+        .user-item button { margin-left: auto; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; }
+        .close-friend { background-color: #0095f6; color: #fff; }
+        .block-btn { background-color: #ff4d4d; color: #fff; }
+    </style>
+</head>
+<body>
+    <h2>Following</h2>
+<div class="user-list">
+    <div class="user-item" th:each="following : ${followingList}">
+        <img th:src="${following.photo != null} ? @{/uploads/profile/{file}(file=${following.photo})} : @{/uploads/default_dp.jpg}" alt="Profile Picture">
+        <div th:text="${following.username}">username</div>
+        <!-- Close Friend Buttons --> 
+            <!-- **CHANGED: Single button with data attribute for AJAX** -->
+            <button type="button" 
+                    class="close-friend-btn close-friend" 
+                    th:data-user-id="${following.id}" 
+                    th:text="${following.isCloseFriend} ? 'Remove from close friends' : 'Add to close friends'">
+            </button>
+
+            <!-- Block/Unblock Buttons
+            <form th:if="${!following.isBlocked}" th:action="@{/block/{userId}(userId=${following.id})}" method="post">
+                <button type="submit" class="block-btn">Block</button>
+            </form>
+            <form th:if="${following.isBlocked}" th:action="@{/unblock/{userId}(userId=${following.id})}" method="post">
+                <button type="submit" class="block-btn">Unblock</button>
+            </form> -->
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const buttons = document.querySelectorAll(".close-friend-btn");
+
+        buttons.forEach(button => {
+            button.addEventListener("click", () => {
+                const userId = button.dataset.userId;
+                const action = button.innerText.includes("Add") ? "addCloseFriend" : "removeCloseFriend";
+
+                fetch(`/${action}/${userId}`, {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                    }
+                })
+                .then(response => {
+                    if(response.ok) return response.text();
+                    else throw new Error("Request failed");
+                })
+                .then(data => {
+                    // Toggle button text
+                    if(action === "addCloseFriend") {
+                        button.innerText = "Remove from close friends";
+                        alert("Added to close friends!");
+                    } else {
+                        button.innerText = "Add to close friends";
+                        alert("Removed from close friends!");
+                    }
+                })
+                .catch(err => {
+                    alert("Something went wrong: " + err.message);
+                });
+            });
+        });
+    });
+    </script>
+
+</body>
+</html>

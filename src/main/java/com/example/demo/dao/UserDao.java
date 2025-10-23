@@ -167,4 +167,23 @@ public void updatePrivacy(Long userId, User.Privacy privacy) {
         return jdbcTemplate.queryForObject(sql, (rs, rowNum) ->
                 User.Privacy.valueOf(rs.getString("privacy")), userId);
     }
+
+    public boolean blockUser(Long blockerId, Long blockedId) {
+    String sql = "INSERT INTO blocked_users (blocker_by_id, blocked_to_id) VALUES (?, ?)";
+    int rows = jdbcTemplate.update(sql, blockerId, blockedId);
+    return rows > 0;
+}
+
+public boolean unblockUser(Long blockerId, Long blockedId) {
+    String sql = "DELETE FROM blocked_users WHERE blocker_by_id = ? AND blocked_to_id = ?";
+    int rows = jdbcTemplate.update(sql, blockerId, blockedId);
+    return rows > 0;
+}
+
+public boolean isUserBlocked(Long blockerId, Long blockedId) {
+    String sql = "SELECT COUNT(*) FROM blocked_users WHERE blocker_by_id = ? AND blocked_to_id = ?";
+    Integer count = jdbcTemplate.queryForObject(sql, Integer.class, blockerId, blockedId);
+    return count != null && count > 0;
+}
+
 }

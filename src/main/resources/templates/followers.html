@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Followers</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #fafafa; }
+        h2 { margin-bottom: 20px; }
+        .user-list { display: flex; flex-direction: column; gap: 15px; }
+        .user-item { display: flex; align-items: center; gap: 15px; background: #fff; padding: 10px; border-radius: 8px; }
+        .user-item img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+        .user-item button { margin-left: auto; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; }
+        .close-friend { background-color: #0095f6; color: #fff; }
+        .block-btn { background-color: #ff4d4d; color: #fff; }
+    </style>
+</head>
+<body>
+    <h2>Followers</h2>
+    <div class="user-list">
+        <div class="user-item" th:each="follower : ${followersList}">
+            <img th:src="${follower.photo != null} ? @{/uploads/profile/{file}(file=${follower.photo})} : @{/uploads/default_dp.jpg}" alt="Profile Picture">
+            <div th:text="${follower.username}">username</div>
+            <!-- Close Friend Buttons -->
+            <!-- <form th:if="${follower.isCloseFriend}" th:action="@{/removeCloseFriend/{userId}(userId=${follower.id})}" method="post">
+                <button type="submit" class="close-friend">Remove from close friends</button>
+            </form>
+            <form th:if="${!follower.isCloseFriend}" th:action="@{/addCloseFriend/{userId}(userId=${follower.id})}" method="post">
+                <button type="submit" class="close-friend">Add to close friends</button>
+            </form> -->
+
+            <!-- Block/Unblock Buttons -->
+            <!-- <form th:if="${!follower.isBlocked}" th:action="@{/block/{userId}(userId=${follower.id})}" method="post">
+                <button type="submit" class="block-btn">Block</button>
+            </form>
+            <form th:if="${follower.isBlocked}" th:action="@{/unblock/{userId}(userId=${follower.id})}" method="post">
+                <button type="submit" class="block-btn">Unblock</button>
+            </form> -->
+        </div>
+    </div>
+
+     <!-- <script>
+        // Select all close friend forms
+        document.querySelectorAll('.close-friend-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault(); // prevent default form submission
+
+                const actionUrl = this.action;
+                const button = this.querySelector('button');
+
+                fetch(actionUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.success){
+                        // Toggle button text
+                        if(button.textContent.includes('Add')){
+                            button.textContent = 'Remove from close friends';
+                            // Swap the form action to remove
+                            this.action = actionUrl.replace('/add/', '/remove/');
+                        } else {
+                            button.textContent = 'Add to close friends';
+                            this.action = actionUrl.replace('/remove/', '/add/');
+                        }
+                    } else {
+                        alert(data.message || 'Something went wrong');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Error occurred while updating close friend status');
+                });
+            });
+        });
+    </script> -->
+
+</body>
+</html>

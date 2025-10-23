@@ -3,10 +3,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
-import com.example.demo.dao.FollowDao;
-import com.example.demo.model.User;
-import com.example.demo.service.FollowService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
@@ -15,10 +11,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-
+import com.example.demo.dao.FollowDao;
 import com.example.demo.dao.UserDao;
 import com.example.demo.model.User;
 import com.example.demo.service.FollowService;
@@ -258,4 +254,79 @@ public class FollowController {
         Long userId = loggedInUser.getUser_id();
         return followDao.searchFollowersAndFollowees(userId, prefix);
     }  
+
+    // ---------------- CLOSE FRIENDS ----------------
+@PostMapping("/closefriend/add/{userId}")
+@ResponseBody
+public Map<String, Object> addCloseFriend(@PathVariable Long userId, HttpSession session) {
+    Map<String, Object> response = new HashMap<>();
+    User currentUser = (User) session.getAttribute("user");
+
+    if (currentUser == null) {
+        response.put("success", false);
+        response.put("message", "Please login first");
+        return response;
+    }
+
+    String result = followService.addCloseFriend(currentUser.getUser_id(), userId);
+    response.put("success", true);
+    response.put("message", result);
+    return response;
+}
+
+@PostMapping("/closefriend/remove/{userId}")
+@ResponseBody
+public Map<String, Object> removeCloseFriend(@PathVariable Long userId, HttpSession session) {
+    Map<String, Object> response = new HashMap<>();
+    User currentUser = (User) session.getAttribute("user");
+
+    if (currentUser == null) {
+        response.put("success", false);
+        response.put("message", "Please login first");
+        return response;
+    }
+
+    String result = followService.removeCloseFriend(currentUser.getUser_id(), userId);
+    response.put("success", true);
+    response.put("message", result);
+    return response;
+}
+
+// ---------------- BLOCK USERS ----------------
+@PostMapping("/block/{userId}")
+@ResponseBody
+public Map<String, Object> blockUser(@PathVariable Long userId, HttpSession session) {
+    Map<String, Object> response = new HashMap<>();
+    User currentUser = (User) session.getAttribute("user");
+
+    if (currentUser == null) {
+        response.put("success", false);
+        response.put("message", "Please login first");
+        return response;
+    }
+
+    String result = followService.blockUser(currentUser.getUser_id(), userId);
+    response.put("success", true);
+    response.put("message", result);
+    return response;
+}
+
+@PostMapping("/unblock/{userId}")
+@ResponseBody
+public Map<String, Object> unblockUser(@PathVariable Long userId, HttpSession session) {
+    Map<String, Object> response = new HashMap<>();
+    User currentUser = (User) session.getAttribute("user");
+
+    if (currentUser == null) {
+        response.put("success", false);
+        response.put("message", "Please login first");
+        return response;
+    }
+
+    String result = followService.unblockUser(currentUser.getUser_id(), userId);
+    response.put("success", true);
+    response.put("message", result);
+    return response;
+}
+
 }

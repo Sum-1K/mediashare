@@ -1,7 +1,11 @@
 package com.example.demo.controller;
 
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,19 +20,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.demo.dao.FollowDao;
 import com.example.demo.dao.FollowRequestDao;
+import com.example.demo.dao.MediaDao;
 import com.example.demo.dao.PostDao;
 import com.example.demo.dao.ReelDao;
-import com.example.demo.dao.MediaDao;
 import com.example.demo.dao.UserDao;
-import com.example.demo.model.User;
-import com.example.demo.service.FollowService;
-
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
+import com.example.demo.dto.UserDTO;
 import com.example.demo.model.Media;
 import com.example.demo.model.Post;
 import com.example.demo.model.Reel;
+import com.example.demo.model.User;
+import com.example.demo.service.FollowService;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -197,47 +198,68 @@ public class UserController {
         return "search"; // Create a search.html template
     }
 
-    // ✅ Followers list
     @GetMapping("/followers/{userId}")
-    public String viewFollowers(@PathVariable Long userId, HttpSession session, Model model) {
-        User currentUser = (User) session.getAttribute("loggedInUser");
-        User profileUser = userDao.findById(userId);
-        
-        if (currentUser == null || profileUser == null) {
-            return "redirect:/users/login";
-        }
-        
-        List<User> followers = followDao.getFollowers(userId);
-        
-        model.addAttribute("currentUser", currentUser);
-        model.addAttribute("profileUser", profileUser);
-        model.addAttribute("users", followers);
-        model.addAttribute("title", "Followers");
-        model.addAttribute("isFollowersPage", true);
-        
-        return "follow-list"; // Create a follow-list.html template
+public String viewFollowers(@PathVariable Long userId, HttpSession session, Model model) {
+    User currentUser = (User) session.getAttribute("loggedInUser");
+    User profileUser = userDao.findById(userId);
+
+    if (currentUser == null || profileUser == null) {
+        return "redirect:/users/login";
     }
 
-    // ✅ Following list
-    @GetMapping("/following/{userId}")
-    public String viewFollowing(@PathVariable Long userId, HttpSession session, Model model) {
-        User currentUser = (User) session.getAttribute("loggedInUser");
-        User profileUser = userDao.findById(userId);
-        
-        if (currentUser == null || profileUser == null) {
-            return "redirect:/users/login";
-        }
-        
-        List<User> following = followDao.getFollowing(userId);
-        
-        model.addAttribute("currentUser", currentUser);
-        model.addAttribute("profileUser", profileUser);
-        model.addAttribute("users", following);
-        model.addAttribute("title", "Following");
-        model.addAttribute("isFollowersPage", false);
-        
-        return "follow-list"; // Create a follow-list.html template
+    List<User> followers = followService.getFollowers(profileUser.getUser_id());
+    List<UserDTO> followerDTOs = new ArrayList<>();
+for (User u : followers) {
+    boolean blocked = followService.isBlocked(currentUser.getUser_id(), u.getUser_id()) ||
+                      followService.isBlocked(u.getUser_id(), currentUser.getUser_id());
+    boolean closeFriend = followService.isCloseFriend(currentUser.getUser_id(), u.getUser_id());
+
+    followerDTOs.add(new UserDTO(u.getUser_id(), u.getUser_name(), closeFriend, blocked, u.getPhoto()));
+}
+
+   // Use same attribute name as 'followingList' for consistency
+    model.addAttribute("followersList", followerDTOs);
+    model.addAttribute("currentUser", currentUser);
+    model.addAttribute("profileUser", profileUser);
+    model.addAttribute("title", "Followers");
+    model.addAttribute("isFollowersPage", true);
+
+    return "followers"; 
+}
+
+
+@GetMapping("/following/{userId}")
+public String viewFollowing(@PathVariable Long userId, HttpSession session, Model model) {
+    User currentUser = (User) session.getAttribute("loggedInUser");
+    User profileUser = userDao.findById(userId);
+
+    if (currentUser == null || profileUser == null) {
+        return "redirect:/users/login";
     }
+
+    // Fetch the users that profileUser is following
+    List<User> following = followService.getFollowing(profileUser.getUser_id());
+
+    // Build DTOs with blocked and close friend info
+    List<UserDTO> followingDTOs = new ArrayList<>();
+for (User u : following) {
+    boolean blocked = followService.isBlocked(currentUser.getUser_id(), u.getUser_id()) ||
+                      followService.isBlocked(u.getUser_id(), currentUser.getUser_id());
+    boolean closeFriend = followService.isCloseFriend(currentUser.getUser_id(), u.getUser_id());
+
+    followingDTOs.add(new UserDTO(u.getUser_id(), u.getUser_name(), closeFriend, blocked, u.getPhoto()));
+}
+
+    model.addAttribute("followingList", followingDTOs);
+    model.addAttribute("currentUser", currentUser);
+    model.addAttribute("profileUser", profileUser);
+    model.addAttribute("title", "Following");
+    model.addAttribute("isFollowersPage", false);
+
+    return "following";
+}
+
+
 
     // ✅ Update user profile
     @PostMapping("/profile/update")
@@ -265,4 +287,42 @@ public class UserController {
         model.addAttribute("message", "Profile updated successfully");
         return "redirect:/profile";
     }
+
+    @PostMapping("/block/{userId}")
+public String blockUser(@PathVariable Long userId, HttpSession session) {
+    User currentUser = (User) session.getAttribute("loggedInUser");
+    if (currentUser != null) {
+        followService.blockUser(currentUser.getUser_id(), userId);
+    }
+    return "redirect:/followers/" + currentUser.getUser_id(); // or redirect back to referring page
+}
+
+@PostMapping("/unblock/{userId}")
+public String unblockUser(@PathVariable Long userId, HttpSession session) {
+    User currentUser = (User) session.getAttribute("loggedInUser");
+    if (currentUser != null) {
+        followService.unblockUser(currentUser.getUser_id(), userId);
+    }
+    return "redirect:/followers/" + currentUser.getUser_id();
+}
+
+@PostMapping("/addCloseFriend/{userId}")
+public String addCloseFriend(@PathVariable Long userId, HttpSession session) {
+    User currentUser = (User) session.getAttribute("loggedInUser");
+    if (currentUser != null) {
+        followService.addCloseFriend(currentUser.getUser_id(), userId);
+    }
+    return "redirect:/followers/" + currentUser.getUser_id();
+}
+
+@PostMapping("/removeCloseFriend/{userId}")
+public String removeCloseFriend(@PathVariable Long userId, HttpSession session) {
+    User currentUser = (User) session.getAttribute("loggedInUser");
+    if (currentUser != null) {
+        followService.removeCloseFriend(currentUser.getUser_id(), userId);
+    }
+    return "redirect:/followers/" + currentUser.getUser_id();
+}
+
+
 }

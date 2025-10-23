@@ -3,6 +3,7 @@ package com.example.demo.dao;
 import com.example.demo.model.Follow;
 import com.example.demo.model.User;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -13,11 +14,8 @@ import java.util.List;
 
 @Repository
 public class FollowDao extends BaseDao<Follow, Long> {
-    private final UserDao userDao;
-
-    public FollowDao(UserDao userDao) { // ✅ inject both
-        this.userDao = userDao;
-    }
+    @Autowired
+    private UserDao userDao;
 
     @Override
     protected String getTableName() {
@@ -115,14 +113,14 @@ public class FollowDao extends BaseDao<Follow, Long> {
 
     // Get followers as User objects
     public List<User> getFollowers(Long userId) {
-        String sql = "SELECT u.* FROM users u JOIN follows f ON u.user_id = f.follower_id WHERE f.followee_id = ?";
-        return jdbcTemplate.query(sql, new UserDao(jdbcTemplate).getRowMapper(), userId);
+        String sql = "SELECT u.* FROM users u JOIN follows f ON u.user_id = f.id WHERE f.followee_id = ?";
+        return jdbcTemplate.query(sql, userDao.getRowMapper(), userId);
     }
 
     // Get following as User objects  
     public List<User> getFollowing(Long userId) {
         String sql = "SELECT u.* FROM users u JOIN follows f ON u.user_id = f.followee_id WHERE f.follower_id = ?";
-        return jdbcTemplate.query(sql, new UserDao(jdbcTemplate).getRowMapper(), userId);
+        return jdbcTemplate.query(sql, userDao.getRowMapper(), userId);
     }
 
     public List<User> searchFollowersAndFollowees(Long userId, String prefix) {
@@ -148,6 +146,30 @@ public class FollowDao extends BaseDao<Follow, Long> {
         userDao.getRowMapper()
     );
 }
+
+public int addCloseFriend(Long followerId, Long followeeId) {
+    String sql = "UPDATE follows SET is_close_friend = TRUE WHERE follower_id = ? AND followee_id = ?";
+    return jdbcTemplate.update(sql, followerId, followeeId);
+}
+
+public int removeCloseFriend(Long followerId, Long followeeId) {
+    String sql = "UPDATE follows SET is_close_friend = FALSE WHERE follower_id = ? AND followee_id = ?";
+    return jdbcTemplate.update(sql, followerId, followeeId);
+}
+
+public boolean updateCloseFriendStatus(Long followerId, Long followeeId, boolean isCloseFriend) {
+    String sql = "UPDATE follows SET is_close_friend = ? WHERE follower_id = ? AND followee_id = ?";
+    int rows = jdbcTemplate.update(sql, isCloseFriend, followerId, followeeId);
+    return rows > 0;
+}
+
+// ✅ Check if userA and userB are close friends
+    public boolean isCloseFriend(Long followerId, Long followeeId) {
+    String sql = "SELECT is_close_friend FROM follows WHERE follower_id = ? AND followee_id = ?";
+    Boolean isCloseFriend = jdbcTemplate.queryForObject(sql, Boolean.class, followerId, followeeId);
+    return isCloseFriend != null && isCloseFriend;
+}
+
 
 
 }

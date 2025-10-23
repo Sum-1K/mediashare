@@ -291,16 +291,28 @@
                 </div>
                 
                 <div class="profile-stats">
-                    <div class="stat"><span th:text="${postCount}">0</span> posts</div>
-                    <div class="stat">
-                        <span id="followerCount" th:text="${followers != null ? followers : 0}">0</span> 
-                        <a th:href="@{/followers/{id}(id=${user.user_id})}" style="text-decoration: none; color: inherit;">followers</a>
-                    </div>
-                    <div class="stat">
-                        <span id="followingCount" th:text="${following != null ? following : 0}">0</span> 
-                        <a th:href="@{/following/{id}(id=${user.user_id})}" style="text-decoration: none; color: inherit;">following</a>
-                    </div>
-                </div>
+    <div class="stat"><span th:text="${postCount}">0</span> posts</div>
+    <div class="stat">
+        <span id="followerCount" 
+      style="cursor:pointer;" 
+      th:text="${followers != null ? followers : 0}" 
+      th:onclick="'window.location.href=\'/followers/' + ${user.user_id} + '\';'">
+</span>
+
+
+
+        followers
+    </div>
+    <div class="stat">
+        <span id="followingCount" 
+      style="cursor:pointer;" 
+      th:text="${following != null ? following : 0}" 
+      th:onclick="'window.location.href=\'/following/' + ${user.user_id} + '\';'">
+</span>
+        following
+    </div>
+</div>
+
                 
                 <div class="bio">
                     <strong th:text="${user.first_name + ' ' + user.last_name}">Full Name</strong>

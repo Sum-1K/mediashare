@@ -1,20 +1,21 @@
 package com.example.demo.service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+
 import com.example.demo.dao.FollowDao;
 import com.example.demo.dao.FollowRequestDao;
 import com.example.demo.dao.UserDao;
 import com.example.demo.model.Follow;
 import com.example.demo.model.FollowRequest;
 import com.example.demo.model.User;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Service
 public class FollowService {
@@ -258,4 +259,71 @@ public class FollowService {
             return List.of();
         }
     }
+
+    // ---- CLOSE FRIENDS ----
+public String addCloseFriend(Long followerId, Long followingId) {
+    try {
+        boolean updated = followDao.updateCloseFriendStatus(followerId, followingId, true);
+        return updated ? "Added to close friends" : "Failed to update";
+    } catch (Exception e) {
+        e.printStackTrace();
+        return "Error adding close friend";
+    }
+}
+
+public String removeCloseFriend(Long followerId, Long followingId) {
+    try {
+        boolean updated = followDao.updateCloseFriendStatus(followerId, followingId, false);
+        return updated ? "Removed from close friends" : "Failed to update";
+    } catch (Exception e) {
+        e.printStackTrace();
+        return "Error removing close friend";
+    }
+}
+
+// ---- BLOCK USERS ----
+public String blockUser(Long blockerId, Long blockedId) {
+    try {
+        // Don’t allow self-block
+        if (blockerId.equals(blockedId)) return "Cannot block yourself";
+
+        boolean alreadyBlocked = userDao.isUserBlocked(blockerId, blockedId);
+        if (alreadyBlocked) return "User already blocked";
+
+        return userDao.blockUser(blockerId, blockedId) ? "User blocked" : "Failed to block user";
+    } catch (Exception e) {
+        e.printStackTrace();
+        return "Error blocking user";
+    }
+}
+
+public String unblockUser(Long blockerId, Long blockedId) {
+    try {
+        return userDao.unblockUser(blockerId, blockedId) ? "User unblocked" : "Failed to unblock user";
+    } catch (Exception e) {
+        e.printStackTrace();
+        return "Error unblocking user";
+    }
+}
+
+// ---- CHECK STATUS HELPERS ----
+
+public boolean isBlocked(Long blockerId, Long blockedId) {
+    try {
+        return userDao.isUserBlocked(blockerId, blockedId);
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
+    }
+}
+
+public boolean isCloseFriend(Long followerId, Long followeeId) {
+    try {
+        return followDao.isCloseFriend(followerId, followeeId);
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
+    }
+}
+
 }
