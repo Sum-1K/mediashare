@@ -1,6 +1,9 @@
 package com.example.demo.controller;
 
 import com.example.demo.dao.UserDao;
+import com.example.demo.dao.HashtagDao;
+import com.example.demo.dao.ContentHashtagDao;
+import com.example.demo.model.Hashtag;
 import com.example.demo.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +19,12 @@ public class SearchController {
 
     @Autowired
     private UserDao userDao;
+
+    @Autowired
+    private HashtagDao hashtagDao;
+
+    @Autowired
+    private ContentHashtagDao contentHashtagDao;
 
     @GetMapping("/search/users")
     public ResponseEntity<?> searchUsers(@RequestParam String q) {
@@ -50,4 +59,22 @@ public class SearchController {
             return ResponseEntity.status(500).body(Map.of("error", "Search failed: " + e.getMessage()));
         }
     }
+
+    @GetMapping("/search/hashtags")
+    @ResponseBody
+    public List<Map<String, Object>> searchHashtags(@RequestParam("q") String query) {
+        List<Hashtag> hashtags = hashtagDao.searchByText(query);  // like-based search
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        for (Hashtag tag : hashtags) {
+            int count = contentHashtagDao.countByHashtagId(tag.getHashtagId());
+            Map<String, Object> tagData = new HashMap<>();
+            tagData.put("text", tag.getText());
+            tagData.put("post_count", count);
+            result.add(tagData);
+        }
+
+        return result;
+    }
+
 }

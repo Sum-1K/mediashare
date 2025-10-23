@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Hashtag - #<span th:text="${hashtagText}"></span></title>
+    <link rel="stylesheet" href="/hashtagPosts.css">
+</head>
+<body>
+    <div class="hashtag-header">
+        #<span th:text="${hashtagText}"></span>
+    </div>
+
+    <div th:if="${#lists.isEmpty(posts)}" class="no-posts">
+        No posts yet for this hashtag.
+    </div>
+
+    <div class="posts-grid" th:if="${!#lists.isEmpty(posts)}">
+        <div class="post-item" th:each="post : ${posts}"
+             th:onclick="'window.location.href=\'/post/' + ${post.id} + '\';'">
+            <img th:src="@{${post.preview}}" alt="Post preview">
+        </div>
+    </div>
+</body>
+</html>
