@@ -30,6 +30,11 @@ public class TagDao extends BaseDao<Tag, Long> {
                 tag.setTag_id(rs.getLong("tag_id"));
                 tag.setUser_id(rs.getLong("user_id"));
                 tag.setContent_id(rs.getLong("content_id"));
+                tag.setStatus(rs.getString("status"));
+                java.sql.Timestamp ts = rs.getTimestamp("created_at");
+                if (ts != null) {
+                    tag.setCreatedAt(ts.toLocalDateTime());
+                }
                 return tag;
             }
         };
@@ -37,19 +42,28 @@ public class TagDao extends BaseDao<Tag, Long> {
 
     // Insert new Tag
     public int save(Tag tag) {
-        String sql = "INSERT INTO " + getTableName() + " (user_id, content_id) VALUES (?, ?)";
+        String sql = "INSERT INTO " + getTableName() + " (user_id, content_id, status, created_at) VALUES (?, ?, 'PENDING', NOW())";  //PENDING, ACCEPTED, DECLINED
         return jdbcTemplate.update(sql, tag.getUser_id(), tag.getContent_id());
-    }
-
-    // Find all tags for a content
-    public List<Tag> findByContent(Long contentId) {
-        String sql = "SELECT * FROM " + getTableName() + " WHERE content_id = ?";
-        return jdbcTemplate.query(sql, getRowMapper(), contentId);
     }
 
     // Find all tags for a user
     public List<Tag> findByUser(Long userId) {
         String sql = "SELECT * FROM " + getTableName() + " WHERE user_id = ?";
         return jdbcTemplate.query(sql, getRowMapper(), userId);
+    }
+
+    public List<Tag> findPendingByUser(Long userId) {
+        String sql = "SELECT * FROM " + getTableName() + " WHERE user_id=? AND status='PENDING'";
+        return jdbcTemplate.query(sql, getRowMapper(), userId);
+    }
+
+    public int updateStatus(Long tagId, String status) {
+        String sql = "UPDATE tag SET status=? WHERE tag_id=?";
+        return jdbcTemplate.update(sql, status, tagId);
+    }
+
+    public List<Tag> findByContentId(Long contentId) {
+        String sql = "SELECT * FROM tag WHERE content_id=?";
+        return jdbcTemplate.query(sql, getRowMapper(), contentId);
     }
 }

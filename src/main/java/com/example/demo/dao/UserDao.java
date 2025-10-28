@@ -186,4 +186,9 @@ public boolean isUserBlocked(Long blockerId, Long blockedId) {
     return count != null && count > 0;
 }
 
+public List<User> searchPublicUsers(String query) {
+        String sql = "SELECT * FROM " + getTableName() + " WHERE privacy='PUBLIC' AND user_name ILIKE ?";
+        return jdbcTemplate.query(sql, getRowMapper(), "%" + query + "%");
+    }
+
 }

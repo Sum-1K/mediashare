@@ -222,6 +222,30 @@
     transform: scale(1.05);
 }
 
+#tag-suggestions {
+  position: absolute;
+  background: #fff;
+  border: 1px solid #dbdbdb;
+  border-radius: 4px;
+  width: 100%;
+  max-height: 150px;
+  overflow-y: auto;
+  display: none;
+  z-index: 1002;
+}
+
+.tag-suggestion {
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.tag-suggestion:hover {
+  background-color: #fafafa;
+}
+
+
     </style>
 </head>
 <body>
@@ -398,6 +422,21 @@
                 <form th:action="@{/posts}" method="post" enctype="multipart/form-data">
                     <input type="file" name="mediaFiles" id="photo-upload" accept="image/*" multiple required style="margin-bottom:10px;">
                     <textarea name="caption" placeholder="Write a caption..." required></textarea>
+                    <!-- Tag Users Input -->
+                    <div class="form-group" style="position: relative;">
+                    <label for="tag-users-input" style="font-weight: 600;">Tag Users</label>
+                    <input
+                        type="text"
+                        id="tag-users-input"
+                        name="tagUsers"
+                        placeholder="Type @username to tag users..."
+                        autocomplete="off"
+                        style="width: 100%; padding: 8px; border: 1px solid #dbdbdb; border-radius: 4px;"
+                    />
+
+                    <!-- Suggestions dropdown (populated dynamically by JS) -->
+                    <div id="tag-suggestions"></div>
+                    </div>                    
                     <button type="submit">Share</button>
                 </form>
             </div>
@@ -445,6 +484,94 @@
         const isOwnProfile = [[${currentUser != null && currentUser.user_id == user.user_id}]];
 
         // Load follow status when page loads (only for other users' profiles)
+        document.addEventListener("DOMContentLoaded", () => {
+            const tagInput = document.getElementById("tag-users-input");
+            const tagSuggestions = document.getElementById("tag-suggestions");
+            const uploadForm = document.querySelector("#upload-modal form");
+            let selectedTags = [];
+
+            if (!tagInput) return; // prevent null errors if modal not loaded
+
+            // When user types in the tag input
+            tagInput.addEventListener("input", function (e) {
+                const value = e.target.value.trim();
+                const lastWord = value.split(/\s+/).pop();
+
+                // Only search if input starts with @
+                if (!lastWord.startsWith("@") || lastWord.length < 2) {
+                    tagSuggestions.style.display = "none";
+                    return;
+                }
+
+                const query = lastWord.substring(1); // remove '@'
+
+                fetch(`/search/taggable-users?q=${encodeURIComponent(query)}`)
+                    .then((res) => {
+                        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                        return res.json();
+                    })
+                    .then((users) => {
+                        tagSuggestions.innerHTML = "";
+                        if (!users || users.length === 0) {
+                            tagSuggestions.style.display = "none";
+                            return;
+                        }
+
+                        users.forEach((user) => {
+                            const div = document.createElement("div");
+                            div.className = "tag-suggestion";
+                            div.innerHTML = `
+                                <img src="${user.photo ? '/uploads/profile/' + user.photo : '/uploads/default_dp.jpg'}" 
+                                    alt="${user.user_name}" 
+                                    style="width:30px;height:30px;border-radius:50%;object-fit:cover;margin-right:8px;vertical-align:middle;">
+                                <span><strong>@${user.user_name}</strong></span>
+                            `;
+                            div.addEventListener("click", () => {
+                                // replace last word with selected username
+                                const words = tagInput.value.split(/\s+/);
+                                words.pop();
+                                words.push(`@${user.user_name}`);
+                                tagInput.value = words.join(" ") + " ";
+                                tagSuggestions.style.display = "none";
+
+                                // store tagged user IDs
+                                if (!selectedTags.includes(user.user_id)) {
+                                    selectedTags.push(user.user_id);
+                                }
+                            });
+                            tagSuggestions.appendChild(div);
+                        });
+
+                        tagSuggestions.style.display = "block";
+                    })
+                    .catch((err) => {
+                        console.error("Error fetching taggable users:", err);
+                        tagSuggestions.style.display = "none";
+                    });
+            });
+
+            // Hide suggestions if clicked outside
+            document.addEventListener("click", (e) => {
+                if (!tagSuggestions.contains(e.target) && e.target !== tagInput) {
+                    tagSuggestions.style.display = "none";
+                }
+            });
+
+            // Add hidden inputs for selected tagged users before form submit
+            uploadForm.addEventListener("submit", function (e) {
+                document.querySelectorAll('input[name="taggedUserIds"]').forEach((i) => i.remove());
+
+                selectedTags.forEach((id) => {
+                    const hiddenInput = document.createElement("input");
+                    hiddenInput.type = "hidden";
+                    hiddenInput.name = "taggedUserIds";
+                    hiddenInput.value = id;
+                    uploadForm.appendChild(hiddenInput);
+                });
+            });
+        });
+
+
         document.addEventListener('DOMContentLoaded', function() {
             if (currentUserId && !isOwnProfile) {
                 loadFollowStatus();

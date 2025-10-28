@@ -23,11 +23,15 @@ import com.example.demo.dao.HashtagDao;
 import com.example.demo.dao.LikeDao;
 import com.example.demo.dao.MediaDao;
 import com.example.demo.dao.PostDao;
+import com.example.demo.dao.TagDao;
+import com.example.demo.dao.UserDao;
+import com.example.demo.dao.FollowDao;
 import com.example.demo.model.Comment;
 import com.example.demo.dto.CommentDTO;
 import com.example.demo.model.Content;
 import com.example.demo.model.ContentHashtag;
 import com.example.demo.model.Hashtag;
+import com.example.demo.model.Tag;
 import com.example.demo.model.Media;
 import com.example.demo.model.Media.MediaType;
 import com.example.demo.model.Post;
@@ -45,9 +49,12 @@ public class PostController {
     private final CommentDao commentDao;
     private final HashtagDao hashtagDao;
     private final ContentHashtagDao contentHashtagDao;
+    private final TagDao tagDao;
+    private final UserDao userDao;
+    private final FollowDao followDao;
 
     @Autowired
-    public PostController(ContentDao contentDao, PostDao postDao, MediaDao mediaDao, CommentDao commentDao, LikeDao likeDao, HashtagDao hashtagDao, ContentHashtagDao contentHashtagDao) {
+    public PostController(ContentDao contentDao, PostDao postDao, MediaDao mediaDao, CommentDao commentDao, LikeDao likeDao, HashtagDao hashtagDao, ContentHashtagDao contentHashtagDao, TagDao tagDao, UserDao userDao, FollowDao followDao) {
         this.contentDao = contentDao;
         this.postDao = postDao;
         this.mediaDao = mediaDao;
@@ -55,14 +62,20 @@ public class PostController {
         this.likeDao = likeDao;
         this.hashtagDao = hashtagDao;
         this.contentHashtagDao = contentHashtagDao;
+        this.tagDao = tagDao;
+        this.userDao=userDao;
+        this.followDao=followDao;
     }
 
     @PostMapping("/posts")
     public String uploadPost(@RequestParam("mediaFiles") List<MultipartFile> mediaFiles,
                             @RequestParam(required = false) String caption,
+                            @RequestParam(required = false) List<Long> taggedUserIds,
                             HttpSession session) {
 
         try {
+            System.out.println("Upload endpoint hit!");
+            System.out.println("Received taggedUsers: " + taggedUserIds);
             // 1️⃣ Get logged-in user
             User user = (User) session.getAttribute("loggedInUser");
             if (user == null) {
@@ -146,6 +159,35 @@ public class PostController {
                 }
             }
         }
+
+        // --- TAGGED USERS ---
+if (taggedUserIds != null && !taggedUserIds.isEmpty()) {
+    for (Long taggedId : taggedUserIds) {
+        User taggedUser = userDao.findById(taggedId); // find the user
+        if (taggedUser == null) continue;
+
+        boolean canTag = false;
+
+        // Check tagging rules
+        if (taggedUser.getPrivacy() == User.Privacy.PUBLIC) {
+            canTag = true;
+        } else if (taggedUser.getPrivacy() == User.Privacy.PRIVATE) {
+            canTag = followDao.isFollowing(user.getUser_id(), taggedId);
+        }
+
+        if (canTag) {
+            Tag tag = new Tag();
+            tag.setUser_id(taggedId);
+            tag.setContent_id(content.getContentId());
+            tag.setStatus("PENDING"); // default status
+            tagDao.save(tag);          // insert into DB
+
+            // Optional: create notification
+            //notificationDao.createTagNotification(taggedId, content.getContentId(), user.getUser_id());
+        }
+    }
+}
+
 
             // 5️⃣ Redirect to user's profile
             return "redirect:/profile"; // you can also do "/profile/" + user.getUsername()

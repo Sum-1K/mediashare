@@ -11,6 +11,10 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collections;
+
 
 @Repository
 public class FollowDao extends BaseDao<Follow, Long> {
@@ -170,6 +174,23 @@ public boolean updateCloseFriendStatus(Long followerId, Long followeeId, boolean
     return isCloseFriend != null && isCloseFriend;
 }
 
+    public List<User> searchFollowees(List<Long> userIds, String query) {
+    if (userIds.isEmpty()) return List.of();
 
+    String inClause = userIds.stream()
+        .map(id -> "?")
+        .collect(Collectors.joining(", "));
 
+    String sql = "SELECT * FROM users WHERE user_id IN (" + inClause + ") AND user_name ILIKE ?";
+
+    List<Object> params = new ArrayList<>(userIds);
+    params.add("%" + query + "%");
+
+    return jdbcTemplate.query(sql, params.toArray(), (rs, rowNum) -> {
+        User user = new User();
+        user.setUser_id(rs.getLong("user_id"));
+        user.setUser_name(rs.getString("user_name"));
+        return user;
+    });
+}
 }
