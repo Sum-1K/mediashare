@@ -868,7 +868,10 @@ function appendMessage(msg) {
     if (targetEl) {
       let text = targetEl.querySelector(".article-content")?.textContent.trim() ?? "";
       if (text.length > 50) text = text.slice(0, 50) + "...";
-      repliedTextHTML = `<small class="text-muted replied-link" data-target="${msg.repliedToId}">Replied to: ${escapeHtml(text)}</small>`;
+      repliedTextHTML = `<small class="text-muted replied-link" data-target="${msg.repliedToId}"><a href="#message-${msg.repliedToId}" 
+         class="replied-link" 
+         data-target="${msg.repliedToId}" 
+         style="text-decoration: underline; color: #007bff; cursor: pointer;">Replied to: ${escapeHtml(text)}</a></small>`;
     }
   }
 
