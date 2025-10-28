@@ -136,7 +136,7 @@
             <div class="comments">
                 <div class="comment" th:each="comment : ${comments}">
                     <b th:text="${comment.username}"></b>:
-                    <span th:text="${comment.text}"></span>
+                    <span th:text="${comment.content}"></span>
                 </div>
             </div>
         </div>

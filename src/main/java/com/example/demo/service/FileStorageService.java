@@ -37,7 +37,7 @@ public class FileStorageService {
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
             // Return a relative URL for DB / frontend use
-            return "/uploads/" + fileName;
+            return "/uploads/chat/" + fileName;
         } catch (IOException e) {
             throw new RuntimeException("File storage failed: " + e.getMessage(), e);
         }
