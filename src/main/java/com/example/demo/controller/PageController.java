@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,16 +11,19 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import com.example.demo.dao.FollowDao;
 import com.example.demo.dao.MediaDao;
 import com.example.demo.dao.PostDao;
 import com.example.demo.dao.ReelDao;
 import com.example.demo.dao.UserDao;
+import com.example.demo.model.BlockedUser;
 import com.example.demo.model.Media;
 import com.example.demo.model.Post;
 import com.example.demo.model.Reel;
 import com.example.demo.model.User;
+import com.example.demo.dao.BlockedUserDao;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -41,6 +45,9 @@ public class PageController {
 
     @Autowired
     private UserDao userDao;
+
+    @Autowired
+    private BlockedUserDao blockedUserDao;
 
 
     //handler methods to handle /abc request
@@ -110,6 +117,9 @@ public class PageController {
         // model.addAttribute("postMediaMap", mediaDao.findByUserId(user.getUser_id()));
 
         model.addAttribute("canViewPosts", true);
+        // 🟢 Add these to prevent Thymeleaf null errors:
+    model.addAttribute("isBlockedByMe", false);
+    model.addAttribute("hasBlockedMe", false);
 
         return "profile";
 }
@@ -152,10 +162,10 @@ public String viewProfile(@PathVariable Long profileId, Model model, HttpSession
         // Check if logged-in user is following this profile
     User.Privacy privacy = profileUser.getPrivacy();
     boolean isFollowing = followDao.isFollowing(loggedInUserId, profileId);
-     boolean canViewPosts = (profileUser.getPrivacy() == User.Privacy.PUBLIC)
-                           || isFollowing
-                           || loggedInUserId.equals(profileId);
-    model.addAttribute("canViewPosts", canViewPosts);
+    
+     // ✅ Check block status both ways
+    boolean isBlockedByMe = blockedUserDao.exists(loggedInUserId, profileId); // you blocked them
+    boolean hasBlockedMe = blockedUserDao.exists(profileId, loggedInUserId);  // they blocked you
 
     if (privacy == User.Privacy.PRIVATE && !isFollowing && !loggedInUserId.equals(profileId)) {
     model.addAttribute("error", "You must follow this user to see their posts.");
@@ -173,6 +183,11 @@ public String viewProfile(@PathVariable Long profileId, Model model, HttpSession
         model.addAttribute("followers", followers);
         model.addAttribute("following", following);
     
+
+        // ✅ Block toggle option
+        model.addAttribute("isBlockedByMe", isBlockedByMe);
+        model.addAttribute("hasBlockedMe", hasBlockedMe);
+
 
     // Fetch posts and reels for the profile user
     // Fetch posts
@@ -209,10 +224,15 @@ public String viewProfile(@PathVariable Long profileId, Model model, HttpSession
 model.addAttribute("user", profileUser);
 model.addAttribute("currentUser", loggedInUser);
 
+ boolean canViewPosts = ((profileUser.getPrivacy() == User.Privacy.PUBLIC)
+                           || isFollowing
+                           || loggedInUserId.equals(profileId)) && !isBlockedByMe && !hasBlockedMe;
+    model.addAttribute("canViewPosts", canViewPosts);
 
 
 
         return "profile";
 }
+
 
 }

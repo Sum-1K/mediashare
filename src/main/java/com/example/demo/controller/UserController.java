@@ -294,7 +294,8 @@ public String blockUser(@PathVariable Long userId, HttpSession session) {
     if (currentUser != null) {
         followService.blockUser(currentUser.getUser_id(), userId);
     }
-    return "redirect:/followers/" + currentUser.getUser_id(); // or redirect back to referring page
+    // ✅ redirect to that user's profile after blocking
+    return "redirect:/profile";
 }
 
 @PostMapping("/unblock/{userId}")
@@ -303,7 +304,8 @@ public String unblockUser(@PathVariable Long userId, HttpSession session) {
     if (currentUser != null) {
         followService.unblockUser(currentUser.getUser_id(), userId);
     }
-    return "redirect:/followers/" + currentUser.getUser_id();
+    // ✅ redirect to that user's profile after blocking
+    return "redirect:/profile";
 }
 
 @PostMapping("/addCloseFriend/{userId}")

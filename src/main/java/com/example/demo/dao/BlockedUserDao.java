@@ -7,6 +7,8 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.sql.Timestamp;
+
 
 @Repository
 public class BlockedUserDao extends BaseDao<BlockedUser, Long> {
@@ -30,7 +32,13 @@ public class BlockedUserDao extends BaseDao<BlockedUser, Long> {
                 BlockedUser blockedUser = new BlockedUser();
                 blockedUser.setBlockerById(rs.getLong("blocker_by_id"));
                 blockedUser.setBlockedToId(rs.getLong("blocked_to_id"));
-                blockedUser.setSince(rs.getTimestamp("since").toLocalDateTime());
+                // ✅ Handle null safely
+            Timestamp timestamp = rs.getTimestamp("since");
+            if (timestamp != null) {
+                blockedUser.setSince(timestamp.toLocalDateTime());
+            } else {
+                blockedUser.setSince(null);
+            }
                 return blockedUser;
             }
         };
@@ -69,4 +77,19 @@ public class BlockedUserDao extends BaseDao<BlockedUser, Long> {
         String sql = "SELECT * FROM " + getTableName() + " WHERE blocked_to_id = ?";
         return jdbcTemplate.query(sql, getRowMapper(), blockedToId);
     }
+
+    public boolean exists(Long blockerById, Long blockedToId) {
+    String sql = "SELECT COUNT(*) FROM " + getTableName() + 
+                 " WHERE blocker_by_id = ? AND blocked_to_id = ?";
+    Integer count = jdbcTemplate.queryForObject(sql, Integer.class, blockerById, blockedToId);
+    return count != null && count > 0;
+}
+
+public boolean isBlocked(Long blockerId, Long blockedId) {
+    String sql = "SELECT COUNT(*) FROM blocked_users WHERE blocker_by_id = ? AND blocked_to_id = ?";
+    Integer count = jdbcTemplate.queryForObject(sql, Integer.class, blockerId, blockedId);
+    return count != null && count > 0;
+}
+
+
 }

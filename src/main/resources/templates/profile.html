@@ -311,6 +311,23 @@
                                 style="display: none;">
                             Requested
                         </button>
+
+    
+                        <div th:if="${currentUser != null and user != null and currentUser.user_id != user.user_id}" class="actions">
+    <div th:if="${isBlockedByMe == null or isBlockedByMe == false}">
+    <form th:action="@{/block/{id}(id=${user.user_id})}" method="post">
+        <button type="submit" class="btn btn-danger">Block User</button>
+    </form>
+</div>
+
+<div th:if="${isBlockedByMe == true}">
+    <form th:action="@{/unblock/{id}(id=${user.user_id})}" method="post">
+        <button type="submit" class="btn btn-secondary">Unblock User</button>
+    </form>
+</div>
+
+</div>
+
                     </div>
                 </div>
                 

@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.dao.UserDao;
 import com.example.demo.dao.FollowDao;
 import com.example.demo.dao.HashtagDao;
+import com.example.demo.dao.BlockedUserDao;
 import com.example.demo.dao.ContentHashtagDao;
 import com.example.demo.model.Hashtag;
 import com.example.demo.model.User;
@@ -36,8 +37,12 @@ public class SearchController {
     @Autowired
     private FollowDao followDao;
 
+    @Autowired
+    private BlockedUserDao blockedUserDao;
+
+
     @GetMapping("/search/users")
-    public ResponseEntity<?> searchUsers(@RequestParam String q) {
+    public ResponseEntity<?> searchUsers(@RequestParam String q, HttpSession session) {
         try {
             System.out.println("Search query received: " + q);
 
@@ -45,12 +50,30 @@ public class SearchController {
                 return ResponseEntity.ok(List.of());
             }
 
+            // 🔹 Get the logged-in user from session
+        User currentUser = (User) session.getAttribute("loggedInUser");
+        if (currentUser == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "User not logged in")); // 🔹 Handle not logged-in case
+        }
+
             // Search users by username, first name, or last name
             List<User> users = userDao.searchUsers(q.trim());
 
+            // ✅ Filter out users who have blocked the logged-in user
+        List<User> filteredUsers = new ArrayList<>();
+        for (User user : users) {
+            if (!blockedUserDao.isBlocked(user.getUser_id(), currentUser.getUser_id())) {
+                filteredUsers.add(user);
+            }
+        }
+
+        if (filteredUsers.isEmpty()) {
+            return ResponseEntity.ok(Map.of("message", "Unable to search user"));
+        }
+
             // Convert to simple DTO for frontend - using CORRECT getter names
             List<Map<String, Object>> results = new ArrayList<>();
-            for (User user : users) {
+           for (User user : filteredUsers) {
                 Map<String, Object> userData = new HashMap<>();
                 userData.put("user_id", user.getUser_id());
                 userData.put("user_name", user.getUser_name());

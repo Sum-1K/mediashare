@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Blocked Users</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #fafafa;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        .blocked-container {
+            max-width: 600px;
+            margin: auto;
+        }
+
+        .blocked-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: #fff;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-pic {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .unblock-btn {
+            margin-left: auto;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            background-color: #ff4d4d;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.2s ease-in-out;
+        }
+
+        .unblock-btn:hover {
+            background-color: #ff3333;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            color: #0095f6;
+            font-weight: bold;
+        }
+
+        .back-btn:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="blocked-container">
+        <h2>Blocked Users</h2>
+
+        <div th:if="${#lists.isEmpty(blockedUsers)}">
+            <p>You haven't blocked anyone yet.</p>
+        </div>
+
+        <div th:each="user : ${blockedUsers}" class="blocked-item">
+            <!-- ✅ Adjusted profile picture logic -->
+            <img th:src="${user.photo != null} ? @{/uploads/profile/{file}(file=${user.photo})} : @{/uploads/default_dp.jpg}"
+                 alt="Profile Picture"
+                 class="profile-pic">
+
+            <span th:text="${user.user_name}"></span>
+
+            <button class="unblock-btn"
+                    th:onclick="'unblockUser(' + ${user.user_id} + ')'">
+                Unblock
+            </button>
+        </div>
+
+        <a href="/settings" class="back-btn">← Back to Settings</a>
+    </div>
+
+    <script>
+        function unblockUser(userId) {
+            fetch(`/blocked/unblock/${userId}`, { method: 'POST' })
+                .then(res => res.text())
+                .then(data => {
+                    if (data === 'UNBLOCKED') {
+                        alert('User unblocked successfully.');
+                        location.reload();
+                    }
+                });
+        }
+    </script>
+</body>
+</html>
