@@ -9,6 +9,50 @@
 
 </head>
 <body>
+    <nav class="bottom-nav">
+    <div class="nav-item" data-link="/home">
+      <i class="fa-solid fa-house active"></i>
+      <span>Home</span>
+    </div>
+    <div class="nav-item">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <span>Search</span>
+    </div>
+
+    <div class="nav-item">
+      <i class="fa-solid fa-circle-plus"></i>
+      <span>Create</span>
+    </div>
+
+    <div class="nav-item" data-link="/chat">
+      <i class="fa-regular fa-comment" ></i>
+      <span>Messages</span>
+    </div>
+
+    <div class="nav-item" data-link="/profile">
+      <i class="fa-regular fa-user"></i>
+      <span>Profile</span>
+    </div>
+
+
+    <div class="nav-item" id="more-nav">
+      <i class="fa-solid fa-bars more-btn"></i>
+      <span>More</span>
+    </div>
+
+    <div class="menu-popup">
+      <a href="/settings" class="menu-item">Settings</a>
+      <div class="menu-item">Your activity</div>
+      <div class="menu-item">Saved</div>
+      <div class="menu-item">Switch appearance</div>
+      <div class="menu-item">Report a problem</div>
+      <div class="menu-item">Switch accounts</div>
+      <div class="menu-item">Log out</div>
+    </div>
+    
+  </nav>
+
+  <div class="main-content">
     <div class="hashtag-header">
         #<span th:text="${hashtagText}" style="font-family: 'Quicksand', sans-serif";></span>
     </div>
@@ -25,6 +69,7 @@
             <img th:src="@{${#strings.replace(post.preview, 'src/main/resources/static', '')}}" 
                  alt="Post preview">
         </div>
+    </div>
     </div>
 </body>
 </html>
