@@ -17,11 +17,13 @@ import com.example.demo.dao.FollowDao;
 import com.example.demo.dao.MediaDao;
 import com.example.demo.dao.PostDao;
 import com.example.demo.dao.ReelDao;
+import com.example.demo.dao.StoryDao;
 import com.example.demo.dao.UserDao;
 import com.example.demo.model.BlockedUser;
 import com.example.demo.model.Media;
 import com.example.demo.model.Post;
 import com.example.demo.model.Reel;
+import com.example.demo.model.Story;
 import com.example.demo.model.User;
 import com.example.demo.dao.BlockedUserDao;
 
@@ -45,6 +47,10 @@ public class PageController {
 
     @Autowired
     private UserDao userDao;
+
+    @Autowired
+    private StoryDao storyDao;
+
 
     @Autowired
     private BlockedUserDao blockedUserDao;
@@ -115,13 +121,27 @@ public class PageController {
         // Optional: posts and media
         // model.addAttribute("posts", postDao.findByUserId(user.getUser_id()));
         // model.addAttribute("postMediaMap", mediaDao.findByUserId(user.getUser_id()));
+        
+            // Fetch all highlighted stories for current user
+List<Story> highlightedStories = storyDao.findHighlightedStoriesByUser(user.getUser_id());
 
+// Convert filesystem path to web path
+for (Story story : highlightedStories) {
+    String fileName = Paths.get(story.getMediaFile()).getFileName().toString();
+    story.setMediaFile("/uploads/" + fileName);
+}
+
+model.addAttribute("highlightedStories", highlightedStories);
+
+    
         model.addAttribute("canViewPosts", true);
         // 🟢 Add these to prevent Thymeleaf null errors:
     model.addAttribute("isBlockedByMe", false);
     model.addAttribute("hasBlockedMe", false);
 
         return "profile";
+
+
 }
 
 
@@ -224,6 +244,20 @@ public String viewProfile(@PathVariable Long profileId, Model model, HttpSession
 model.addAttribute("user", profileUser);
 model.addAttribute("currentUser", loggedInUser);
 
+      
+
+        // Add:
+        // Fetch all highlighted stories for profile user
+List<Story> highlightedStories = storyDao.findHighlightedStoriesByUser(profileUser.getUser_id());
+
+// Convert filesystem path to web path
+for (Story story : highlightedStories) {
+    String fileName = Paths.get(story.getMediaFile()).getFileName().toString();
+    story.setMediaFile("/uploads/" + fileName);
+}
+
+model.addAttribute("highlightedStories", highlightedStories);
+
  boolean canViewPosts = ((profileUser.getPrivacy() == User.Privacy.PUBLIC)
                            || isFollowing
                            || loggedInUserId.equals(profileId)) && !isBlockedByMe && !hasBlockedMe;
@@ -231,7 +265,8 @@ model.addAttribute("currentUser", loggedInUser);
 
 
 
-        return "profile";
+      return "profile";
+
 }
 
 

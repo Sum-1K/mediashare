@@ -2,10 +2,12 @@ package com.example.demo.controller;
 
 import java.io.File;
 import java.io.IOException; // your DAO class for DB operations
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -13,6 +15,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dao.UserDao;
+import com.example.demo.dao.StoryDao;
+import com.example.demo.model.Story;
 import com.example.demo.model.User;
 
 import jakarta.servlet.http.HttpSession;
@@ -23,6 +27,10 @@ public class SettingController {
 
     @Autowired
     private UserDao userDao;
+
+    
+    @Autowired
+    private StoryDao storyDao;  // <-- Add this injection
 
     private static final String UPLOAD_DIR = System.getProperty("user.dir") + "/uploads/profile/";
 
@@ -94,6 +102,27 @@ public String updatePrivacy(@RequestParam("privacy") String privacy, HttpSession
         return "ERROR: " + e.getMessage();
     }
 }
+
+    @GetMapping("/archive")
+public String viewArchive(HttpSession session, Model model) {
+    User user = (User) session.getAttribute("loggedInUser");
+    if (user == null) {
+        return "redirect:/login"; // Redirect if user is not logged in
+    }
+
+    // Fetch user's archived stories (you can later connect this with your Story DAO)
+    // Example: List<Story> archivedStories = storyDao.findArchivedByUserId(user.getUser_id());
+    // model.addAttribute("stories", archivedStories);
+
+    // For now, let's just send user info
+    // Fetch archived stories for this user
+    List<Story> archivedStories = storyDao.findArchivedStoriesByUser(user.getUser_id());
+
+    model.addAttribute("user", user);
+    model.addAttribute("stories", archivedStories);
+    return "archive_story"; // Thymeleaf will load archive_story.html
+}
+
 
 
 }

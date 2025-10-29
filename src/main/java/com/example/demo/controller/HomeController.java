@@ -76,11 +76,25 @@ public class HomeController {
         logger.info("User Stories for {} (ID: {}): {}", currentUser.getUser_name(), currentUser.getUser_id(), userStories);
 
         // Fetch stories of users the current user is following
-        List<User> followingUsers = followDao.getFollowing(currentUser.getUser_id());
-        List<Long> followingIds = followingUsers.stream().map(User::getUser_id).toList();
+List<User> followingUsers = followDao.getFollowing(currentUser.getUser_id());
+List<Long> followingIds = followingUsers.stream().map(User::getUser_id).toList();
 
-        List<Object[]> followingStories = storyDao.findActiveStoriesWithUsersByUserIds(followingIds);
-        model.addAttribute("followingStories", followingStories);
+List<Object[]> followingStoriesRaw = storyDao.findActiveStoriesWithUsersByUserIds(followingIds);
+
+// Group stories by user
+Map<Long, List<Object[]>> storiesByUser = new HashMap<>();
+for (Object[] story : followingStoriesRaw) {
+    Long userId = (Long) story[5]; // adjust index to user_id in your query
+    storiesByUser.computeIfAbsent(userId, k -> new ArrayList<>()).add(story);
+}
+
+// Take only one story per user for display (e.g., first story)
+List<Object[]> followingStories = new ArrayList<>();
+for (List<Object[]> userStoryList : storiesByUser.values()) {
+    followingStories.addAll(userStoryList); // send all stories
+}
+
+model.addAttribute("followingStories", followingStories);
 
         logger.info("Following Users for {} (ID: {}): {}", currentUser.getUser_name(), currentUser.getUser_id(), followingUsers);
         logger.info("Following Stories for {} (ID: {}): {}", currentUser.getUser_name(), currentUser.getUser_id(), followingStories);
@@ -188,6 +202,9 @@ public class HomeController {
             return date2 != null && date1 != null ? date2.compareTo(date1) : 0;
         });
 
+
+
+
         model.addAttribute("feedItems", feedItems);
         model.addAttribute("postUserMap", postUserMap);
         model.addAttribute("postCreatedAtMap", postCreatedAtMap);
@@ -200,5 +217,8 @@ public class HomeController {
         model.addAttribute("reelCommentsMap", reelCommentsMap);
 
         return "home";
-    }
+    }  
+
+
 }
+

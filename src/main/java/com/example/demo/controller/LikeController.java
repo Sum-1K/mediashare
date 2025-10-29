@@ -1,15 +1,25 @@
 package com.example.demo.controller;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
 import com.example.demo.dao.LikeDao;
 import com.example.demo.model.Like;
 import com.example.demo.model.User;
-import jakarta.servlet.http.HttpSession;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.stereotype.Controller;
-import java.time.LocalDateTime;
-import java.util.List;
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/like")
@@ -57,6 +67,48 @@ public String toggleLike(
         return "redirect:/";  // fallback
     }
 }
+
+
+
+  // ---------------- Story toggle (AJAX) ----------------
+    @PostMapping("/story/toggle")
+    @ResponseBody
+    public Map<String, Object> toggleStoryLike(@RequestParam Long contentId,
+                                               HttpSession session) {
+
+        Map<String, Object> response = new HashMap<>();
+        User user = (User) session.getAttribute("loggedInUser");
+
+        if (user == null) {
+            response.put("error", "User not logged in");
+            return response;
+        }
+
+        Long userId = user.getUser_id();
+        int rowsDeleted = likeDao.deleteByUserIdAndContentId(userId, contentId);
+        boolean liked = rowsDeleted == 0;
+
+        if (liked) {
+            Like like = new Like();
+            like.setContentId(contentId);
+            like.setUserId(userId);
+            like.setCreatedAt(LocalDateTime.now());
+            likeDao.insert(like);
+        }
+
+        int likeCount = likeDao.countByContentId(contentId);
+        response.put("liked", liked);
+        response.put("likeCount", likeCount);
+
+        return response;
+    }
+
+    // ---------------- Story like count (AJAX) ----------------
+    @GetMapping("/story/{storyId}/count")
+    @ResponseBody
+    public int getStoryLikeCount(@PathVariable Long storyId) {
+        return likeDao.countByContentId(storyId);
+    }
 
     // // ✅ Add Like
     // @PostMapping("/add")

@@ -213,8 +213,6 @@ if (taggedUserIds != null && !taggedUserIds.isEmpty()) {
     int likesCount = likeDao.countByContentId(post.getPostId());
 
     List<CommentDTO> comments = commentDao.findWithUsernameByContentId(id);
-    model.addAttribute("comments", comments);
-
 
     model.addAttribute("post", post);
     model.addAttribute("mediaList", mediaList); // ✅ add this line

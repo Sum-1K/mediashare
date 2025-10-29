@@ -843,3 +843,28 @@ body.search-open .main-content {
     max-width: calc(975px - 82px);
   }
 }
+
+.archive-btn {
+  background: rgba(0,0,0,0.5);
+  color: white;
+  border: none;
+  padding: 3px 6px;
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 12px;
+}
+.story-item {
+  position: relative; /* Ensure archive button positions correctly */
+}
+#toggleArchiveBtn {
+  background-color: #333;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  transition: 0.2s ease;
+}
+#toggleArchiveBtn:hover {
+  background-color: #555;
+}

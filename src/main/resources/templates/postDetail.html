@@ -87,9 +87,43 @@
 
 .scroll-arrow.left { left: 10px; }
 .scroll-arrow.right { right: 10px; }
+
+
+/* --- Small Close (X) Button --- */
+.close-btn {
+  position: fixed;
+  top: 18px;
+  right: 22px;
+  font-size: 26px;
+  font-weight: 600;
+  color: #444;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  cursor: pointer;
+  z-index: 1000;
+  transition: all 0.2s ease-in-out;
+}
+
+.close-btn:hover {
+  background: #f5f5f5;
+  border-color: #999;
+  transform: scale(1.1);
+}
+
     </style>
 </head>
 <body>
+
+<!-- ✅ Close button -->
+<a href="javascript:history.back()" class="close-btn" title="Close">&times;</a>
+
 
 <div class="post-container">
     <!-- Media section -->

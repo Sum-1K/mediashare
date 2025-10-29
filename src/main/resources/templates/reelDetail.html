@@ -125,27 +125,30 @@
         <div>
             <div class="caption" th:text="${reel.caption}">Sample caption</div>
 
-            <div class="likes">
-                <span th:text="${likesCount}">0</span> likes
-                <form th:action="@{/reel/like}" method="post" style="display:inline;">
-                    <input type="hidden" name="reelId" th:value="${reel.reelId}"/>
-                    <button type="submit">❤️ Like</button>
-                </form>
-            </div>
-
-            <div class="comments">
-                <div class="comment" th:each="comment : ${comments}">
-                    <b th:text="${comment.username}"></b>:
-                    <span th:text="${comment.content}"></span>
-                </div>
-            </div>
+           <div class="likes">
+    <span th:text="${likesCount}">0</span> likes
+    <form th:action="@{/like/toggle}" method="post" style="display:inline;">
+        <input type="hidden" name="contentId" th:value="${reel.reelId}"/>
+        <input type="hidden" name="type" value="reel"/>
+        <button type="submit">❤️ Like</button>
+    </form>
+</div>
+        <div class="comments">
+    <div class="comment" th:each="comment : ${comments}">
+        <b th:text="${comment.username}"></b>:
+        <span th:text="${comment.content}"></span>
+    </div>
+</div>
+            
         </div>
 
-        <form th:action="@{/reel/comment}" method="post">
-            <input type="hidden" name="reelId" th:value="${reel.reelId}"/>
-            <input type="text" name="text" placeholder="Add a comment..." required/>
-            <button type="submit">Post</button>
-        </form>
+        <form th:action="@{/comment/addReel}" method="post">
+    <input type="hidden" name="reelId" th:value="${reel.reelId}"/>
+    <input type="text" name="text" placeholder="Add a comment..." required/>
+    <input type="hidden" name="type" value="reel"/>
+    <button type="submit">Post</button>
+</form>
+
     </div>
 </div>
 

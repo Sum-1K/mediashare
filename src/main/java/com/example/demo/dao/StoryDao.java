@@ -68,6 +68,12 @@ public class StoryDao extends BaseDao<Story, Long> {
                  "ORDER BY c.created_at DESC";
     return jdbcTemplate.query(sql, getRowMapper(), userId);
     }
+    public Story findById(Long storyId) {
+    String sql = "SELECT * FROM stories WHERE story_id = ?";
+    List<Story> stories = jdbcTemplate.query(sql, getRowMapper(), storyId);
+    return stories.isEmpty() ? null : stories.get(0);
+}
+
 
 
 
@@ -109,5 +115,24 @@ public class StoryDao extends BaseDao<Story, Long> {
         rs.getString("photo")
     }, userIds.toArray());
 }
+
+public List<Story> findArchivedStoriesByUser(Long userId) {
+    String sql = "SELECT s.* FROM stories s " +
+                 "JOIN content c ON s.story_id = c.content_id " +
+                 "WHERE c.user_id = ? AND s.is_archived = true " +
+                 "ORDER BY c.created_at DESC";
+    return jdbcTemplate.query(sql, getRowMapper(), userId);
+}
+
+public List<Story> findHighlightedStoriesByUser(Long userId) {
+    String sql = "SELECT * FROM stories s " +
+                 "JOIN content c ON s.story_id = c.content_id " +
+                 "WHERE c.user_id = ? AND s.is_highlighted = true " +
+                 "ORDER BY c.created_at DESC";
+
+    return jdbcTemplate.query(sql, getRowMapper(), userId);
+}
+
+
 
 }

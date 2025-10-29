@@ -52,6 +52,7 @@
         <a href="/notifications"><i class="fa-regular fa-heart top-icon"></i></a>
         <i class="fa-regular fa-paper-plane top-icon"></i>
       </div>
+
     </header>
 
     <!-- Stories Section -->
@@ -61,14 +62,26 @@
           <img th:src="@{${currentUser.photo != null ? '/uploads/profile/' + currentUser.photo : '/default.png'}}" alt="Add Story">
           <span>+</span>
         </div>
-        <div class="story-item has-story" th:if="${currentUser != null and not #lists.isEmpty(userStories)}" th:attr="data-story-id=${userStories[0].storyId}">
-          <img th:src="@{${currentUser.photo != null ? '/uploads/profile/' + currentUser.photo : '/default.png'}}" alt="Your Story">
-          <span th:text="${currentUser.user_name}">You</span>
-        </div>
-        <div th:each="story : ${followingStories}" th:if="${currentUser != null and story != null}" class="story-item has-story" th:attr="data-story-id=${story[0]}">
-          <img th:src="${story[7] != null ? '/uploads/profile/' + story[7] : '/default.png'}" th:alt="${story[6]}">
-          <span th:text="${story[6]}">Username</span>
-        </div>
+        <div class="story-item has-story" 
+     th:if="${currentUser != null and not #lists.isEmpty(userStories)}" 
+     th:attr="data-story-id=${userStories[0].storyId}, data-user-name=${currentUser.user_name}">
+  <img th:src="@{${currentUser.photo != null ? '/uploads/profile/' + currentUser.photo : '/default.png'}}" alt="Your Story">
+  <span th:text="${currentUser.user_name}">You</span>
+
+ 
+</div>
+
+       <div th:each="story : ${followingStories}" 
+     th:if="${currentUser != null and story != null}" 
+     class="story-item has-story" 
+     th:attr="data-story-id=${story[0]}, data-user-name=${story[6]}">
+  <img th:src="${story[7] != null ? '/uploads/profile/' + story[7] : '/default.png'}" th:alt="${story[6]}">
+  <span th:text="${story[6]}">Username</span>
+
+  
+</div>
+
+
       </div>
     </section>
 
@@ -80,6 +93,43 @@
         <img id="storyImage" src="" alt="Story">
         <video id="storyVideo" src="" controls style="display:none;"></video>
         <div id="storyUsername"></div>
+
+        <!-- ✅ Archive Toggle Button -->
+    <button id="toggleArchiveBtn" 
+            style="margin-top:10px; padding:6px 12px; background:#333; color:#fff; border:none; border-radius:8px; cursor:pointer;">
+      Archive
+    </button>
+
+
+        <!-- ✅ Inside .story-content (below Archive button) -->
+<div class="story-actions" style="margin-top:15px; display:flex; gap:15px; align-items:center;">
+  <!-- Like button -->
+  <button id="storyLikeBtn" 
+          style="background:#ff4d4d; color:white; border:none; border-radius:8px; padding:6px 12px; cursor:pointer;">
+    ❤️ Like (<span id="storyLikeCount">0</span>)
+  </button>
+
+  <!-- Comment button -->
+  <button id="storyCommentBtn"
+          style="background:#007bff; color:white; border:none; border-radius:8px; padding:6px 12px; cursor:pointer;">
+    💬 Comment
+  </button>
+</div>
+
+<!-- Comment modal -->
+<div id="storyCommentModal" style="display:none; margin-top:10px; border-top:1px solid #ddd; padding-top:10px;">
+  <textarea id="storyCommentText" rows="2" placeholder="Write a comment..." 
+            style="width:100%; border-radius:8px; padding:5px;"></textarea>
+  <button id="storySubmitCommentBtn" 
+          style="margin-top:6px; background:#28a745; color:white; border:none; border-radius:8px; padding:6px 12px; cursor:pointer;">
+    Post
+  </button>
+</div>
+
+
+
+
+
       </div>
       <button id="storyNext" class="story-nav">&gt;</button>
     </div>
@@ -87,119 +137,137 @@
     <!-- Feed Section -->
     <main class="feed">
       <div th:each="item : ${feedItems}" class="post" th:attr="data-post-id=${item.type == 'POST' ? item.content.postId : ''}, data-reel-id=${item.type == 'REEL' ? item.content.reelId : ''}">
-        <!-- Post -->
-        <div th:if="${item.type == 'POST'}">
-          <div class="post-header">
-            <img th:src="@{${postUserMap[item.content.postId].photo != null ? '/uploads/profile/' + postUserMap[item.content.postId].photo : '/default.png'}}" alt="User Photo" />
-            <span th:text="${postUserMap[item.content.postId].user_name}"></span>
-          </div>
-          <div class="post-media" th:if="${postMediaMap[item.content.postId] != null}">
-            <div class="carousel">
-              <div class="carousel-slide" th:each="media : ${postMediaMap[item.content.postId]}" th:if="${media != null}">
-                <img th:if="${media.type.name() == 'PHOTO'}" th:src="@{${#strings.replace(media.url, 'src/main/resources/static', '')}}" class="carousel-img" alt="Post image" />
-                <video th:if="${media.type.name() == 'VIDEO'}" class="carousel-img" controls>
-                  <source th:src="@{${#strings.replace(media.url, 'src/main/resources/static', '')}}" type="video/mp4"/>
-                </video>
-              </div>
-            </div>
-            <button class="prev">&lt;</button>
-            <button class="next">&gt;</button>
-            <div class="carousel-indicators"></div>
-          </div>
-          <div class="post-actions">
-            <form th:action="@{/like/add}" method="post" style="display:inline;">
-              <input type="hidden" name="postId" th:value="${item.content.postId}"/>
-              <i class="fa-regular fa-heart like-btn"></i>
-            </form>
-            <i class="fa-regular fa-comment comment-btn"></i>
-            <i class="fa-regular fa-paper-plane"></i>
-            <div class="comment-popup">
-              <div class="comment-content">
-                <div class="comment-header">
-                  <h3>Comments</h3>
-                  <span class="close-btn">&times;</span>
-                </div>
-                <div class="comment-list">
-                  <div class="comment" th:each="comment : ${postCommentsMap[item.content.postId]}" th:if="${comment != null}">
-                    <div class="comment-text">
-                      <span class="comment-username" th:text="${commentUsernamesMap[comment.commentId]}"></span>
-                      <span th:text="${comment.content}"></span>
-                    </div>
-                  </div>
-                </div>
-                <div class="comment-input">
-                  <form th:action="@{/comment/add}" method="post">
-                    <input type="hidden" name="postId" th:value="${item.content.postId}"/>
-                    <input type="text" name="text" placeholder="Add a comment...">
-                    <button class="post-comment">Post</button>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="post-caption" th:if="${item.content.caption != null}">
-            <span class="username" th:text="${postUserMap[item.content.postId].user_name}"></span>
-            <span th:text="${item.content.caption}"></span>
-          </div>
-          <div class="post-meta" th:if="${postCreatedAtMap[item.content.postId] != null}">
-            <span th:text="${postLikesMap[item.content.postId] != null ? postLikesMap[item.content.postId] + ' likes' : '0 likes'}"></span>
-            <small th:text="${#dates.format(postCreatedAtMap[item.content.postId], 'dd MMM yyyy HH:mm')}"></small>
-          </div>
-        </div>
-        <!-- Reel -->
-        <div th:if="${item.type == 'REEL'}">
-          <div class="post-header">
-            <img th:src="@{${reelUserMap[item.content.reelId].photo != null ? '/uploads/profile/' + reelUserMap[item.content.reelId].photo : '/default.png'}}" alt="User Photo" />
-            <span th:text="${reelUserMap[item.content.reelId].user_name}"></span>
-          </div>
-          <div class="reel-video">
-            <a th:href="@{/reels/{id}(id=${item.content.reelId})}">
-              <video th:src="@{${#strings.replace(item.content.videoFile, 'src/main/resources/static', '')}}" controls preload="metadata" onmouseover="this.play()" onmouseout="this.pause(); this.currentTime=0;"></video>
-            </a>
-          </div>
-          <div class="post-actions">
-            <form th:action="@{/reel/like}" method="post" style="display:inline;">
-              <input type="hidden" name="reelId" th:value="${item.content.reelId}"/>
-              <i class="fa-regular fa-heart like-btn"></i>
-            </form>
-            <i class="fa-regular fa-comment comment-btn"></i>
-            <i class="fa-regular fa-paper-plane"></i>
-            <div class="comment-popup">
-              <div class="comment-content">
-                <div class="comment-header">
-                  <h3>Comments</h3>
-                  <span class="close-btn">&times;</span>
-                </div>
-                <div class="comment-list">
-                  <div class="comment" th:each="comment : ${reelCommentsMap[item.content.reelId]}" th:if="${comment != null}">
-                    <div class="comment-text">
-                      <span class="comment-username" th:text="${commentUsernamesMap[comment.commentId]}"></span>
-                      <span th:text="${comment.content}"></span>
-                    </div>
-                  </div>
-                </div>
-                <div class="comment-input">
-                  <form th:action="@{/reel/comment}" method="post">
-                    <input type="hidden" name="reelId" th:value="${item.content.reelId}"/>
-                    <input type="text" name="text" placeholder="Add a comment...">
-                    <button class="post-comment">Post</button>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="post-caption" th:if="${item.content.caption != null}">
-            <span class="username" th:text="${reelUserMap[item.content.reelId].user_name}"></span>
-            <span th:text="${item.content.caption}"></span>
-          </div>
-          <div class="post-meta" th:if="${reelCreatedAtMap[item.content.reelId] != null}">
-            <span th:text="${reelLikesMap[item.content.reelId] != null ? reelLikesMap[item.content.reelId] + ' likes' : '0 likes'}"></span>
-            <small th:text="${#dates.format(reelCreatedAtMap[item.content.reelId], 'dd MMM yyyy HH:mm')}"></small>
-          </div>
-        </div>
-      </div>
-    </main>
+          <div th:if="${item.type == 'POST'}" 
+     class="post-card"
+     th:attr="data-post-id=${item.content.postId}">
+     
+          <!-- Profile link stays separate -->
+  <div class="post-header">
+    <a href="#" th:attr="data-user-id=${postUserMap[item.content.postId].user_id}" class="profile-link">
+      <img th:src="@{${postUserMap[item.content.postId].photo != null ? '/uploads/profile/' + postUserMap[item.content.postId].photo : '/default.png'}}"
+           alt="User Photo" style="cursor: pointer;" />
+      <span th:text="${postUserMap[item.content.postId].user_name}" style="cursor: pointer;"></span>
+    </a>
+  </div>
 
+
+
+  <!-- Make the whole post clickable -->
+  <a th:href="@{/post/{id}(id=${item.content.postId})}" style="text-decoration: none; color: inherit;">
+  <div class="clickable-post"
+       style="cursor:pointer;">
+
+      <!-- Keep your existing media, caption, and meta -->
+      <div class="post-media" th:if="${postMediaMap[item.content.postId] != null}">
+        <div class="carousel">
+          <div class="carousel-slide" th:each="media : ${postMediaMap[item.content.postId]}" th:if="${media != null}">
+            <img th:if="${media.type.name() == 'PHOTO'}" th:src="@{${#strings.replace(media.url, 'src/main/resources/static', '')}}" class="carousel-img" alt="Post image" />
+            <video th:if="${media.type.name() == 'VIDEO'}" class="carousel-img" controls>
+              <source th:src="@{${#strings.replace(media.url, 'src/main/resources/static', '')}}" type="video/mp4"/>
+            </video>
+          </div>
+        </div>
+        <button class="prev">&lt;</button>
+        <button class="next">&gt;</button>
+        <div class="carousel-indicators"></div>
+      </div>
+      
+      <div class="post-caption" th:if="${item.content.caption != null}">
+        <span class="username" th:text="${postUserMap[item.content.postId].user_name}"></span>
+        <span th:text="${item.content.caption}"></span>
+      </div>
+      <div class="post-meta" th:if="${postCreatedAtMap[item.content.postId] != null}">
+        <span th:text="${postLikesMap[item.content.postId] != null ? postLikesMap[item.content.postId] + ' likes' : '0 likes'}"></span>
+        <small th:text="${#dates.format(postCreatedAtMap[item.content.postId], 'dd MMM yyyy HH:mm')}"></small>
+      </div>
+
+  </div> <!-- clickable-post ends -->
+  </a>
+  <!-- Comments section remains separate (not clickable for detail) -->
+  <div class="view-comments" style="color: #555; font-size: 13px; cursor: pointer;"
+       th:attr="data-post-id=${item.content.postId}">
+    View comments (<span th:text="${postCommentsMap[item.content.postId]?.size() != null ? postCommentsMap[item.content.postId].size() : 0}">0</span>)
+  </div>
+
+  <div class="comments-popup"
+       th:attr="id='comments-post-' + ${item.content.postId}"
+       style="display:none; background:#f9f9f9; padding:8px; border-radius:6px; margin-top:5px;">
+    <div th:each="comment : ${postCommentsMap[item.content.postId]}">
+      <strong th:text="${commentUsernamesMap[comment.commentId]}"></strong>: 
+      <span th:text="${comment.content}"></span>
+    </div>
+  </div>
+</div>
+
+
+  <!-- Reel -->
+<div th:if="${item.type == 'REEL'}" class="reel-post">
+  <div class="post-header">
+  <a href="#" th:attr="data-user-id=${reelUserMap[item.content.reelId].user_id}" class="profile-link">
+    <img
+      th:src="@{${reelUserMap[item.content.reelId].photo != null ? '/uploads/profile/' + reelUserMap[item.content.reelId].photo : '/default.png'}}"
+      alt="User Photo"
+      style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; cursor: pointer;"
+    />
+    <span th:text="${reelUserMap[item.content.reelId].user_name}" style="margin-left: 10px; font-weight: 600; cursor: pointer;"></span>
+  </a>
+</div>
+
+
+  <!-- REEL PREVIEW VIDEO -->
+  <div class="reel-video" style="margin-top: 10px; position: relative;">
+    <a th:href="@{/reels/{id}(id=${item.content.reelId})}" style="display: block; position: relative;">
+      <!-- Thumbnail preview (first frame or black fallback) -->
+      <video
+        th:src="@{'/uploads/' + ${#strings.substringAfter(item.content.videoFile, '/uploads/')}}"
+        muted
+        preload="metadata"
+        playsinline
+        style="width: 100%; height: auto; object-fit: cover; border-radius: 10px; background: #000;"
+        poster="/default-thumbnail.jpg"   <!-- fallback image -->
+        onmouseover="this.play()"
+        onmouseout="this.pause(); this.currentTime=0;"
+      ></video>
+
+      <!-- Play icon overlay -->
+      <div style="
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 45px;
+        opacity: 0.8;">
+        <i class="fa-solid fa-play-circle"></i>
+      </div>
+    </a>
+  </div>
+
+  <div class="post-caption" th:if="${item.content.caption != null}" style="margin-top: 8px;">
+    <span class="username" th:text="${reelUserMap[item.content.reelId].user_name}" style="font-weight: 600;"></span>
+    <span th:text="${item.content.caption}" style="margin-left: 5px;"></span>
+  </div>
+
+  <div class="post-meta" style="margin-top: 5px; font-size: 13px; color: gray;">
+    <span th:text="${reelLikesMap[item.content.reelId] != null ? reelLikesMap[item.content.reelId] + ' likes' : '0 likes'}"></span>
+    <small style="margin-left: 10px;" th:text="${#dates.format(reelCreatedAtMap[item.content.reelId], 'dd MMM yyyy HH:mm')}"></small>
+  </div>
+  <!-- Comment popup trigger -->
+<div class="view-comments" style="color: #555; font-size: 13px; cursor: pointer;"
+     th:attr="data-reel-id=${item.content.reelId}">
+  View comments (<span th:text="${reelCommentsMap[item.content.reelId]?.size() != null ? reelCommentsMap[item.content.reelId].size() : 0}">0</span>)
+</div>
+
+<!-- Comment popup -->
+<div class="comments-popup" th:attr="id='comments-reel-' + ${item.content.reelId}" style="display:none; background:#f9f9f9; padding:8px; border-radius:6px; margin-top:5px;">
+  <div th:each="comment : ${reelCommentsMap[item.content.reelId]}">
+    <strong th:text="${commentUsernamesMap[comment.commentId]}"></strong>: 
+    <span th:text="${comment.content}"></span>
+  </div>
+</div>
+
+</div>
+  
     <!-- Bottom Navbar (Mobile) -->
     <nav class="bottom-nav">
       <div class="nav-item active">
@@ -414,80 +482,214 @@
     }
 
     // Story overlay logic
-    let allStories = [];
-    let userStories = /*[[${userStories}]]*/ [];
-    let currentUser = /*[[${currentUser}]]*/ {};
+let allStories = [];
+let userStories = /*[[${userStories}]]*/ [];
+let currentUser = /*[[${currentUser}]]*/ {};
 
-    userStories.forEach(story => {
-      allStories.push({
-        storyId: story.storyId,
-        mediaFile: story.mediaFile,
-        userName: currentUser.user_name
-      });
-    });
+userStories.forEach(story => {
+  allStories.push({
+    storyId: story.storyId,
+    mediaFile: story.mediaFile,
+    userName: currentUser.user_name
+  });
+});
 
-    let followingStories = /*[[${followingStories}]]*/ [];
-    followingStories.forEach(story => {
-      allStories.push({
-        storyId: story.storyId,
-        mediaFile: story.mediaFile,
-        userName: story[6]
-      });
-    });
+let followingStories = /*[[${followingStories}]]*/ [];
+followingStories.forEach(story => {
+  allStories.push({
+    storyId: story[0], // storyId from index 0
+    mediaFile: story[1], // mediaFile from index 2 (based on StoryDao query)
+    userName: story[6] // user_name from index 6
+  });
+});
 
     let currentStoryIndex = 0;
+    let currentUserStories = [];
 
     document.querySelectorAll('.story-item.has-story').forEach((storyDiv) => {
-      const storyId = storyDiv.getAttribute('data-story-id');
+      const storyId = parseInt(storyDiv.getAttribute('data-story-id'));
+      const userName = storyDiv.getAttribute('data-user-name');
       storyDiv.addEventListener('click', () => {
-        const story = allStories.find(s => s.storyId === parseInt(storyId));
+        // Filter stories for the clicked user's username
+        currentUserStories = allStories.filter(s => s.userName === userName);
+        const story = currentUserStories.find(s => s.storyId === storyId);
         if (story) {
-          currentStoryIndex = allStories.indexOf(story);
+          currentStoryIndex = currentUserStories.indexOf(story);
           showStory(currentStoryIndex);
           document.getElementById('storyOverlay').style.display = 'flex';
         }
       });
     });
 
-    function showStory(index) {
-      const story = allStories[index];
-      const storyImage = document.getElementById('storyImage');
-      const storyVideo = document.getElementById('storyVideo');
-      const storyUsername = document.getElementById('storyUsername');
-      const overlay = document.getElementById('storyOverlay');
 
-      if (!story || !story.mediaFile) {
-        overlay.style.display = 'none';
+    // --- Archive toggle functionality inside story modal ---
+const toggleArchiveBtn = document.getElementById('toggleArchiveBtn');
+let currentStory = null; // will store the active story object
+
+function showStory(index) {
+  const story = currentUserStories[index];
+  currentStory = story; // store reference
+  const storyImage = document.getElementById('storyImage');
+  const storyVideo = document.getElementById('storyVideo');
+  const storyUsername = document.getElementById('storyUsername');
+  const overlay = document.getElementById('storyOverlay');
+
+  if (!story || !story.mediaFile) {
+    overlay.style.display = 'none';
+    return;
+  }
+
+  storyUsername.textContent = story.userName;
+  overlay.style.display = 'flex';
+
+  if (story.mediaFile.endsWith('.mp4')) {
+    storyVideo.src = story.mediaFile;
+    storyVideo.style.display = 'block';
+    storyImage.style.display = 'none';
+    storyVideo.play();
+  } else {
+    storyImage.src = story.mediaFile;
+    storyImage.style.display = 'block';
+    storyVideo.style.display = 'none';
+    storyVideo.pause();
+    storyVideo.src = '';
+  }
+
+  // ✅ Update button label based on current archive status
+  fetch(`/stories/status/${story.storyId}`)
+    .then(r => r.json())
+    .then(data => {
+      toggleArchiveBtn.textContent = data.isArchived ? 'Unarchive' : 'Archive';
+      toggleArchiveBtn.dataset.archived = data.isArchived;
+    })
+    .catch(() => {
+      toggleArchiveBtn.textContent = 'Archive';
+      toggleArchiveBtn.dataset.archived = 'false';
+    });
+}
+
+// ✅ Toggle archive/unarchive
+toggleArchiveBtn.addEventListener('click', () => {
+  if (!currentStory) return;
+  const newArchivedStatus = toggleArchiveBtn.dataset.archived === 'true' ? false : true;
+
+fetch('/stories/archive', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  body: `storyId=${currentStory.storyId}&archived=${newArchivedStatus}`
+})
+  .then(response => response.text())
+  .then(msg => {
+    console.log(msg);
+    toggleArchiveBtn.textContent = newArchivedStatus ? 'Unarchive' : 'Archive';
+    toggleArchiveBtn.dataset.archived = newArchivedStatus;
+  })
+  .catch(err => console.error('Archive toggle error:', err));
+
+});
+
+
+
+
+
+
+
+// --- Story Like button setup ---
+const storyLikeBtn = document.getElementById('storyLikeBtn');
+const storyLikeCount = document.getElementById('storyLikeCount');
+
+// ✅ Update like count when story opens
+function updateStoryLikeCount(storyId) {
+  fetch(`/like/story/${storyId}/count`)
+    .then(r => r.text())
+    .then(count => {
+      storyLikeCount.textContent = count;
+    })
+    .catch(err => console.error('Error fetching like count:', err));
+}
+
+// ✅ Extend showStory() to refresh like count too
+function showStory(index) {
+  // existing code inside your function stays same...
+  const story = currentUserStories[index];
+  currentStory = story;
+
+  // ✅ Update like count each time a story is opened
+  updateStoryLikeCount(story.storyId);
+
+  // (no other change needed here)
+}
+
+// ✅ Handle like button click
+storyLikeBtn.addEventListener('click', () => {
+  if (!currentStory) return;
+  fetch('/like/story/toggle', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `contentId=${currentStory.storyId}`
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) {
+        alert('Please login to like stories!');
+        return;
+      }
+      storyLikeCount.textContent = data.likeCount;
+      storyLikeBtn.textContent = data.liked
+        ? `❤️ Liked (${data.likeCount})`
+        : `🤍 Like (${data.likeCount})`;
+    })
+    .catch(err => console.error('Like toggle error:', err));
+});
+
+  // ✅ Open the comment modal
+document.getElementById("storyCommentBtn").addEventListener("click", () => {
+  const modal = document.getElementById("storyCommentModal");
+  modal.style.display = modal.style.display === "none" ? "block" : "none";
+});
+
+// ✅ Submit comment on "Post" button click
+document.getElementById("storySubmitCommentBtn").addEventListener("click", () => {
+  const text = document.getElementById("storyCommentText").value.trim();
+  if (!text) return alert("Please enter a comment!");
+
+  fetch("/comment/story/add", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: `contentId=${currentStory.storyId}&text=${encodeURIComponent(text)}`
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) {
+        alert("Please login to comment!");
         return;
       }
 
-      storyUsername.textContent = story.userName;
-      overlay.style.display = 'flex';
+      // Dynamically append comment
+      const commentList = document.createElement("div");
+      commentList.innerHTML = `<b>${data.username}:</b> ${data.content}`;
+      document.getElementById("storyCommentModal").appendChild(commentList);
 
-      if (story.mediaFile.endsWith('.mp4')) {
-        storyVideo.src = story.mediaFile;
-        storyVideo.style.display = 'block';
-        storyImage.style.display = 'none';
-        storyVideo.play();
-      } else {
-        storyImage.src = story.mediaFile;
-        storyImage.style.display = 'block';
-        storyVideo.style.display = 'none';
-        storyVideo.pause();
-        storyVideo.src = '';
-      }
-    }
+      document.getElementById("storyCommentText").value = "";
+    })
+    .catch(err => console.error("Comment add error:", err));
+});
+
+
+
+
+
 
     document.getElementById('storyNext').addEventListener('click', () => {
-      if (currentStoryIndex < allStories.length - 1) {
-        currentStoryIndex++;
+      if (currentUserStories.length > 0) {
+        currentStoryIndex = (currentStoryIndex + 1) % currentUserStories.length;
         showStory(currentStoryIndex);
       }
     });
 
     document.getElementById('storyPrev').addEventListener('click', () => {
-      if (currentStoryIndex > 0) {
-        currentStoryIndex--;
+      if (currentUserStories.length > 0) {
+        currentStoryIndex = (currentStoryIndex - 1 + currentUserStories.length) % currentUserStories.length;
         showStory(currentStoryIndex);
       }
     });
@@ -577,10 +779,12 @@
         searchResults.innerHTML = "<div style='padding: 10px; text-align: center; color: #8e8e8e;'>No users found</div>";
         return;
       }
+
       users.forEach(user => {
         const resultDiv = document.createElement("div");
         resultDiv.className = "search-result";
         const profilePicUrl = user.photo ? `/uploads/profile/${user.photo}` : '/uploads/default_dp.jpg';
+
         resultDiv.innerHTML = `
           <img src="${profilePicUrl}" alt="${user.user_name}" onerror="this.src='/uploads/default_dp.jpg'">
           <div>
@@ -659,6 +863,7 @@ resultDiv.addEventListener('click', () => {
         resultDiv.addEventListener('click', () => {
           window.location.href = `/hashtag/${tag.text}`;
         });
+
         searchResults.appendChild(resultDiv);
       });
     }
@@ -673,6 +878,51 @@ resultDiv.addEventListener('click', () => {
       }
       document.addEventListener('click', () => menuPopup.classList.remove('active'));
     }
+    document.querySelectorAll('.view-comments').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const postId = btn.getAttribute('data-post-id');
+    const reelId = btn.getAttribute('data-reel-id');
+    let popup;
+    if (postId) {
+      popup = document.getElementById('comments-post-' + postId);
+    } else if (reelId) {
+      popup = document.getElementById('comments-reel-' + reelId);
+    }
+    if (popup) {
+      popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+    }
+  });
+})
+
+  // Redirect to user's profile on clicking profile icon
+document.querySelectorAll('.profile-link').forEach(link => {
+  link.addEventListener('click', (event) => {
+    event.preventDefault();
+    const userId = link.getAttribute('data-user-id');
+    if (!userId) return;
+
+    // Check follow/visibility status
+    fetch(`/follow/status/${userId}`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.privacy === "PUBLIC" || data.isFollowing) {
+          window.location.href = `/profile/${userId}`;
+        } else {
+          window.location.href = `/user/${userId}`;
+        }
+      })
+      .catch(error => {
+        console.error("Error checking follow status:", error);
+        window.location.href = `/user/${userId}`;
+      });
+  });
+});
+
+
+
+
+
+
   </script>
 </body>
 </html>

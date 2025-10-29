@@ -3,10 +3,15 @@ package com.example.demo.controller;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dao.ContentDao;
@@ -65,6 +70,61 @@ public String uploadStory(@RequestParam("storyFile") MultipartFile file,
         return "error";
     }
 }
+
+@PostMapping("/stories/archive")
+@ResponseBody
+public String toggleArchive(@RequestParam("storyId") Long storyId,
+                            @RequestParam("archived") boolean archived) {
+    try {
+        Story story = storyDao.findById(storyId);
+        if (story == null) {
+            return "Story not found";
+        }
+        story.setIsArchived(archived);
+        storyDao.update(story);
+        return archived ? "Story archived" : "Story unarchived";
+    } catch (Exception e) {
+        e.printStackTrace();
+        return "Error updating archive status";
+    }
+}
+
+
+@GetMapping("/stories/status/{id}")
+@ResponseBody
+public Map<String, Object> getStoryStatus(@PathVariable("id") Long id) {
+    Map<String, Object> response = new HashMap<>();
+    try {
+        Story story = storyDao.findById(id);
+        if (story != null) {
+            response.put("isArchived", story.getIsArchived());
+        } else {
+            response.put("isArchived", false);
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+        response.put("isArchived", false);
+    }
+    return response;
+}
+
+@PostMapping("/stories/highlight")
+@ResponseBody
+public String toggleHighlight(@RequestParam Long storyId, 
+                              @RequestParam boolean isHighlighted) {
+    Story story = storyDao.findById(storyId);
+    if (story == null) return "Story not found";
+
+    story.setIsHighlighted(isHighlighted);
+    storyDao.update(story);
+
+    return "Success";
+}
+
+
+
+
+
 
    
 }
