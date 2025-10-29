@@ -151,7 +151,6 @@
   </div>
 
 
-
   <!-- Make the whole post clickable -->
   <a th:href="@{/post/{id}(id=${item.content.postId})}" style="text-decoration: none; color: inherit;">
   <div class="clickable-post"
@@ -894,14 +893,20 @@ resultDiv.addEventListener('click', () => {
   });
 })
 
-  // Redirect to user's profile on clicking profile icon
 document.querySelectorAll('.profile-link').forEach(link => {
   link.addEventListener('click', (event) => {
     event.preventDefault();
+
     const userId = link.getAttribute('data-user-id');
     if (!userId) return;
 
-    // Check follow/visibility status
+    // Check if the clicked profile belongs to the logged-in user
+    if (parseInt(userId) === currentUser.user_id) {
+      window.location.href = `/profile`;
+      return;
+    }
+
+    // Otherwise, check follow/visibility status
     fetch(`/follow/status/${userId}`)
       .then(response => response.json())
       .then(data => {
@@ -917,6 +922,7 @@ document.querySelectorAll('.profile-link').forEach(link => {
       });
   });
 });
+
 
 
 
