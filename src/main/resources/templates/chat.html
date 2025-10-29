@@ -93,12 +93,12 @@
                 <div id="chat-container">
                     <div class="chat-header" >
                         <div class="profile-photo-mini">
-                            <img th:src="${chatUser != null ? chatUser.photo ?: '/shifu.jpg' : '/shifu.jpg'}" alt="Profile Picture">
+                            <img th:src="${chatUser != null ? chatUser.photo ?: '/default.jpg' : '/default.jpg'}" alt="Profile Picture">
 
                             <i class="fas fa-user"></i> <!-- Font Awesome user icon -->
                            
                         </div>
-                        <h3 th:if="${chatUser != null}" th:text="${chatUser.user_name}"></h3>
+                        <h3 id="chatHeaderName" th:text="${chatUser != null ? chatUser.user_name : ''}"></h3>
                     </div>
                     <div class="messages">
                       <div th:each="msg : ${messages}" >
@@ -737,10 +737,11 @@ let CURRENT_CHAT_USER_ID = null;
       const chatHeaderName = document.querySelector(".chat-header h3");
 
       if (chatHeaderImg) {
-        chatHeaderImg.src = photo ? `/uploads/profile/${photo}` : '/shifu.jpg';
+        chatHeaderImg.src = photo ? `/uploads/profile/${photo}` : '/default.jpg';
       }
       if (chatHeaderName) {
-        chatHeaderName.textContent = userName;
+        //chatHeaderName.textContent = userName;
+        chatHeaderName.textContent = userName || "";
       }
 
       const res = await fetch(`/chat/messages/${userId}`);
