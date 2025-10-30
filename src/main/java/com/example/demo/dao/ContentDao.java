@@ -79,4 +79,17 @@ public class ContentDao extends BaseDao<Content, Long> {
         String sql = "UPDATE content SET user_id = ? WHERE content_id = ?";
         return jdbcTemplate.update(sql, content.getUserId(), content.getContentId());
     }
+
+    // Add this method to ContentDao.java
+    public Long findOwnerIdByContentId(Long contentId) {
+        String sql = "SELECT user_id FROM content WHERE content_id = ?";
+        try {
+            return jdbcTemplate.queryForObject(sql, Long.class, contentId);
+        } catch (Exception e) {
+            System.err.println("Error finding content owner for contentId: " + contentId);
+            return null;
+        }
+    }
+
+    
 }

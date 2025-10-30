@@ -83,45 +83,22 @@ public class ChatDao extends BaseDao<Chat, Long> {
     return jdbcTemplate.query(sql, getRowMapper(), user1, user2, user2, user1);
     }
 
-    public void saveMessage(Long senderId, Long receiverId, String text, Long repliedToId) {
-    String sql = "INSERT INTO chats (seen, message, sent_at, sender_id, receiver_id, replied_to_id) VALUES (FALSE, ?, NOW(), ?, ?, ?)";
-    jdbcTemplate.update(connection -> {
-        var ps = connection.prepareStatement(sql);
-        ps.setString(1, text);
-        ps.setLong(2, senderId);
-        ps.setLong(3, receiverId);
-        if (repliedToId != null) {
-            ps.setLong(4, repliedToId);
-        } else {
-            ps.setNull(4, java.sql.Types.BIGINT);
-        }
-        return ps;
-    });
+    public Long saveMessage(Long senderId, Long receiverId, String text, Long repliedToId) {
+        String sql = "INSERT INTO chats (seen, message, sent_at, sender_id, receiver_id, replied_to_id) VALUES (FALSE, ?, NOW(), ?, ?, ?) RETURNING chat_id";
+        return jdbcTemplate.queryForObject(sql, Long.class, text, senderId, receiverId, repliedToId);
     }
 
     public Chat saveAndReturn(Chat chat) {
-        String sql = "INSERT INTO chats (seen, message, sent_at, sender_id, receiver_id, replied_to_id) VALUES (FALSE, ?, NOW(), ?, ?, ?)";
-
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, new String[] {"chat_id"});
-            ps.setString(1, chat.getMessage());                    // ?1 -> message
-            ps.setLong(2, chat.getSender_id());                    // ?2 -> sender_id
-            ps.setLong(3, chat.getReceiver_id());                  // ?3 -> receiver_id
-            if (chat.getReplied_to_id() != null) {
-                ps.setLong(4, chat.getReplied_to_id());           // ?4 -> replied_to_id
-            } else {
-                ps.setNull(4, java.sql.Types.BIGINT);             // handle null replied_to_id
-            }
-            return ps;
-        }, keyHolder);
-
-        Number key = keyHolder.getKey();
-        if (key != null) {
-            chat.setChat_id(key.longValue()); // assuming your model has chatId
-        }
-
+        String sql = "INSERT INTO chats (seen, message, sent_at, sender_id, receiver_id, replied_to_id) VALUES (FALSE, ?, NOW(), ?, ?, ?) RETURNING chat_id";
+        
+        Long chatId = jdbcTemplate.queryForObject(sql, Long.class, 
+            chat.getMessage(), 
+            chat.getSender_id(), 
+            chat.getReceiver_id(), 
+            chat.getReplied_to_id()
+        );
+        
+        chat.setChat_id(chatId);
         return chat;
     }
 

@@ -62,4 +62,6 @@ public class BlockedUserController {
         blockedUserService.unblockUser(loggedInUser.getUser_id(), blockedId);
         return "UNBLOCKED";
     }
+
+    
 }

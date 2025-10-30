@@ -33,6 +33,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import java.util.Map;
 
+import com.example.demo.service.NotificationService;
 
 @Controller
 public class ChatController {
@@ -41,13 +42,17 @@ public class ChatController {
 
     private final SimpMessagingTemplate messagingTemplate;
 
-    public ChatController(ChatService chatService, SimpMessagingTemplate messagingTemplate) {
+    public ChatController(ChatService chatService, SimpMessagingTemplate messagingTemplate, NotificationService notificationService) {
         this.chatService = chatService;
         this.messagingTemplate = messagingTemplate;
+        this.notificationService = notificationService;
     }
 
     @Autowired
     private UserDao userDao;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @GetMapping("/chat/users")
     @ResponseBody
@@ -62,7 +67,7 @@ public class ChatController {
         return chatService.getChatUsers(currentUser.getUser_id());
     }
 
-    @GetMapping("/chat/{userId}")
+@GetMapping("/chat/{userId}")
 public String openChat(@PathVariable Long userId, Model model, HttpSession session) {
     User currentUser = (User) session.getAttribute("loggedInUser");
     Long currentUserId = currentUser.getUser_id();
@@ -142,33 +147,55 @@ public List<ChatMessage> getMessages(@PathVariable Long userId, HttpSession sess
     //     );
     // }
 
+    // Modify the sendMessage method in ChatController:
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(@Payload ChatMessage chatMessage, SimpMessageHeaderAccessor headerAccessor) {
-        // User loggedInUser = (User) headerAccessor.getSessionAttributes().get("loggedInUser");
-        // if (loggedInUser == null) {
-        //     throw new IllegalStateException("No logged in user in WebSocket session");
-        // }
-        // Long senderId = loggedInUser.getUser_id(); // real sender
-
-        // chatMessage.setSenderId(senderId);
         System.out.println("Received payload: " + chatMessage); 
-        System.out.println("RepliedToId: " + chatMessage.getRepliedToId());
+
+        Long savedChatId = null;
 
         if (chatMessage.getMedia() != null) {
-            chatService.saveMessageAndMedia(
+            // Save message with media and get the chat ID
+            savedChatId = chatService.saveMessageAndMedia(
                 chatMessage.getSenderId(),
                 chatMessage.getReceiverId(),
                 chatMessage.getContent(),
                 chatMessage.getRepliedToId(),
                 chatMessage.getMedia()
             );
-        } else
-        {
-        chatService.saveMessage(chatMessage.getSenderId(), chatMessage.getReceiverId(), chatMessage.getContent(), chatMessage.getRepliedToId());
+        } else {
+            // Save regular message and get the chat ID
+            savedChatId = chatService.saveMessage(
+                chatMessage.getSenderId(), 
+                chatMessage.getReceiverId(), 
+                chatMessage.getContent(), 
+                chatMessage.getRepliedToId()
+            );
+        }
+
+        // 🔥 CREATE NOTIFICATION FOR THE RECEIVER
+        if (savedChatId != null) {
+            if (chatMessage.getRepliedToId() != null) {
+                // It's a reply to a message
+                notificationService.createReplyNotification(
+                    chatMessage.getSenderId(), 
+                    chatMessage.getReceiverId(), 
+                    savedChatId, 
+                    chatMessage.getRepliedToId()
+                );
+            } else {
+                // It's a new message
+                notificationService.createMessageNotification(
+                    chatMessage.getSenderId(), 
+                    chatMessage.getReceiverId(), 
+                    savedChatId
+                );
+            }
         }
 
         messagingTemplate.convertAndSend("/topic/messages/" + chatMessage.getReceiverId(), chatMessage);
     }
+
 
     @GetMapping("/session/currentUser")
     @ResponseBody

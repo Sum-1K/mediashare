@@ -168,3 +168,52 @@ a {
     text-decoration: none;
     color: inherit;
 }
+
+/* Add these styles to your existing notifications.css */
+.tag-response-buttons {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.tag-response-buttons form {
+    margin: 0;
+}
+
+.tag-response-buttons .btn {
+    padding: 5px 15px;
+    font-size: 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-accept {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-accept:hover {
+    background-color: #218838;
+}
+
+.btn-reject {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-reject:hover {
+    background-color: #c82333;
+}
+
+.notification-processed {
+    color: #6c757d;
+    font-style: italic;
+}
+
+.tag-notification {
+    border-left: 3px solid #007bff;
+    padding-left: 10px;
+}

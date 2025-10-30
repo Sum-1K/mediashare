@@ -6,43 +6,135 @@
     <title>Media Share Settings</title>
     <link rel="stylesheet" href="/settings.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    
+    <!-- Add Theme CSS Variables -->
+    <style>
+        :root {
+            /* Light theme (default) */
+            --bg-color: #fafafa;
+            --text-color: #262626;
+            --card-bg: #ffffff;
+            --border-color: #dbdbdb;
+            --secondary-text: #8e8e8e;
+            --hover-bg: #fafafa;
+            --input-bg: #ffffff;
+            --input-border: #dbdbdb;
+            --input-text: #262626;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --text-color: #ffffff;
+            --card-bg: #1e1e1e;
+            --border-color: #363636;
+            --secondary-text: #a8a8a8;
+            --hover-bg: #262626;
+            --input-bg: #2a2a2a;
+            --input-border: #363636;
+            --input-text: #ffffff;
+        }
+
+        /* Apply theme to settings page */
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .settings-container {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+        }
+
+        .setting-item {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .setting-label {
+            color: var(--text-color);
+        }
+
+        .link {
+            color: var(--text-color);
+        }
+
+        .link:hover {
+            color: var(--secondary-text);
+        }
+
+        .username-input {
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--input-text);
+        }
+
+        .username-input::placeholder {
+            color: var(--secondary-text);
+        }
+
+        /* Update radio buttons for dark theme */
+        [data-theme="dark"] .radio-group label {
+            color: var(--text-color);
+        }
+
+        /* Update bottom nav for dark theme */
+        .bottom-nav {
+            background-color: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .nav-item {
+            color: var(--text-color);
+        }
+
+        .nav-item.active {
+            color: #0095f6;
+        }
+
+        /* Update menu popup for dark theme */
+        .menu-popup {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+        }
+
+        .menu-item {
+            color: var(--text-color);
+        }
+
+        .menu-item:hover {
+            background-color: var(--hover-bg);
+        }
+    </style>
 </head>
-<body>
+<body th:attr="data-theme=${userTheme}" data-theme="light">
     <div class="settings-container">
         <h1>MediaShare Settings</h1>
 
         <!-- Profile Picture Upload -->
         <div class="setting-item">
-    <!-- 🔸 Removed image + label wrapper -->
-    <span class="setting-label">Update Profile Picture</span> <!-- 🔹 Changed text -->
+            <span class="setting-label">Update Profile Picture</span>
+            <form th:action="@{/settings/updateProfilePic}" 
+                  method="post" 
+                  enctype="multipart/form-data" 
+                  class="profile-form">
+                <input type="file" name="profilePic" id="profileUpload" accept="image/*" hidden onchange="this.form.submit()">
+                <button type="button" class="change-btn" onclick="document.getElementById('profileUpload').click()">Change</button>
+            </form>
+        </div>
 
-    <form th:action="@{/settings/updateProfilePic}" 
-          method="post" 
-          enctype="multipart/form-data" 
-          class="profile-form">
-        <!-- 🔸 Same input logic -->
-        <input type="file" name="profilePic" id="profileUpload" accept="image/*" hidden onchange="this.form.submit()">
-        <button type="button" class="change-btn" onclick="document.getElementById('profileUpload').click()">Change</button>
-    </form>
-</div>
-
-
-
-<!-- Username Update -->
-<div class="setting-item username-section">
-    <span class="setting-label">Username</span>
-    <div class="username-actions">
-        <input type="text" id="usernameInput" placeholder="Enter new username" class="username-input">
-        <button class="save-btn" onclick="saveUsername()">Update</button>
-    </div>
-</div>
-
+        <!-- Username Update -->
+        <div class="setting-item username-section">
+            <span class="setting-label">Username</span>
+            <div class="username-actions">
+                <input type="text" id="usernameInput" placeholder="Enter new username" class="username-input">
+                <button class="save-btn" onclick="saveUsername()">Update</button>
+            </div>
+        </div>
 
         <div class="setting-item">
-    <span class="setting-label">Saved</span>
-    <a th:href="@{/saved/my}" class="link">View Saved</a>
-</div>
-
+            <span class="setting-label">Saved</span>
+            <a th:href="@{/saved/my}" class="link">View Saved</a>
+        </div>
 
         <div class="setting-item">
             <span class="setting-label">Story Archive Enabled</span>
@@ -67,20 +159,18 @@
         </div>
 
         <div class="setting-item">
-  <span class="setting-label">Account Privacy</span>
-  <div class="radio-group">
-    <label>
-  <input type="radio" name="privacy" value="PRIVATE"
-         th:checked="${user.privacy == T(com.example.demo.model.User.Privacy).PRIVATE}"> Private
-</label>
-<label>
-  <input type="radio" name="privacy" value="PUBLIC"
-         th:checked="${user.privacy == T(com.example.demo.model.User.Privacy).PUBLIC}"> Public
-</label>
-
-  </div>
-</div>
-
+            <span class="setting-label">Account Privacy</span>
+            <div class="radio-group">
+                <label>
+                    <input type="radio" name="privacy" value="PRIVATE"
+                         th:checked="${user.privacy == T(com.example.demo.model.User.Privacy).PRIVATE}"> Private
+                </label>
+                <label>
+                    <input type="radio" name="privacy" value="PUBLIC"
+                         th:checked="${user.privacy == T(com.example.demo.model.User.Privacy).PUBLIC}"> Public
+                </label>
+            </div>
+        </div>
 
         <div class="setting-item">
             <span class="setting-label">Close Friends</span>
@@ -104,10 +194,10 @@
             <span class="setting-label">Theme</span>
             <div class="radio-group">
                 <label>
-                    <input type="radio" name="theme" checked> Light
+                    <input type="radio" name="theme" value="light" th:checked="${userTheme == 'light'}"> Light
                 </label>
                 <label>
-                    <input type="radio" name="theme"> Dark
+                    <input type="radio" name="theme" value="dark" th:checked="${userTheme == 'dark'}"> Dark
                 </label>
             </div>
         </div>
@@ -116,129 +206,219 @@
     </div>
 
     <!-- Bottom Navbar (Sidebar on larger screens) -->
-<nav class="bottom-nav">
-  <div class="nav-item" onclick="location.href='home.html'">
-    <i class="fa-solid fa-house"></i>
-    <span>Home</span>
-  </div>
-  <div class="nav-item" onclick="location.href='search.html'">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span>Search</span>
-  </div>
-  <div class="nav-item" onclick="location.href='create.html'">
-    <i class="fa-solid fa-circle-plus"></i>
-    <span>Create</span>
-  </div>
-  <div class="nav-item" onclick="location.href='chat.html'">
-    <i class="fa-regular fa-comment"></i>
-    <span>Messages</span>
-  </div>
-  <div class="nav-item" onclick="location.href='profile.html'">
-    <i class="fa-regular fa-user"></i>
-    <span>Profile</span>
-  </div>
-  <div class="nav-item more-btn">
-    <i class="fa-solid fa-bars"></i>
-    <span>More</span>
-  </div>
+    <nav class="bottom-nav">
+        <div class="nav-item" onclick="location.href='/home'">
+            <i class="fa-solid fa-house"></i>
+            <span>Home</span>
+        </div>
+        <div class="nav-item" onclick="location.href='/search'">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>Search</span>
+        </div>
+        <div class="nav-item" onclick="location.href='/create'">
+            <i class="fa-solid fa-circle-plus"></i>
+            <span>Create</span>
+        </div>
+        <div class="nav-item" onclick="location.href='/chat'">
+            <i class="fa-regular fa-comment"></i>
+            <span>Messages</span>
+        </div>
+        <div class="nav-item" onclick="location.href='/profile'">
+            <i class="fa-regular fa-user"></i>
+            <span>Profile</span>
+        </div>
+        <div class="nav-item more-btn">
+            <i class="fa-solid fa-bars"></i>
+            <span>More</span>
+        </div>
 
-  <!-- Popup menu -->
-  <div class="menu-popup">
-    <div class="menu-item" onclick="location.href='settings.html'">Settings</div>
-    <div class="menu-item" onclick="location.href='activity.html'">Your activity</div>
-    <div class="menu-item" onclick="location.href='saved.html'">Saved</div>
-    <div class="menu-item">Switch appearance</div>
-    <div class="menu-item" onclick="location.href='report.html'">Report a problem</div>
-    <div class="menu-item" onclick="location.href='accounts.html'">Switch accounts</div>
-    <div class="menu-item" onclick="location.href='logout.html'">Log out</div>
-  </div>
-</nav>
+        <!-- Popup menu -->
+        <div class="menu-popup">
+            <div class="menu-item" onclick="location.href='/settings'">Settings</div>
+            <div class="menu-item" onclick="location.href='/activity'">Your activity</div>
+            <div class="menu-item" onclick="location.href='/saved'">Saved</div>
+            <div class="menu-item">Switch appearance</div>
+            <div class="menu-item" onclick="location.href='/report'">Report a problem</div>
+            <div class="menu-item" onclick="location.href='/accounts'">Switch accounts</div>
+            <div class="menu-item" onclick="location.href='/logout'">Log out</div>
+        </div>
+    </nav>
 
+    <script>// Function to apply theme to the entire page
+function applyTheme(theme) {
+    // Apply theme to document and body
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', theme);
+    
+    // Update radio buttons to reflect the current theme
+    updateThemeRadioButtons(theme);
+    
+    console.log('Settings page - Theme applied:', theme);
+}
 
-
-    <script>
-        document.querySelectorAll('.nav-item').forEach(item => {
-    item.addEventListener('click', () => {
-      const link = item.getAttribute('data-link');
-      if (link) window.location.href = link;
+// Function to update theme radio buttons
+function updateThemeRadioButtons(theme) {
+    document.querySelectorAll('input[name="theme"]').forEach(radio => {
+        radio.checked = (radio.value === theme);
     });
-  });
-        // Toggle and position popup menu for the "More" button
-        const moreBtn = document.querySelector('.more-btn');
-        const popup = document.querySelector('.menu-popup');
-        const bottomNav = document.querySelectorAll('.bottom-nav i');
+}
 
-        // Toggle active class for bottom nav icons
-        bottomNav.forEach(icon => {
-            icon.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (!icon.classList.contains('more-btn')) {
-                    bottomNav.forEach(i => i.classList.remove('active'));
-                    icon.classList.add('active');
-                }
-            });
-        });
+// Function to show success message without alert
+function showThemeSuccessMessage(message) {
+    // Remove existing message if any
+    const existingMessage = document.querySelector('.theme-success-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    // Create success message
+    const successMessage = document.createElement('div');
+    successMessage.className = 'theme-success-message';
+    successMessage.textContent = message;
+    successMessage.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #4CAF50;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 4px;
+        z-index: 10000;
+        font-size: 14px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    `;
+    
+    document.body.appendChild(successMessage);
+    
+    // Remove message after 3 seconds
+    setTimeout(() => {
+        successMessage.remove();
+    }, 3000);
+}
 
-        // Toggle popup menu
-        moreBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            popup.classList.toggle('active');
-
-            // Dynamically position popup to stay within viewport
-            const rect = moreBtn.getBoundingClientRect();
-            const isDesktop = window.innerWidth >= 1024;
-            const popupHeight = popup.offsetHeight;
-            const popupWidth = popup.offsetWidth;
-
-            if (isDesktop) {
-                // Sidebar mode: position to the right
-                popup.style.left = '82px';
-                popup.style.right = 'auto';
-                popup.style.top = `${rect.top - popupHeight + 40}px`;
-                popup.style.bottom = 'auto';
-            } else {
-                // Mobile mode: position above navbar
-                popup.style.right = '10px';
-                popup.style.left = 'auto';
-                popup.style.bottom = `${window.innerHeight - rect.top + 10}px`;
-                popup.style.top = 'auto';
-
-                // Adjust if popup would go off-screen
-                if (rect.right + popupWidth > window.innerWidth) {
-                    popup.style.right = '5px';
-                }
-            }
-        });
-
-        // Close popup when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!popup.contains(e.target) && !moreBtn.contains(e.target)) {
-                popup.classList.remove('active');
-            }
-        });
-
-document.querySelectorAll('input[name="privacy"]').forEach(radio => {
-  radio.addEventListener('change', function() {
-    const selected = this.value; // now directly PRIVATE or PUBLIC
-
-    fetch('/settings/updatePrivacy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `privacy=${selected}`
-    })
-    .then(res => res.text())
-    .then(data => {
-      if (data === 'SUCCESS') {
-        alert(`Privacy updated to ${selected}`);
-      } else {
-        alert('Error updating privacy. Please try again.');
-      }
-    })
-    .catch(err => console.error('Privacy update failed:', err));
-  });
+// Initialize theme on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Get current theme from data attribute or default to light
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 
+                        document.body.getAttribute('data-theme') || 
+                        'light';
+    
+    console.log('Settings page - Current theme on load:', currentTheme);
+    
+    // Apply the theme to the entire page
+    applyTheme(currentTheme);
 });
 
-</script>
+// Theme radio buttons
+document.querySelectorAll('input[name="theme"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const selectedTheme = this.value;
+        console.log('Settings page - Theme changed to:', selectedTheme);
+        
+        fetch('/settings/updateTheme', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `theme=${selectedTheme}`
+        })
+        .then(res => res.text())
+        .then(data => {
+            console.log('Settings page - Server response:', data);
+            if (data === 'SUCCESS') {
+                // Update the current page theme immediately using the new function
+                applyTheme(selectedTheme);
+                
+                // Show success message without page reload
+                showThemeSuccessMessage('Theme updated successfully!');
+            } else {
+                alert('Error updating theme. Please try again.');
+            }
+        })
+        .catch(err => console.error('Theme update failed:', err));
+    });
+});
 
+// Rest of your existing JavaScript for navigation, etc.
+document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+        const link = item.getAttribute('data-link');
+        if (link) window.location.href = link;
+    });
+});
+
+// Toggle and position popup menu for the "More" button
+const moreBtn = document.querySelector('.more-btn');
+const popup = document.querySelector('.menu-popup');
+const bottomNav = document.querySelectorAll('.bottom-nav i');
+
+// Toggle active class for bottom nav icons
+bottomNav.forEach(icon => {
+    icon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!icon.classList.contains('more-btn')) {
+            bottomNav.forEach(i => i.classList.remove('active'));
+            icon.classList.add('active');
+        }
+    });
+});
+
+// Toggle popup menu
+moreBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    popup.classList.toggle('active');
+
+    // Dynamically position popup to stay within viewport
+    const rect = moreBtn.getBoundingClientRect();
+    const isDesktop = window.innerWidth >= 1024;
+    const popupHeight = popup.offsetHeight;
+    const popupWidth = popup.offsetWidth;
+
+    if (isDesktop) {
+        // Sidebar mode: position to the right
+        popup.style.left = '82px';
+        popup.style.right = 'auto';
+        popup.style.top = `${rect.top - popupHeight + 40}px`;
+        popup.style.bottom = 'auto';
+    } else {
+        // Mobile mode: position above navbar
+        popup.style.right = '10px';
+        popup.style.left = 'auto';
+        popup.style.bottom = `${window.innerHeight - rect.top + 10}px`;
+        popup.style.top = 'auto';
+
+        // Adjust if popup would go off-screen
+        if (rect.right + popupWidth > window.innerWidth) {
+            popup.style.right = '5px';
+        }
+    }
+});
+
+// Close popup when clicking outside
+document.addEventListener('click', (e) => {
+    if (!popup.contains(e.target) && !moreBtn.contains(e.target)) {
+        popup.classList.remove('active');
+    }
+});
+
+document.querySelectorAll('input[name="privacy"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const selected = this.value;
+
+        fetch('/settings/updatePrivacy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `privacy=${selected}`
+        })
+        .then(res => res.text())
+        .then(data => {
+            if (data === 'SUCCESS') {
+                alert(`Privacy updated to ${selected}`);
+            } else {
+                alert('Error updating privacy. Please try again.');
+            }
+        })
+        .catch(err => console.error('Privacy update failed:', err));
+    });
+});
+    </script>
 </body>
 </html>

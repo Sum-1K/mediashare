@@ -1,0 +1,87 @@
+/* Theme Variables */
+:root {
+    /* Light theme */
+    --bg-color: #fafafa;
+    --text-color: #262626;
+    --card-bg: #ffffff;
+    --border-color: #dbdbdb;
+    --secondary-text: #8e8e8e;
+    --hover-bg: #fafafa;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] {
+    --bg-color: #121212;
+    --text-color: #ffffff;
+    --card-bg: #1e1e1e;
+    --border-color: #363636;
+    --secondary-text: #a8a8a8;
+    --hover-bg: #262626;
+    --shadow-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Apply theme variables */
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+.sidebar, .top-nav, .post, .search-panel, .menu-popup, .story-upload-content {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+.nav-item, .search-result, .menu-item {
+    color: var(--text-color);
+}
+
+.nav-item:hover, .search-result:hover, .menu-item:hover {
+    background-color: var(--hover-bg);
+}
+
+.post-meta, .search-result div div {
+    color: var(--secondary-text);
+}
+
+.post:hover {
+    box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    cursor: pointer;
+    color: var(--text-color);
+    transition: transform 0.2s;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+}
+
+/* Update specific components for dark theme */
+[data-theme="dark"] .top-nav .logo {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .search-panel input {
+    background-color: #2a2a2a;
+    border-color: #363636;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .search-panel input:focus {
+    border-color: #555555;
+}
+
+[data-theme="dark"] .comment-popup .comment-content {
+    background-color: #2a2a2a;
+}
+
+[data-theme="dark"] .comment-input input {
+    background-color: #363636;
+    border-color: #555555;
+    color: #ffffff;
+}

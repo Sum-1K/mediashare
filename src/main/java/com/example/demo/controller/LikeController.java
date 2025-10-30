@@ -16,10 +16,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.demo.dao.LikeDao;
+import com.example.demo.dao.ContentDao;
 import com.example.demo.model.Like;
 import com.example.demo.model.User;
-
+import com.example.demo.service.NotificationService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Controller;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Controller
 @RequestMapping("/like")
@@ -28,35 +34,47 @@ public class LikeController {
     @Autowired
     private LikeDao likeDao;
 
-@PostMapping("/toggle")
-public String toggleLike(
-        @RequestParam Long contentId,         // can be postId or reelId
-        @RequestParam String type,            // "post" or "reel"
-        HttpSession session) {
+    @Autowired
+    private NotificationService notificationService;
 
-    // ✅ Get logged-in user safely
-    User user = (User) session.getAttribute("user");
-    if (user == null) {
-        System.out.println("[ERROR] User not logged in!");
-        return "redirect:/login";  // redirect to login if session expired
-    }
-    Long userId = user.getUser_id();
+    @Autowired
+    private ContentDao contentDao;
 
-    // ✅ Remove existing like if it exists
-    int rowsDeleted = likeDao.deleteByUserIdAndContentId(userId, contentId);
+    @PostMapping("/toggle")
+    public String toggleLike(
+            @RequestParam Long contentId,
+            @RequestParam String type,
+            HttpSession session) {
 
-    if (rowsDeleted > 0) {
-        // User unliked
-        System.out.println("[DEBUG] Like removed for contentId=" + contentId + ", userId=" + userId);
-    } else {
-        // User liked
-        Like like = new Like();
-        like.setContentId(contentId);
-        like.setUserId(userId);
-        like.setCreatedAt(LocalDateTime.now());
-        likeDao.insert(like);
-        System.out.println("[DEBUG] Like inserted for contentId=" + contentId + ", userId=" + userId);
-    }
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            System.out.println("[ERROR] User not logged in!");
+            return "redirect:/login";
+        }
+        Long userId = user.getUser_id();
+
+        // Remove existing like if it exists
+        int rowsDeleted = likeDao.deleteByUserIdAndContentId(userId, contentId);
+
+        if (rowsDeleted > 0) {
+            // User unliked
+            System.out.println("[DEBUG] Like removed for contentId=" + contentId + ", userId=" + userId);
+        } else {
+            // User liked
+            Like like = new Like();
+            like.setContentId(contentId);
+            like.setUserId(userId);
+            like.setCreatedAt(LocalDateTime.now());
+            likeDao.insert(like);
+            
+            // Create notification for like
+            Long contentOwnerId = contentDao.findOwnerIdByContentId(contentId);
+            if (contentOwnerId != null && !contentOwnerId.equals(userId)) {
+                notificationService.createLikeNotification(userId, contentOwnerId, contentId, like.getLikeId());
+            }
+            
+            System.out.println("[DEBUG] Like inserted for contentId=" + contentId + ", userId=" + userId);
+        }
 
     // ✅ Redirect back to the correct page
     if (type.equals("post")) {

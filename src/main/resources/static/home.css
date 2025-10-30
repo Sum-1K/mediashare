@@ -15,6 +15,23 @@ body {
   overflow-x: hidden;
 }
 
+/* Theme Toggle Button */
+.theme-toggle {
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    cursor: pointer;
+    color: var(--text-color);
+    transition: transform 0.2s;
+    padding: 5px;
+    border-radius: 50%;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+    background-color: var(--hover-bg);
+}
+
 /* Sidebar Styles */
 .sidebar {
   background-color: #fff;

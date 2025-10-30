@@ -30,12 +30,22 @@ public class ChatService {
     return chatDao.findMessagesBetweenWithMedia(currentUserId, otherUserId);
     }
 
-    public void saveMessage(Long senderId, Long recieverId, String text, Long repliedToId){
-        chatDao.saveMessage(senderId, recieverId, text, repliedToId);
+    @Transactional
+    public Long saveMessage(Long senderId, Long receiverId, String content, Long repliedToId) {
+        Chat chat = new Chat();
+        chat.setSender_id(senderId);
+        chat.setReceiver_id(receiverId);
+        chat.setMessage(content);
+        chat.setReplied_to_id(repliedToId);
+
+        Chat savedChat = chatDao.saveAndReturn(chat);
+        
+        // 🔥 RETURN THE CHAT ID FOR NOTIFICATIONS
+        return savedChat.getChat_id();
     }
 
     @Transactional
-    public void saveMessageAndMedia(Long senderId, Long receiverId, String content, Long repliedToId, ChatMediaDTO mediaDTO) {
+    public Long saveMessageAndMedia(Long senderId, Long receiverId, String content, Long repliedToId, ChatMediaDTO mediaDTO) {
         // 1️⃣ Save chat message
         Chat chat = new Chat();
         chat.setSender_id(senderId);
@@ -53,5 +63,7 @@ public class ChatService {
             chatMedia.setFile_url(mediaDTO.getFileUrl());
             chatMediaDao.save(chatMedia); 
         }
+
+        return savedChat.getChat_id();
     }
 }

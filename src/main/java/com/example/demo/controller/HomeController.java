@@ -202,8 +202,11 @@ model.addAttribute("followingStories", followingStories);
             return date2 != null && date1 != null ? date2.compareTo(date1) : 0;
         });
 
-
-
+        String userTheme = (String) session.getAttribute("userTheme");
+        if (userTheme == null) {
+            userTheme = "light"; // default
+        }
+        model.addAttribute("userTheme", userTheme);
 
         model.addAttribute("feedItems", feedItems);
         model.addAttribute("postUserMap", postUserMap);

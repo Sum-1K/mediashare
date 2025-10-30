@@ -38,6 +38,8 @@ import com.example.demo.model.Post;
 import com.example.demo.model.User;
 
 import jakarta.servlet.http.HttpSession;
+import com.example.demo.service.NotificationService;
+
 
 @Controller
 public class PostController {
@@ -54,6 +56,9 @@ public class PostController {
     private final FollowDao followDao;
 
     @Autowired
+    private NotificationService notificationService;
+
+    @Autowired
     public PostController(ContentDao contentDao, PostDao postDao, MediaDao mediaDao, CommentDao commentDao, LikeDao likeDao, HashtagDao hashtagDao, ContentHashtagDao contentHashtagDao, TagDao tagDao, UserDao userDao, FollowDao followDao) {
         this.contentDao = contentDao;
         this.postDao = postDao;
@@ -67,136 +72,140 @@ public class PostController {
         this.followDao=followDao;
     }
 
-    @PostMapping("/posts")
-    public String uploadPost(@RequestParam("mediaFiles") List<MultipartFile> mediaFiles,
-                            @RequestParam(required = false) String caption,
-                            @RequestParam(required = false) List<Long> taggedUserIds,
-                            HttpSession session) {
+@PostMapping("/posts")
+public String uploadPost(@RequestParam("mediaFiles") List<MultipartFile> mediaFiles,
+                        @RequestParam(required = false) String caption,
+                        @RequestParam(required = false) List<Long> taggedUserIds,
+                        HttpSession session) {
 
-        try {
-            System.out.println("Upload endpoint hit!");
-            System.out.println("Received taggedUsers: " + taggedUserIds);
-            // 1️⃣ Get logged-in user
-            User user = (User) session.getAttribute("loggedInUser");
-            if (user == null) {
-                return "redirect:/users/login";
-            }
+    try {
+        System.out.println("Upload endpoint hit!");
+        System.out.println("Received taggedUsers: " + taggedUserIds);
+        // 1️⃣ Get logged-in user
+        User user = (User) session.getAttribute("loggedInUser");
+        if (user == null) {
+            return "redirect:/users/login";
+        }
 
-            // 2️⃣ Insert into content table
-            Content content = new Content();
-            content.setUserId(user.getUser_id());
-            content.setCreatedAt(LocalDateTime.now());
-            Long contentId = contentDao.saveAndReturnId(content);
+        // 2️⃣ Insert into content table
+        Content content = new Content();
+        content.setUserId(user.getUser_id());
+        content.setCreatedAt(LocalDateTime.now());
+        Long contentId = contentDao.saveAndReturnId(content);
 
-            // 3️⃣ Insert into post table
-            Post post = new Post();
-            post.setPostId(contentId);
-            post.setCaption(caption);
-            postDao.save(post);
+        // 3️⃣ Insert into post table
+        Post post = new Post();
+        post.setPostId(contentId);
+        post.setCaption(caption);
+        postDao.save(post);
 
-            // 4️⃣ Handle multiple media files
-            String uploadDir = "src/main/resources/static/uploads/"; // relative to project root
-            Files.createDirectories(Paths.get(uploadDir));
+        // 4️⃣ Handle multiple media files
+        String uploadDir = "src/main/resources/static/uploads/"; // relative to project root
+        Files.createDirectories(Paths.get(uploadDir));
 
-            int order = 1; // maintain order
-            for (MultipartFile file : mediaFiles) {
-                if (!file.isEmpty()) {
-                    // Save file
-                    Path path = Paths.get(uploadDir, file.getOriginalFilename());
-                    Files.write(path, file.getBytes());
-                    String mediaPath = "src/main/resources/static/uploads/" + file.getOriginalFilename(); // path to use in HTML
+        int order = 1; // maintain order
+        for (MultipartFile file : mediaFiles) {
+            if (!file.isEmpty()) {
+                // Save file
+                Path path = Paths.get(uploadDir, file.getOriginalFilename());
+                Files.write(path, file.getBytes());
+                String mediaPath = "src/main/resources/static/uploads/" + file.getOriginalFilename(); // path to use in HTML
 
-                    // Detect type
-                    String contentType = file.getContentType();
-                    MediaType mediaType;
-                    if (contentType != null && contentType.startsWith("image")) {
-                        mediaType = MediaType.PHOTO;
-                    } else if (contentType != null && contentType.startsWith("video")) {
-                        mediaType = MediaType.VIDEO;
-                    } else {
-                        mediaType = MediaType.PHOTO; // fallback
-                    }
-
-                    // Insert into media table
-                    Media media = new Media();
-                    media.setPostId(contentId);
-                    media.setUrl(mediaPath);
-                    media.setType(mediaType);
-                    media.setMediaOrder(order++);
-                    mediaDao.insert(media);
-                }
-            }
-
-            if (caption != null && !caption.isEmpty()) {
-            // Use regex to find hashtags
-            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("#(\\w+)");
-            java.util.regex.Matcher matcher = pattern.matcher(caption);
-
-            while (matcher.find()) {
-                String hashtagText = matcher.group(1).toLowerCase();
-
-                Long hashtagId = null;
-                try {
-                    Hashtag existing = hashtagDao.findByText(hashtagText);
-                    hashtagId = existing.getHashtagId();
-                } catch (Exception e) {
-                    // Not found → insert new one
-                    Hashtag newTag = new Hashtag();
-                    newTag.setText(hashtagText);
-                    hashtagDao.insert(newTag);
-
-                    // Retrieve ID of inserted hashtag
-                    Hashtag inserted = hashtagDao.findByText(hashtagText);
-                    hashtagId = inserted.getHashtagId();
+                // Detect type
+                String contentType = file.getContentType();
+                MediaType mediaType;
+                if (contentType != null && contentType.startsWith("image")) {
+                    mediaType = MediaType.PHOTO;
+                } else if (contentType != null && contentType.startsWith("video")) {
+                    mediaType = MediaType.VIDEO;
+                } else {
+                    mediaType = MediaType.PHOTO; // fallback
                 }
 
-                // Link content ↔ hashtag
-                if (hashtagId != null) {
-                    ContentHashtag contentHashtag=new ContentHashtag();
-                    contentHashtag.setHashtag_id(hashtagId);
-                    contentHashtag.setContent_id(contentId);
-                    contentHashtagDao.save(contentHashtag);
-                }
+                // Insert into media table
+                Media media = new Media();
+                media.setPostId(contentId);
+                media.setUrl(mediaPath);
+                media.setType(mediaType);
+                media.setMediaOrder(order++);
+                mediaDao.insert(media);
             }
         }
 
-        // --- TAGGED USERS ---
-if (taggedUserIds != null && !taggedUserIds.isEmpty()) {
-    for (Long taggedId : taggedUserIds) {
-        User taggedUser = userDao.findById(taggedId); // find the user
-        if (taggedUser == null) continue;
+        if (caption != null && !caption.isEmpty()) {
+        // Use regex to find hashtags
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("#(\\w+)");
+        java.util.regex.Matcher matcher = pattern.matcher(caption);
 
-        boolean canTag = false;
+        while (matcher.find()) {
+            String hashtagText = matcher.group(1).toLowerCase();
 
-        // Check tagging rules
-        if (taggedUser.getPrivacy() == User.Privacy.PUBLIC) {
-            canTag = true;
-        } else if (taggedUser.getPrivacy() == User.Privacy.PRIVATE) {
-            canTag = followDao.isFollowing(user.getUser_id(), taggedId);
+            Long hashtagId = null;
+            try {
+                Hashtag existing = hashtagDao.findByText(hashtagText);
+                hashtagId = existing.getHashtagId();
+            } catch (Exception e) {
+                // Not found → insert new one
+                Hashtag newTag = new Hashtag();
+                newTag.setText(hashtagText);
+                hashtagDao.insert(newTag);
+
+                // Retrieve ID of inserted hashtag
+                Hashtag inserted = hashtagDao.findByText(hashtagText);
+                hashtagId = inserted.getHashtagId();
+            }
+
+            // Link content ↔ hashtag
+            if (hashtagId != null) {
+                ContentHashtag contentHashtag=new ContentHashtag();
+                contentHashtag.setHashtag_id(hashtagId);
+                contentHashtag.setContent_id(contentId);
+                contentHashtagDao.save(contentHashtag);
+            }
         }
+    }
 
-        if (canTag) {
-            Tag tag = new Tag();
-            tag.setUser_id(taggedId);
-            tag.setContent_id(content.getContentId());
-            tag.setStatus("PENDING"); // default status
-            tagDao.save(tag);          // insert into DB
+    // --- TAGGED USERS ---
+    if (taggedUserIds != null && !taggedUserIds.isEmpty()) {
+        for (Long taggedId : taggedUserIds) {
+            User taggedUser = userDao.findById(taggedId); // find the user
+            if (taggedUser == null) continue;
 
-            // Optional: create notification
-            //notificationDao.createTagNotification(taggedId, content.getContentId(), user.getUser_id());
+            boolean canTag = false;
+
+            // Check tagging rules
+            if (taggedUser.getPrivacy() == User.Privacy.PUBLIC) {
+                canTag = true;
+            } else if (taggedUser.getPrivacy() == User.Privacy.PRIVATE) {
+                canTag = followDao.isFollowing(user.getUser_id(), taggedId);
+            }
+
+            if (canTag) {
+                Tag tag = new Tag();
+                tag.setUser_id(taggedId);
+                tag.setContent_id(contentId); // Use contentId instead of content.getContentId()
+                tag.setStatus("PENDING"); // default status
+                Long tagId = tagDao.saveAndReturnId(tag); // Make sure this returns the generated tag ID
+
+                // 🔥 CREATE NOTIFICATION FOR TAG
+                notificationService.createTagNotification(
+                    user.getUser_id(),  // taggerUserId
+                    taggedId,           // taggedUserId  
+                    contentId,          // contentId
+                    tagId               // tagId
+                );
+            }
         }
+    }
+
+        // 5️⃣ Redirect to user's profile
+        return "redirect:/profile"; // you can also do "/profile/" + user.getUsername()
+
+    } catch (IOException e) {
+        e.printStackTrace();
+        return "redirect:/profile?error"; // optional error flag
     }
 }
-
-
-            // 5️⃣ Redirect to user's profile
-            return "redirect:/profile"; // you can also do "/profile/" + user.getUsername()
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            return "redirect:/profile?error"; // optional error flag
-        }
-    }
 
     @GetMapping("/post/{id}")
     public String viewPost(@PathVariable Long id, Model model) {

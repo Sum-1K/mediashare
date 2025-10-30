@@ -12,12 +12,12 @@ public class Notification {
     private Long commentId;        // One-to-one
     private Long tagId;            // One-to-one
     private Long likeId;           // One-to-one
+    private Boolean is_read;
 
-    public Notification() {}
-
+    // Constructor
     public Notification(Long notifId, LocalDateTime createdAt, String notificationContent,
                         Long userId, Long chatId, Long followRequestId,
-                        Long commentId, Long tagId, Long likeId) {
+                        Long commentId, Long tagId, Long likeId, Boolean is_read) {
         this.notifId = notifId;
         this.createdAt = createdAt;
         this.notificationContent = notificationContent;
@@ -27,7 +27,11 @@ public class Notification {
         this.commentId = commentId;
         this.tagId = tagId;
         this.likeId = likeId;
+        this.is_read = is_read;
     }
+
+    // Default constructor
+    public Notification() {}
 
     // Getters and setters
     public Long getNotifId() { return notifId; }
@@ -56,4 +60,8 @@ public class Notification {
 
     public Long getLikeId() { return likeId; }
     public void setLikeId(Long likeId) { this.likeId = likeId; }
+
+    public Boolean getIsRead() { return is_read; }
+    public void setIsRead(Boolean is_read) { this.is_read = is_read; }
+
 }

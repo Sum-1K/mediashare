@@ -66,4 +66,10 @@ public class PostDao extends BaseDao<Post, Long> {
                     "ORDER BY c.created_at DESC";
         return jdbcTemplate.query(sql, getRowMapper(), userId);
     }
+
+    public Post findByContentId(Long contentId) {
+    String sql = "SELECT * FROM posts WHERE post_id = ?";
+    return jdbcTemplate.queryForObject(sql, getRowMapper(), contentId);
+}
+
 }

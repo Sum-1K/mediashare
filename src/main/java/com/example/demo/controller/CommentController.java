@@ -1,7 +1,11 @@
 package com.example.demo.controller;
 
-import java.time.LocalDateTime;
-
+import com.example.demo.dao.CommentDao;
+import com.example.demo.dao.ContentDao;
+import com.example.demo.model.Comment;
+import com.example.demo.model.User;
+import com.example.demo.service.NotificationService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,16 +26,24 @@ public class CommentController {
     @Autowired
     private CommentDao commentDao;
 
+    @Autowired
+    private NotificationService notificationService;
+
+    @Autowired
+    private ContentDao contentDao;
+
     // ✅ Add comment
     @PostMapping("/add")
     public String addComment(@RequestParam("postId") Long postId,
-                        @RequestParam("text") String text,
-                        HttpSession session) {
+                            @RequestParam("text") String text,
+                            HttpSession session) {
 
         User user = (User) session.getAttribute("loggedInUser");
         if (user == null) {
             return "redirect:/users/login";
         }
+
+        //abdjdww=djdj;
 
         Comment comment = new Comment();
         comment.setContent(text);
@@ -41,29 +53,20 @@ public class CommentController {
 
         commentDao.insert(comment);
 
-        // Redirect back to post page
+        // Create notification for comment
+        Long contentOwnerId = contentDao.findOwnerIdByContentId(postId);
+        if (contentOwnerId != null && !contentOwnerId.equals(user.getUser_id())) {
+            notificationService.createCommentNotification(user.getUser_id(), contentOwnerId, postId, comment.getCommentId());
+        }
+
         return "redirect:/post/" + postId;
     }
-
-    // // ✅ Delete comment
-    // @PostMapping("/delete")
-    // public String deleteComment(@RequestParam("commentId") Long commentId,
-    //                             @RequestParam("postId") Long postId,
-    //                             HttpSession session) {
-    //     User user = (User) session.getAttribute("loggedInUser");
-    //     if (user == null) {
-    //         return "redirect:/users/login";
-    //     }
-
-    //     commentDao.deleteById(commentId);
-    //     return "redirect:/post/" + postId;
-    // }
 
     // ✅ Add comment for reel
     @PostMapping("/addReel")
     public String addReelComment(@RequestParam("reelId") Long reelId,
-                            @RequestParam("text") String text,
-                            HttpSession session) {
+                                @RequestParam("text") String text,
+                                HttpSession session) {
 
         User user = (User) session.getAttribute("loggedInUser");
         if (user == null) {
@@ -79,7 +82,12 @@ public class CommentController {
         commentDao.insert(comment);
         System.out.println("[DEBUG] Reel comment added by userId=" + user.getUser_id() + " for reelId=" + reelId);
 
-        // Redirect back to reel detail page
+        // Create notification for reel comment
+        Long contentOwnerId = contentDao.findOwnerIdByContentId(reelId);
+        if (contentOwnerId != null && !contentOwnerId.equals(user.getUser_id())) {
+            notificationService.createCommentNotification(user.getUser_id(), contentOwnerId, reelId, comment.getCommentId());
+        }
+
         return "redirect:/reels/" + reelId;
     }
 

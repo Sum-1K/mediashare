@@ -1,130 +1,122 @@
-/* General reset */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Poppins', sans-serif;
-    background: #f8f9fb;
-    color: #333;
-    display: flex;
-}
-
-/* Sidebar Navbar */
-.sidebar {
-    width: 240px;
-    min-height: 100vh;
-    background: #eceff1;
+.notifications-container {
+    max-width: 600px;
+    margin: 0 auto;
     padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: fixed;
-    top: 0;
-    left: 0;
-    border-right: 1px solid #ddd;
+    font-family: Arial, sans-serif;
 }
 
-.logo {
-    font-size: 1.6rem;
-    font-weight: 600;
+.notifications-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 30px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 15px;
 }
 
-.nav-links {
-    list-style: none;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.sidebar a {
+.back-button {
     text-decoration: none;
-    color: #000;
+    color: #0095f6;
+    font-weight: bold;
+}
+
+.notifications-list {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.notification-item {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    width: 100%;
-    padding: 12px 16px;
-    border-radius: 12px;
+    padding: 15px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s;
+}
+
+.notification-item:hover {
+    background-color: #f8f8f8;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-content p {
+    margin: 0 0 5px 0;
     font-weight: 500;
-    background: #fff;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.08);
-    transition: all 0.2s ease;
 }
 
-.sidebar a i {
-    font-size: 18px;
-    margin-right: 12px;
-}
-
-.sidebar a span {
-    font-size: 14px;
-}
-
-.sidebar a:hover {
-    background-color: #f1f3f5;
-    transform: translateY(-2px);
-}
-
-.sidebar a.active {
-    background-color: #e0e0e0;
-    font-weight: 600;
-}
-
-/* Notifications Section */
-.notifications {
-    margin-left: 260px;
-    padding: 30px;
-    max-width: 700px;
-    width: 100%;
-}
-
-.notifications h2 {
-    margin-bottom: 20px;
-    font-weight: 600;
-    color: #444;
-}
-
-/* Notification Cards (match sidebar links style) */
-.notification-card {
-    display: flex;
-    align-items: center;
-    background: #fff;
-    border-radius: 12px;
-    padding: 12px 16px;
-    margin-bottom: 16px;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.08);
-    transition: all 0.2s ease;
-}
-
-.notification-card:hover {
-    background-color: #f1f3f5;
-    transform: translateY(-2px);
-}
-
-.notification-card img {
-    border-radius: 50%;
-    margin-right: 12px;
-    width: 40px;
-    height: 40px;
-}
-
-.notification-card .notification-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    flex: 1;
-}
-
-.notification-card p {
-    font-size: 14px;
-}
-
-.notification-card .time {
+.notification-content small {
+    color: #8e8e8e;
     font-size: 12px;
-    color: #777;
-    margin-top: 4px;
+}
+
+.notification-type {
+    font-size: 12px;
+    padding: 4px 8px;
+    background: #f0f0f0;
+    border-radius: 12px;
+    color: #666;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #8e8e8e;
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 16px;
+}
+
+/* Add these styles to your existing notifications.css */
+.tag-response-buttons {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.tag-response-buttons form {
+    margin: 0;
+}
+
+.tag-response-buttons .btn {
+    padding: 5px 15px;
+    font-size: 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-accept {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-accept:hover {
+    background-color: #218838;
+}
+
+.btn-reject {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-reject:hover {
+    background-color: #c82333;
+}
+
+.notification-processed {
+    color: #6c757d;
+    font-style: italic;
+}
+
+.tag-notification {
+    border-left: 3px solid #007bff;
+    padding-left: 10px;
 }

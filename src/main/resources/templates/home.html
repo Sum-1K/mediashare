@@ -6,8 +6,36 @@
   <title>MediaShare Home</title>
   <link rel="stylesheet" href="/home.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <!-- Dynamic Theme CSS -->
+  <link rel="stylesheet" th:href="@{/css/theme.css}">
+  <style th:inline="css">
+      :root {
+          /* Light theme (default) */
+          --bg-color: #fafafa;
+          --text-color: #262626;
+          --card-bg: #ffffff;
+          --border-color: #dbdbdb;
+          --secondary-text: #8e8e8e;
+          --hover-bg: #fafafa;
+      }
+      
+      [data-theme="dark"] {
+          --bg-color: #121212;
+          --text-color: #ffffff;
+          --card-bg: #1e1e1e;
+          --border-color: #363636;
+          --secondary-text: #a8a8a8;
+          --hover-bg: #262626;
+      }
+      
+      body {
+          background-color: var(--bg-color);
+          color: var(--text-color);
+          transition: background-color 0.3s ease, color 0.3s ease;
+      }
+  </style>
 </head>
-<body>
+<body th:attr="data-theme=${userTheme}" data-theme="light">
   <!-- Sidebar -->
   <div class="sidebar">
     <div class="nav-item active">
@@ -49,8 +77,15 @@
     <header class="top-nav">
       <div class="logo">MediaShare</div>
       <div class="top-icons">
-        <a href="/notifications"><i class="fa-regular fa-heart top-icon"></i></a>
-        <i class="fa-regular fa-paper-plane top-icon"></i>
+          <!-- Theme Toggle Button -->
+          <button id="themeToggle" class="theme-toggle">
+              <i class="fa-solid fa-sun" id="themeIcon"></i>
+          </button>
+          
+          <!-- Notifications Link -->
+          <a href="/notifications" class="nav-link">
+              🔔 Notifications
+          </a>
       </div>
 
     </header>
@@ -329,11 +364,15 @@
   <!-- JavaScript -->
   <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', () => {
+      initializeTheme();
+
       const storyUploadModal = document.querySelector('#storyUploadModal');
       storyUploadModal.style.display = 'none';
       initSearch();
       initMoreMenu();
     });
+
+
 
     // Search functionality elements
     const searchBtn = document.getElementById('search-btn');
@@ -929,6 +968,83 @@ document.querySelectorAll('.profile-link').forEach(link => {
 
 
 
+
+// Theme functionality
+// Theme functionality
+function initializeTheme() {
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    
+    // Get current theme from the data-theme attribute on body/html element
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 
+                        document.body.getAttribute('data-theme') || 
+                        'light';
+
+    console.log('Home page - Current theme on load:', currentTheme);
+
+    // Initialize theme UI
+    applyTheme(currentTheme);
+
+    // Theme toggle event
+    if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            console.log('Home page - Theme changing to:', newTheme);
+            
+            // Update UI immediately
+            applyTheme(newTheme);
+            
+            // Save to server immediately
+            saveThemePreference(newTheme);
+        });
+    }
+}
+
+function applyTheme(theme) {
+    // Apply theme to document
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', theme);
+    
+    // Update theme icon
+    updateThemeIcon(theme);
+}
+
+function updateThemeIcon(theme) {
+    const themeIcon = document.getElementById('themeIcon');
+    if (themeIcon) {
+        if (theme === 'dark') {
+            themeIcon.className = 'fa-solid fa-moon';
+        } else {
+            themeIcon.className = 'fa-solid fa-sun';
+        }
+    }
+}
+
+function saveThemePreference(theme) {
+    fetch('/settings/updateTheme', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `theme=${theme}`
+    })
+    .then(response => response.text())
+    .then(data => {
+        if (data !== 'SUCCESS') {
+            console.error('Home page - Failed to save theme preference');
+        } else {
+            console.log('Home page - Theme saved successfully:', theme);
+        }
+    })
+    .catch(error => {
+        console.error('Home page - Error saving theme:', error);
+    });
+}
+
+// // Initialize theme when DOM is loaded
+// document.addEventListener('DOMContentLoaded', initializeTheme);
   </script>
 </body>
 </html>

@@ -145,23 +145,25 @@ model.addAttribute("highlightedStories", highlightedStories);
 }
 
 
-    @GetMapping("/settings")
+    // In PageController.java - update the settingsPage method:
+@GetMapping("/settings")
 public String settingsPage(HttpSession session, Model model) {
-    // Get current user
     User user = (User) session.getAttribute("loggedInUser");
-    if (user == null) {
-        return "redirect:/users/login"; // redirect if not logged in
+    if (user != null) {
+        model.addAttribute("user", user);
+        
+        // Get current theme - this will use the @ModelAttribute method
+        String userTheme = (String) session.getAttribute("userTheme");
+        if (userTheme == null) {
+            userTheme = "light"; // default
+        }
+        model.addAttribute("userTheme", userTheme);
+    } else {
+        return "redirect:/login";
     }
-
-    model.addAttribute("user", user);
-    return "settings"; // Thymeleaf template: settings.html
+    return "settings";
 }
 
-
-    @GetMapping("/notifications")
-    public String notificationsPage() {
-        return "notifications"; // notifications.html in templates/
-    }
 
     @GetMapping("/profile/{profileId}")
 public String viewProfile(@PathVariable Long profileId, Model model, HttpSession session) {

@@ -7,6 +7,8 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.time.LocalDateTime;
+import org.springframework.dao.EmptyResultDataAccessException;
 
 @Repository
 public class TagDao extends BaseDao<Tag, Long> {
@@ -65,5 +67,31 @@ public class TagDao extends BaseDao<Tag, Long> {
     public List<Tag> findByContentId(Long contentId) {
         String sql = "SELECT * FROM tag WHERE content_id=?";
         return jdbcTemplate.query(sql, getRowMapper(), contentId);
+    }
+
+    public Long saveAndReturnId(Tag tag) {
+    String sql = "INSERT INTO tag (user_id, content_id, status, created_at) VALUES (?, ?, ?, ?) RETURNING tag_id";
+    return jdbcTemplate.queryForObject(sql, Long.class,
+        tag.getUser_id(),
+        tag.getContent_id(),
+        tag.getStatus(),
+        LocalDateTime.now()
+    );
+}
+
+ @Override
+    public Tag findById(Long tagId) {
+        String sql = "SELECT * FROM tag WHERE tag_id = ?";
+        
+        try {
+            return jdbcTemplate.queryForObject(sql, getRowMapper(), tagId);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
+
+    public void delete(Long tagId) {
+        String sql = "DELETE FROM tag WHERE tag_id = ?";
+        jdbcTemplate.update(sql, tagId);
     }
 }

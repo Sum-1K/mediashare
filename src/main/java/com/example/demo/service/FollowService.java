@@ -11,11 +11,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dao.FollowDao;
-import com.example.demo.dao.FollowRequestDao;
+import com.example.demo.dao.FollowRequestDao; // ← FIXED THIS LINE
 import com.example.demo.dao.UserDao;
 import com.example.demo.model.Follow;
 import com.example.demo.model.FollowRequest;
 import com.example.demo.model.User;
+
 
 @Service
 public class FollowService {
@@ -31,6 +32,9 @@ public class FollowService {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private NotificationService notificationService;
     
     public String followUser(Long followerId, Long followingId) {
         try {
@@ -83,6 +87,12 @@ public class FollowService {
                 request.setSent_at(LocalDateTime.now());
                 
                 Long requestId = followRequestDao.save(request);
+                
+                // Create notification for follow request
+                if (notificationService != null) {
+                    notificationService.createFollowRequestNotification(followerId, followingId, requestId);
+                }
+                
                 System.out.println("Follow request save result, ID: " + requestId);
                 return "Follow request sent";
             }
@@ -132,6 +142,12 @@ public class FollowService {
                 // Update request status
                 request.setStatus("ACCEPTED");
                 followRequestDao.update(request);
+                
+                // Create notification for accepted follow request
+                if (notificationService != null) {
+                    notificationService.createFollowAcceptedNotification(request.getReceiver_id(), request.getSender_id());
+                }
+                
                 return "Follow request accepted";
             }
             return "Request not found or already processed";
