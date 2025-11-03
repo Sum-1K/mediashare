@@ -52,7 +52,7 @@ public class CommentController {
         comment.setUserId(user.getUser_id());
         comment.setContentId(postId);
 
-        commentDao.insert(comment);
+        commentDao.insertAndReturn(comment);
 
         // Create notification for comment
         Long contentOwnerId = contentDao.findOwnerIdByContentId(postId);

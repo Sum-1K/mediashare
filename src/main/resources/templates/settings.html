@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Media Share Settings</title>
+    <title>MediaShare Settings</title>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+    <!-- Our combined stylesheet -->
     <link rel="stylesheet" href="/settings.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     
@@ -106,9 +112,284 @@
         }
     </style>
 </head>
-<body th:attr="data-theme=${userTheme}" data-theme="light">
-    <div class="settings-container">
-        <h1>MediaShare Settings</h1>
+<style>
+  /* -------------------------------------------------
+   BASIC RESET & TYPOGRAPHY
+   ------------------------------------------------- */
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background:#fafafa;
+    color:#262626;
+}
+
+/* -------------------------------------------------
+   TOP NAVBAR
+   ------------------------------------------------- */
+.navbar {
+    background:#fff;
+    border-bottom:1px solid #dbdbdb;
+    padding:10px 20px;
+    position:fixed;
+    top:0; left:0; right:0;
+    z-index:1000;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+.navbar-title { font-size:24px; font-weight:600; }
+.navbar-icons a { color:#262626; font-size:24px; margin-left:20px; text-decoration:none; }
+
+/* -------------------------------------------------
+   LEFT SIDEBAR (same as profile / post-detail)
+   ------------------------------------------------- */
+.sidebar {
+    background:#fff;
+    border-right:1px solid #dbdbdb;
+    width:80px;
+    height:100vh;
+    position:fixed;
+    top:0; left:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding-top:70px;
+    z-index:999;
+    box-shadow:2px 0 5px rgba(0,0,0,.05);
+}
+.sidebar-item { margin:15px 0; }
+.sidebar-item a {
+    display:flex; flex-direction:column; align-items:center;
+    text-decoration:none; color:#262626; font-size:.8rem;
+    transition:color .2s;
+}
+.sidebar-item a:hover { color:#000; }
+.sidebar-item i { font-size:1.5rem; margin-bottom:4px; }
+.sidebar-item span { font-weight:400; text-transform:capitalize; }
+.sidebar-item.active a,
+.sidebar-item a.active { color:#0095f6; }
+
+/* -------------------------------------------------
+   SEARCH PANEL
+   ------------------------------------------------- */
+.search-panel {
+    position:fixed; top:0; left:70px;
+    width:300px; height:100vh;
+    background:#fff; border-right:1px solid #dbdbdb;
+    z-index:998; display:none; flex-direction:column;
+    padding:70px 15px 15px;
+}
+.search-panel input {
+    width:100%; padding:10px; border:1px solid #dbdbdb;
+    border-radius:6px; margin-bottom:15px; font-size:14px;
+}
+.search-results { flex:1; overflow-y:auto; }
+.search-result {
+    padding:10px; border-bottom:1px solid #eee;
+    cursor:pointer; display:flex; align-items:center; gap:10px;
+}
+.search-result:hover { background:#fafafa; }
+.search-result img { width:40px; height:40px; border-radius:50%; object-fit:cover; }
+
+/* -------------------------------------------------
+   MAIN CONTAINER
+   ------------------------------------------------- */
+.container {
+    max-width:935px; margin:0 auto;
+    padding:20px; margin-left:90px; margin-top:60px;
+    transition:margin-left .3s ease;
+}
+.container.with-search { margin-left:calc(90px + 300px); }
+
+/* -------------------------------------------------
+   SETTINGS CONTENT (old styles – kept)
+   ------------------------------------------------- */
+.settings-container {
+    max-width:600px; width:100%; background:#fff;
+    border-radius:8px; padding:20px;
+    box-shadow:0 2px 10px rgba(0,0,0,.1);
+}
+h1 { text-align:center; margin-bottom:20px; font-size:clamp(1.5rem,5vw,1.8rem); }
+
+.setting-item {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:15px 0; border-bottom:1px solid #eee;
+}
+.setting-item:last-child { border-bottom:none; }
+.setting-label { font-size:clamp(14px,4vw,16px); font-weight:bold; }
+
+.toggle { position:relative; display:inline-block; width:50px; height:24px; }
+.toggle input { opacity:0; width:0; height:0; }
+.slider {
+    position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0;
+    background:#ccc; transition:.4s; border-radius:24px;
+}
+.slider:before {
+    position:absolute; content:""; height:20px; width:20px;
+    left:2px; bottom:2px; background:#fff; transition:.4s; border-radius:50%;
+}
+input:checked + .slider { background:#2196F3; }
+input:checked + .slider:before { transform:translateX(26px); }
+
+.radio-group { display:flex; gap:20px; }
+.radio-group label { display:flex; align-items:center; font-size:clamp(12px,3.5vw,14px); }
+
+.link { color:#007bff; text-decoration:none; font-size:clamp(14px,4vw,16px); }
+.link:hover { text-decoration:underline; }
+
+.logout-btn {
+    display:block; width:100%; background:#dc3545; color:#fff;
+    border:none; padding:15px; font-size:clamp(14px,4vw,16px);
+    border-radius:5px; cursor:pointer; margin-top:20px;
+}
+.logout-btn:hover { background:#c82333; }
+
+/* -------------------------------------------------
+   MORE POPUP (inside sidebar)
+   ------------------------------------------------- */
+.menu-popup {
+    display:none; position:absolute; left:100%; top:420px;
+    background:#efeeee; border-radius:8px;
+    box-shadow:0 4px 12px rgba(0,0,0,.2);
+    z-index:200; width:200px; padding:8px 0;
+}
+.menu-popup.active { display:block; }
+.menu-item {
+    padding:10px 16px; color:#262626; font-size:.9rem;
+    cursor:pointer; transition:background .2s;
+}
+.menu-item:hover { background:#a4a4a4; }
+.menu-item.active { color:#0095f6; font-weight:600; }
+
+/* -------------------------------------------------
+   MODALS (Create / Upload)
+   ------------------------------------------------- */
+.modal, .upload-modal {
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,.5); z-index:1001;
+    justify-content:center; align-items:center;
+}
+.modal-content {
+    background:#fff; border-radius:12px; padding:20px;
+    width:300px; text-align:center;
+}
+.modal-option {
+    padding:15px; font-size:16px; cursor:pointer;
+    border-bottom:1px solid #dbdbdb;
+}
+.modal-option:last-child { border-bottom:none; }
+.modal-option:hover { background:#fafafa; }
+
+.upload-modal-content {
+    background:#fff; border-radius:12px; width:600px; height:400px;
+    display:flex; overflow:hidden;
+}
+.upload-preview {
+    width:50%; background:#fafafa; padding:10px;
+    overflow-y:auto; display:flex; flex-wrap:wrap; gap:5px;
+}
+.upload-preview img { max-width:100px; max-height:100px; object-fit:cover; }
+.upload-caption {
+    width:50%; padding:20px; display:flex; flex-direction:column;
+}
+.upload-caption textarea {
+    flex:1; border:1px solid #dbdbdb; border-radius:4px;
+    padding:10px; resize:none; margin-bottom:10px;
+}
+.upload-caption button {
+    padding:8px; background:#0095f6; color:#fff;
+    border:none; border-radius:4px; cursor:pointer;
+}
+
+/* -------------------------------------------------
+   RESPONSIVE
+   ------------------------------------------------- */
+@media (max-width:768px) {
+    .sidebar { width:60px; }
+    .container { margin-left:70px; }
+    .container.with-search { margin-left:70px; }
+    .search-panel { left:60px; width:250px; }
+    .upload-modal-content { width:90%; height:80%; flex-direction:column; }
+    .upload-preview,.upload-caption { width:100%; height:50%; }
+}
+</style>
+<body>
+
+    <!-- ====================== TOP NAVBAR ====================== -->
+    <div class="navbar">
+        <div class="navbar-title">MediaShare</div>
+        <div class="navbar-icons">
+            <a href="/notifications"><i class="fa-regular fa-heart"></i></a>
+            <a href="/chat"><i class="fa-regular fa-paper-plane"></i></a>
+        </div>
+    </div>
+
+    <!-- ====================== LEFT SIDEBAR ====================== -->
+    <div class="sidebar">
+        <div class="sidebar-item">
+            <a th:href="@{/home}">
+                <i class="fa-solid fa-house"></i>
+                <span>Home</span>
+            </a>
+        </div>
+
+        <div class="sidebar-item" id="search-btn">
+            <a href="javascript:void(0);">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <span>Search</span>
+            </a>
+        </div>
+
+        <div class="sidebar-item" id="create-post">
+            <a href="javascript:void(0);">
+                <i class="fa-solid fa-circle-plus"></i>
+                <span>Create</span>
+            </a>
+        </div>
+
+        <div class="sidebar-item">
+            <a th:href="@{/chat}">
+                <i class="fa-regular fa-comment"></i>
+                <span>Messages</span>
+            </a>
+        </div>
+
+        <div class="sidebar-item">
+            <a th:href="@{/profile}">
+                <i class="fa-regular fa-user"></i>
+                <span>Profile</span>
+            </a>
+        </div>
+
+        <div class="sidebar-item">
+            <a href="javascript:void(0);">
+                <i class="fa-solid fa-bars more-btn"></i>
+                <span>More</span>
+            </a>
+        </div>
+
+        <!-- More popup -->
+        <div class="menu-popup">
+            <a href="/settings" class="menu-item">Settings</a>
+            <div class="menu-item">Your activity</div>
+            <div class="menu-item">Saved</div>
+            <div class="menu-item">Switch appearance</div>
+            <div class="menu-item">Report a problem</div>
+            <div class="menu-item">Switch accounts</div>
+            <div class="menu-item">Log out</div>
+        </div>
+    </div>
+
+    <!-- ====================== SEARCH PANEL ====================== -->
+    <div class="search-panel" id="search-panel">
+        <input type="text" id="search-input" placeholder="Search usernames...">
+        <div class="search-results" id="search-results"></div>
+    </div>
+
+    <!-- ====================== MAIN CONTENT ====================== -->
+    <div class="container" id="main-container">
+        <div class="settings-container">
+            <h1>MediaShare Settings</h1>
 
         <!-- Profile Picture Upload -->
         <div class="setting-item">
@@ -136,27 +417,26 @@
             <a th:href="@{/saved/my}" class="link">View Saved</a>
         </div>
 
-        <div class="setting-item">
-            <span class="setting-label">Story Archive Enabled</span>
-            <label class="toggle">
-                <input type="checkbox" checked>
-                <span class="slider"></span>
-            </label>
-        </div>
+            <div class="setting-item">
+                <span class="setting-label">Story Archive Enabled</span>
+                <label class="toggle">
+                    <input type="checkbox" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
 
-        <div class="setting-item">
-            <span class="setting-label">Archive</span>
-            <a th:href="@{/settings/archive}" class="link">View Archive</a>
+            <div class="setting-item">
+                <span class="setting-label">Archive</span>
+                <a th:href="@{/settings/archive}" class="link">View Archive</a>
+            </div>
 
-        </div>
-
-        <div class="setting-item">
-            <span class="setting-label">Notifications Enabled</span>
-            <label class="toggle">
-                <input type="checkbox" checked>
-                <span class="slider"></span>
-            </label>
-        </div>
+            <div class="setting-item">
+                <span class="setting-label">Notifications Enabled</span>
+                <label class="toggle">
+                    <input type="checkbox" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
 
         <div class="setting-item">
             <span class="setting-label">Account Privacy</span>
@@ -172,23 +452,23 @@
             </div>
         </div>
 
-        <div class="setting-item">
-            <span class="setting-label">Close Friends</span>
-             <a th:href="@{'/following/' + ${user.user_id}}" class="link">Manage Close Friends</a>
-        </div>
+            <div class="setting-item">
+                <span class="setting-label">Close Friends</span>
+                <a th:href="@{'/following/' + ${user.user_id}}" class="link">Manage Close Friends</a>
+            </div>
 
-        <div class="setting-item">
-            <span class="setting-label">Blocked Friends</span>
-            <a th:href="@{/blocked/my}" class="link">Manage Blocked</a>
-        </div>
+            <div class="setting-item">
+                <span class="setting-label">Blocked Friends</span>
+                <a th:href="@{/blocked/my}" class="link">Manage Blocked</a>
+            </div>
 
-        <div class="setting-item">
-            <span class="setting-label">Allow Tags</span>
-            <label class="toggle">
-                <input type="checkbox" checked>
-                <span class="slider"></span>
-            </label>
-        </div>
+            <div class="setting-item">
+                <span class="setting-label">Allow Tags</span>
+                <label class="toggle">
+                    <input type="checkbox" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
 
         <div class="setting-item">
             <span class="setting-label">Theme</span>
@@ -200,9 +480,9 @@
                     <input type="radio" name="theme" value="dark" th:checked="${userTheme == 'dark'}"> Dark
                 </label>
             </div>
-        </div>
 
-        <button class="logout-btn">Log Out</button>
+            <button class="logout-btn">Log Out</button>
+        </div>
     </div>
 
     <!-- Bottom Navbar (Sidebar on larger screens) -->
@@ -419,6 +699,176 @@ document.querySelectorAll('input[name="privacy"]').forEach(radio => {
         .catch(err => console.error('Privacy update failed:', err));
     });
 });
+    </script>
+    <!-- ====================== JAVASCRIPT ====================== -->
+    <script>
+        /* ---------- DOM Elements ---------- */
+        const searchBtn      = document.getElementById('search-btn');
+        const searchPanel    = document.getElementById('search-panel');
+        const searchInput    = document.getElementById('search-input');
+        const searchResults  = document.getElementById('search-results');
+        const mainContainer  = document.getElementById('main-container');
+        const createPostBtn  = document.getElementById('create-post');
+        const createModal    = document.getElementById('create-modal');
+        const postOption     = document.getElementById('post-option');
+        const uploadModal    = document.getElementById('upload-modal');
+        const photoUpload    = document.getElementById('photo-upload');
+        const previewContainer = document.getElementById('preview-container');
+
+        /* ---------- More Menu ---------- */
+        document.querySelector('.more-btn').addEventListener('click', e => {
+            e.stopPropagation();
+            document.querySelector('.menu-popup').classList.toggle('active');
+        });
+        document.addEventListener('click', e => {
+            const menu = document.querySelector('.menu-popup');
+            if (!menu.contains(e.target) && !e.target.closest('.more-btn')) {
+                menu.classList.remove('active');
+            }
+        });
+
+        /* ---------- Search Panel ---------- */
+        searchBtn.addEventListener('click', () => {
+            const open = searchPanel.style.display === 'flex';
+            searchPanel.style.display = open ? 'none' : 'flex';
+            mainContainer.classList.toggle('with-search', !open);
+            if (!open) searchInput.focus();
+        });
+        document.addEventListener('click', e => {
+            if (!searchPanel.contains(e.target) && !searchBtn.contains(e.target)) {
+                searchPanel.style.display = 'none';
+                mainContainer.classList.remove('with-search');
+            }
+        });
+
+        /* ---------- Search Logic (same as profile & post-detail) ---------- */
+        let searchTimeout;
+        searchInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            const q = searchInput.value.trim();
+            if (!q) { searchResults.innerHTML = ''; return; }
+            searchTimeout = setTimeout(() => performSearch(q), 300);
+        });
+
+        function performSearch(q) {
+            searchResults.innerHTML = "<div style='padding:10px;text-align:center;color:#8e8e8e;'>Searching...</div>";
+            q.startsWith('#') ? searchHashtags(q.slice(1)) : searchUsers(q);
+        }
+
+        function searchUsers(q) {
+            fetch(`/search/users?q=${encodeURIComponent(q)}`)
+                .then(r => r.json())
+                .then(displayUserResults)
+                .catch(() => showSearchError('users'));
+        }
+        function searchHashtags(t) {
+            fetch(`/search/hashtags?q=${encodeURIComponent(t)}`)
+                .then(r => r.json())
+                .then(displayHashtagResults)
+                .catch(() => showSearchError('hashtags'));
+        }
+
+        function displayUserResults(users) {
+            searchResults.innerHTML = '';
+            if (!users.length) return noResults();
+            users.forEach(u => {
+                const div = document.createElement('div');
+                div.className = 'search-result';
+                const pic = u.photo ? `/uploads/profile/${u.photo}` : '/uploads/default_dp.jpg';
+                div.innerHTML = `
+                    <img src="${pic}" alt="${u.user_name}" onerror="this.src='/uploads/default_dp.jpg'">
+                    <div><strong>${u.user_name}</strong>
+                         <div style="font-size:12px;color:#8e8e8e;">${u.first_name} ${u.last_name}</div>
+                    </div>`;
+                div.addEventListener('click', () => {
+                    fetch(`/follow/status/${u.user_id}`)
+                        .then(r => r.json())
+                        .then(d => {
+                            const url = (d.privacy === 'PUBLIC' || d.isFollowing)
+                                ? `/profile/${u.user_id}` : `/user/${u.user_id}`;
+                            location.href = url;
+                        })
+                        .catch(() => location.href = `/user/${u.user_id}`);
+                });
+                searchResults.appendChild(div);
+            });
+        }
+
+        function displayHashtagResults(tags) {
+            searchResults.innerHTML = '';
+            if (!tags.length) return noResults();
+            tags.forEach(t => {
+                const div = document.createElement('div');
+                div.className = 'search-result';
+                div.innerHTML = `<div style="padding:8px;"><strong>#${t.text}</strong>
+                                 <div style="font-size:12px;color:#8e8e8e;">${t.post_count} post${t.post_count>1?'s':''}</div></div>`;
+                div.addEventListener('click', () => location.href = `/hashtag/${t.text}`);
+                searchResults.appendChild(div);
+            });
+        }
+
+        function noResults() {
+            searchResults.innerHTML = "<div style='padding:10px;text-align:center;color:#8e8e8e;'>No results</div>";
+        }
+        function showSearchError(type) {
+            searchResults.innerHTML = `<div style='padding:10px;text-align:center;color:#8e8e8e;'>Error searching ${type}.</div>`;
+        }
+
+        /* ---------- Create Modal ---------- */
+        createPostBtn.addEventListener('click', () => createModal.style.display = 'flex');
+        postOption.addEventListener('click', () => {
+            createModal.style.display = 'none';
+            uploadModal.style.display = 'flex';
+        });
+        photoUpload.addEventListener('change', e => {
+            previewContainer.innerHTML = '';
+            Array.from(e.target.files).forEach(f => {
+                const r = new FileReader();
+                r.onload = ev => {
+                    const img = document.createElement('img');
+                    img.src = ev.target.result;
+                    previewContainer.appendChild(img);
+                };
+                r.readAsDataURL(f);
+            });
+        });
+        document.addEventListener('click', e => {
+            if (e.target === createModal) createModal.style.display = 'none';
+            if (e.target === uploadModal) {
+                uploadModal.style.display = 'none';
+                previewContainer.innerHTML = '';
+                photoUpload.value = '';
+            }
+        });
+
+        /* ---------- Active State (highlight Settings inside More) ---------- */
+        document.querySelectorAll('.sidebar-item a').forEach(a => {
+            const href = a.getAttribute('th:href') || a.getAttribute('href');
+            if (href && location.pathname.startsWith(href.replace('@{/','/').replace('}',''))) {
+                a.closest('.sidebar-item').classList.add('active');
+            }
+        });
+        // Also mark the Settings entry inside the popup
+        document.querySelectorAll('.menu-popup .menu-item').forEach(item => {
+            if (item.textContent.trim() === 'Settings') item.classList.add('active');
+        });
+
+        /* ---------- Privacy Radio Buttons ---------- */
+        document.querySelectorAll('input[name="privacy"]').forEach(r => {
+            r.addEventListener('change', function () {
+                fetch('/settings/updatePrivacy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `privacy=${this.value}`
+                })
+                .then(res => res.text())
+                .then(txt => {
+                    if (txt === 'SUCCESS') alert(`Privacy updated to ${this.value}`);
+                    else alert('Error updating privacy.');
+                })
+                .catch(() => alert('Network error.'));
+            });
+        });
     </script>
 </body>
 </html>

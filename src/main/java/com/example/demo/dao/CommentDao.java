@@ -2,13 +2,18 @@ package com.example.demo.dao;
 
 import com.example.demo.model.Comment;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import com.example.demo.dto.CommentDTO;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
+import java.sql.Statement;
 
 @Repository
 public class CommentDao extends BaseDao<Comment, Long> {
@@ -89,5 +94,33 @@ public class CommentDao extends BaseDao<Comment, Long> {
                 rs.getLong("user_id"),
                 rs.getString("username")
         ), contentId);
+    }
+
+    public Long insertAndReturn(Comment comment) {
+        String sql = "INSERT INTO comment (content, created_at, user_id, content_id) VALUES (?, ?, ?, ?)";
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, comment.getContent());
+            ps.setObject(2, comment.getCreatedAt());
+            ps.setLong(3, comment.getUserId());
+            ps.setLong(4, comment.getContentId());
+            return ps;
+        }, keyHolder);
+
+        //return keyHolder.getKey().longValue();
+        Map<String, Object> keyMap = keyHolder.getKeys();
+        Long generatedId = null;
+
+        if (keyMap != null && keyMap.containsKey("comment_id")) {
+            Object keyValue = keyMap.get("comment_id");
+            if (keyValue instanceof Number) {
+                generatedId = ((Number) keyValue).longValue();
+            }
+        }
+
+        comment.setCommentId(generatedId);
+        return generatedId;
     }
 }

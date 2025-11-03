@@ -65,7 +65,7 @@ public class LikeController {
             like.setContentId(contentId);
             like.setUserId(userId);
             like.setCreatedAt(LocalDateTime.now());
-            likeDao.insert(like);
+            likeDao.insertAndReturn(like);
             
             // Create notification for like
             Long contentOwnerId = contentDao.findOwnerIdByContentId(contentId);

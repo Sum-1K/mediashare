@@ -3,290 +3,744 @@
 <head>
     <meta charset="UTF-8">
     <title th:text="${post.caption}">Post Detail</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #fafafa;
-            margin: 0;
-            padding: 0;
-        }
-        .post-container {
-            max-width: 900px;
-            margin: 40px auto;
-            display: flex;
-            background: #fff;
-            border: 1px solid #dbdbdb;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        .post-media {
-            flex: 1;
-            background: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            position: relative;
-        }
-        .media-scroll {
-            display: flex;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            width: 100%;
-        }
-        .media-item {
-            flex: 0 0 100%;
-            scroll-snap-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .media-item img, .media-item video {
-            max-height: 600px;
-            max-width: 100%;
-            object-fit: contain;
-        }
-        .post-details {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-        }
-        .caption {
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-        .comments {
-            flex: 1;
-            overflow-y: auto;
-            margin-bottom: 20px;
-        }
-        .comment {
-            margin-bottom: 10px;
-        }
-        .likes {
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        .scroll-arrow {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+</head>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+    background-color: #fafafa;
+    color: #262626;
+}
+
+/* Navbar */
+.navbar {
+    background-color: #fff;
+    border-bottom: 1px solid #dbdbdb;
+    padding: 10px 20px;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar-title {
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.navbar-icons a {
+    color: #262626;
+    font-size: 24px;
+    margin-left: 20px;
+    text-decoration: none;
+}
+
+/* Sidebar */
+.sidebar {
+    background-color: #fff;
+    border-right: 1px solid #dbdbdb;
+    width: 80px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 70px;
+    z-index: 999;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-item {
+    margin: 15px 0;
+}
+
+.sidebar-item a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #262626;
+    font-size: 0.8rem;
+    transition: color 0.2s;
+}
+
+.sidebar-item a:hover {
+    color: #000;
+}
+
+.sidebar-item i {
+    font-size: 1.5rem;
+    margin-bottom: 4px;
+}
+
+.sidebar-item span {
+    font-weight: 400;
+    text-transform: capitalize;
+}
+
+.sidebar-item.active a,
+.sidebar-item a.active {
+    color: #0095f6;
+}
+
+/* Search Panel */
+.search-panel {
+    position: fixed;
+    top: 0;
+    left: 70px;
+    width: 300px;
+    height: 100vh;
+    background-color: #fff;
+    border-right: 1px solid #dbdbdb;
+    z-index: 998;
+    display: none;
+    flex-direction: column;
+    padding: 70px 15px 15px;
+}
+
+.search-panel input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #dbdbdb;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.search-results {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.search-result {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.search-result:hover {
+    background-color: #fafafa;
+}
+
+.search-result img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.search-result span {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Container */
+.container {
+    max-width: 935px;
+    margin: 0 auto;
+    padding: 20px;
+    margin-left: 90px;
+    margin-top: 60px;
+    transition: margin-left 0.3s ease;
+}
+
+.container.with-search {
+    margin-left: calc(90px + 300px);
+}
+
+/* Post Container */
+.post-container {
+    background: #fff;
+    border: 1px solid #dbdbdb;
+    border-radius: 8px;
+    overflow: hidden;
+    max-width: 700px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.post-media {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
+.media-scroll {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+}
+
+.media-item {
+    min-width: 100%;
+    scroll-snap-align: start;
+}
+
+.media-item img,
+.media-item video {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.scroll-arrow {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 30px;
+    background: rgba(0,0,0,0.5);
     color: white;
-    background: rgba(0,0,0,0.3);
-    border-radius: 50%;
     width: 40px;
     height: 40px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    font-size: 20px;
+    user-select: none;
     z-index: 10;
 }
 
 .scroll-arrow.left { left: 10px; }
 .scroll-arrow.right { right: 10px; }
 
+/* Post Details */
+.post-details {
+    padding: 15px;
+}
 
-/* --- Small Close (X) Button --- */
+.caption {
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.likes {
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.comments {
+    margin: 15px 0;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.comment {
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.comment b {
+    margin-right: 5px;
+}
+
+form {
+    display: flex;
+    margin-top: 10px;
+    gap: 10px;
+}
+
+form input[type="text"] {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #dbdbdb;
+    border-radius: 4px;
+}
+
+form button {
+    padding: 8px 16px;
+    background: #0095f6;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+form button:hover {
+    background: #0074cc;
+}
+
+/* Close Button */
 .close-btn {
-  position: fixed;
-  top: 18px;
-  right: 22px;
-  font-size: 26px;
-  font-weight: 600;
-  color: #444;
-  background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  cursor: pointer;
-  z-index: 1000;
-  transition: all 0.2s ease-in-out;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    font-size: 30px;
+    color: #fff;
+    background: rgba(0,0,0,0.5);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 40px;
+    text-decoration: none;
+    z-index: 1001;
 }
 
-.close-btn:hover {
-  background: #f5f5f5;
-  border-color: #999;
-  transform: scale(1.1);
+/* Modals */
+.modal, .upload-modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1001;
+    justify-content: center;
+    align-items: center;
 }
 
-    </style>
-</head>
+.modal-content {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    width: 300px;
+    text-align: center;
+}
+
+.modal-option {
+    padding: 15px;
+    font-size: 16px;
+    cursor: pointer;
+    border-bottom: 1px solid #dbdbdb;
+}
+
+.modal-option:last-child { border-bottom: none; }
+.modal-option:hover { background: #fafafa; }
+
+.upload-modal-content {
+    background: #fff;
+    border-radius: 12px;
+    width: 600px;
+    height: 400px;
+    display: flex;
+    overflow: hidden;
+}
+
+.upload-preview {
+    width: 50%;
+    background: #fafafa;
+    padding: 10px;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.upload-preview img {
+    max-width: 100px;
+    max-height: 100px;
+    object-fit: cover;
+}
+
+.upload-caption {
+    width: 50%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.upload-caption textarea {
+    flex: 1;
+    border: 1px solid #dbdbdb;
+    border-radius: 4px;
+    padding: 10px;
+    resize: none;
+    margin-bottom: 10px;
+}
+
+.upload-caption button {
+    padding: 8px;
+    background: #0095f6;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* More Menu Popup */
+.menu-popup {
+    display: none;
+    position: absolute;
+    left: 100%;
+    top: 420px;
+    background: #efeeee;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    z-index: 200;
+    width: 200px;
+    padding: 8px 0;
+}
+
+.menu-popup.active {
+    display: block;
+}
+
+.menu-item {
+    display: block;
+    padding: 10px 16px;
+    color: #262626;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.menu-item:hover {
+    background: #a4a4a4;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar { width: 60px; }
+    .container { margin-left: 70px; }
+    .container.with-search { margin-left: 70px; }
+    .search-panel { left: 60px; width: 250px; }
+    .post-container { flex-direction: column; }
+    .upload-modal-content { width: 90%; height: 80%; flex-direction: column; }
+    .upload-preview, .upload-caption { width: 100%; height: 50%; }
+}
+</style>
 <body>
 
-<!-- ✅ Close button -->
-<a href="javascript:history.back()" class="close-btn" title="Close">&times;</a>
-
-
-<div class="post-container">
-    <!-- Media section -->
-
-    <div class="post-media">
-    <div class="media-scroll" id="mediaScroll">
-        <div class="media-item" th:each="media : ${mediaList}">
-            <img th:if="${media.type.name() == 'PHOTO'}"
-     th:src="@{${#strings.replace(media.url, 'src/main/resources/static', '')}}"
-     alt="Post image" />
-
-<video th:if="${media.type.name() == 'VIDEO'}" controls>
-    <source th:src="@{${#strings.replace(media.url, 'src/main/resources/static', '')}}" type="video/mp4"/>
-</video>
-
-
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="navbar-title">MediaShare</div>
+        <div class="navbar-icons">
+            <a href="/notifications"><i class="fa-regular fa-heart"></i></a>
+            <a href="/chat"><i class="fa-regular fa-paper-plane"></i></a>
         </div>
     </div>
 
-    <div class="scroll-arrow left" onclick="scrollMedia(-1)">&#10094;</div>
-    <div class="scroll-arrow right" onclick="scrollMedia(1)">&#10095;</div>
-</div>
-
-    <!-- Details section -->
-    <div class="post-details">
-        <div class="caption">
-            <span th:text="${post.caption}"></span>
+    <!-- Sidebar (Same as profile.html) -->
+    <div class="sidebar">
+        <div class="sidebar-item">
+            <a th:href="@{/home}">
+                <i class="fa-solid fa-house"></i>
+                <span>Home</span>
+            </a>
+        </div>
+        <div class="sidebar-item" id="search-btn">
+            <a href="javascript:void(0);">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <span>Search</span>
+            </a>
+        </div>
+        <div class="sidebar-item" id="create-post">
+            <a href="javascript:void(0);">
+                <i class="fa-solid fa-circle-plus"></i>
+                <span>Create</span>
+            </a>
+        </div>
+        <div class="sidebar-item">
+            <a th:href="@{/chat}">
+                <i class="fa-regular fa-comment"></i>
+                <span>Messages</span>
+            </a>
+        </div>
+        <div class="sidebar-item">
+            <a th:href="@{/profile}">
+                <i class="fa-regular fa-user"></i>
+                <span>Profile</span>
+            </a>
+        </div>
+        <div class="sidebar-item">
+            <a href="javascript:void(0);">
+                <i class="fa-solid fa-bars more-btn"></i>
+                <span>More</span>
+            </a>
         </div>
 
-        <div class="likes">
-            <span th:text="${likesCount}">0</span> likes
-            <form th:action="@{/like/toggle}" method="post" style="display:inline;">
-            <input type="hidden" name="contentId" th:value="${post.postId}"/>
-            <input type="hidden" name="type" value="post" />
-        <button type="submit">❤️ Like</button>
-    </form>
+        <div class="menu-popup">
+            <a href="/settings" class="menu-item">Settings</a>
+            <div class="menu-item">Your activity</div>
+            <div class="menu-item">Saved</div>
+            <div class="menu-item">Switch appearance</div>
+            <div class="menu-item">Report a problem</div>
+            <div class="menu-item">Switch accounts</div>
+            <div class="menu-item">Log out</div>
         </div>
+    </div>
 
-        <div class="save-post" style="margin-bottom: 20px;">
-            <button id="saveBtn">💾 Save</button>
-        </div>
+    <!-- Search Panel -->
+    <div class="search-panel" id="search-panel">
+        <input type="text" id="search-input" placeholder="Search usernames...">
+        <div class="search-results" id="search-results"></div>
+    </div>
 
+    <!-- Main Container -->
+    <div class="container" id="main-container">
+        <!-- Close Button -->
+        <a href="javascript:history.back()" class="close-btn" title="Close">×</a>
 
-        <div class="comments">
-            <div class="comment" th:each="comment : ${comments}">
-                <b th:text="${comment.username}"></b>
-                <span th:text="${comment.content}"></span>
+        <!-- Post Container -->
+        <div class="post-container">
+            <div class="post-media">
+                <div class="media-scroll" id="mediaScroll">
+                    <div class="media-item" th:each="media : ${mediaList}">
+                        <img th:if="${media.type.name() == 'PHOTO'}"
+                             th:src="@{${#strings.replace(media.url, 'src/main/resources/static', '')}}"
+                             alt="Post image" />
+                        <video th:if="${media.type.name() == 'VIDEO'}" controls>
+                            <source th:src="@{${#strings.replace(media.url, 'src/main/resources/static', '')}}" type="video/mp4" />
+                        </video>
+                    </div>
+                </div>
+                <div class="scroll-arrow left" onclick="scrollMedia(-1)">❮</div>
+                <div class="scroll-arrow right" onclick="scrollMedia(1)">❯</div>
+            </div>
+
+            <div class="post-details">
+                <div class="caption">
+                    <span th:text="${post.caption}"></span>
+                </div>
+
+                <div class="likes">
+                    <span th:text="${likesCount}">0</span> likes
+                    <form th:action="@{/like/toggle}" method="post" style="display:inline;">
+                        <input type="hidden" name="contentId" th:value="${post.postId}" />
+                        <input type="hidden" name="type" value="post" />
+                        <button type="submit">❤️ Like</button>
+                    </form>
+                </div>
+
+                <div class="save-post" style="margin-bottom: 20px;">
+                    <button id="saveBtn">💾 Save</button>
+                </div>
+
+                <div class="comments">
+                    <div class="comment" th:each="comment : ${comments}">
+                        <b th:text="${comment.username}"></b>
+                        <span th:text="${comment.content}"></span>
+                    </div>
+                </div>
+
+                <form th:action="@{/comment/add}" method="post">
+                    <input type="hidden" name="postId" th:value="${post.postId}" />
+                    <input type="text" name="text" placeholder="Add a comment..." required />
+                    <button type="submit">Post</button>
+                </form>
             </div>
         </div>
-
-        <form th:action="@{/comment/add}" method="post">
-            <input type="hidden" name="postId" th:value="${post.postId}"/>
-            <input type="text" name="text" placeholder="Add a comment..." required/>
-            <button type="submit">Post</button>
-        </form>
     </div>
-</div>
 
-<script>
-function scrollMedia(direction) {
-    const scrollBox = document.getElementById("mediaScroll");
-    const itemWidth = scrollBox.clientWidth;
-    scrollBox.scrollBy({ left: direction * itemWidth, behavior: 'smooth' });
-}
-</script>
+    <!-- Create Modal -->
+    <div class="modal" id="create-modal">
+        <div class="modal-content">
+            <div class="modal-option" id="post-option">Post</div>
+            <div class="modal-option">Story</div>
+            <div class="modal-option">Reel</div>
+        </div>
+    </div>
 
-<!-- <script th:inline="javascript">
-document.addEventListener("DOMContentLoaded", () => {
-    const saveBtn = document.getElementById("saveBtn");
-    const postId = /*[[${post.postId}]]*/ '0';
-    console.log("Post ID:", postId);
+    <!-- Upload Modal -->
+    <div class="upload-modal" id="upload-modal">
+        <div class="upload-modal-content">
+            <div class="upload-preview" id="preview-container"></div>
+            <div class="upload-caption">
+                <form th:action="@{/posts}" method="post" enctype="multipart/form-data">
+                    <input type="file" name="mediaFiles" id="photo-upload" accept="image/*" multiple required>
+                    <textarea name="caption" placeholder="Write a caption..." required></textarea>
+                    <button type="submit">Share</button>
+                </form>
+            </div>
+        </div>
+    </div>
 
-    fetch(`/saved/status?postId=${postId}`)
-        .then(res => res.json())
-        .then(data => {
-            if (data.saved) saveBtn.textContent = "✅ Saved";
+    <script>
+        // DOM Elements
+        const searchBtn = document.getElementById('search-btn');
+        const searchPanel = document.getElementById('search-panel');
+        const searchInput = document.getElementById('search-input');
+        const searchResults = document.getElementById('search-results');
+        const mainContainer = document.getElementById('main-container');
+        const createPostBtn = document.getElementById('create-post');
+        const createModal = document.getElementById('create-modal');
+        const postOption = document.getElementById('post-option');
+        const uploadModal = document.getElementById('upload-modal');
+        const photoUpload = document.getElementById('photo-upload');
+        const previewContainer = document.getElementById('preview-container');
+
+        // More Menu
+        document.querySelector('.more-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.querySelector('.menu-popup').classList.toggle('active');
         });
 
-    saveBtn.addEventListener("click", () => {
-        const action = saveBtn.textContent === "💾 Save" ? "save" : "unsave";
-
-        fetch(`/saved/${action}/${postId}`, {  // ✅ URL changed to match @PathVariable {postId}
-    method: "POST"
-})
-.then(res => res.json())
-.then(data => {
-    if (data.success) {                   // ✅ now checks JSON success field
-        saveBtn.textContent = action === "save" ? "✅ Saved" : "💾 Save"; // ✅ updated text
-    } else {
-        alert(data.message);              // ✅ display JSON message
-    }
-})
-
-        .catch(err => console.error(err));
-    });
-});
-</script> -->
-
-<script th:inline="javascript">
-document.addEventListener("DOMContentLoaded", () => {
-    const saveBtn = document.getElementById("saveBtn");
-    const postId = /*[[${post.postId}]]*/ '0';
-    console.log("Post ID:", postId);
-
-    // ✅ Step 1: Check current save status
-    fetch(`/saved/status?postId=${postId}`)
-        .then(res => res.json())
-        .then(data => {
-            if (data.saved) {
-                saveBtn.textContent = "✅ Saved";
-            } else {
-                saveBtn.textContent = "💾 Save";
+        document.addEventListener('click', (e) => {
+            const menu = document.querySelector('.menu-popup');
+            if (!menu.contains(e.target) && !e.target.closest('.more-btn')) {
+                menu.classList.remove('active');
             }
         });
 
-    // // ✅ Step 2: Toggle save/unsave
-    // saveBtn.addEventListener("click", () => {
-    //     const isSaved = saveBtn.textContent === "✅ Saved";
-    //     const action = isSaved ? "unsave" : "save";
+        // Search Toggle
+        searchBtn.addEventListener('click', () => {
+            const isOpen = searchPanel.style.display === 'flex';
+            searchPanel.style.display = isOpen ? 'none' : 'flex';
+            mainContainer.classList.toggle('with-search', !isOpen);
+            if (!isOpen) searchInput.focus();
+        });
 
-    //     fetch(`/saved/${action}/${postId}`, {
-    //         method: "POST"
-    //     })
-    //     .then(res => res.json())
-    //     .then(data => {
-    //         if (data.success) {
-    //             saveBtn.textContent = action === "save" ? "✅ Saved" : "💾 Save";
-    //         } else {
-    //             alert(data.message);
-    //         }
-    //     })
-    //     .catch(err => console.error(err));
-    // });
-
-    // ✅ Step 2: Toggle save/unsave
-saveBtn.addEventListener("click", () => {
-    const isSaved = saveBtn.textContent === "✅ Saved";
-    const action = isSaved ? "unsave" : "save";
-
-    fetch(`/saved/${action}/${postId}`, {
-        method: "POST"
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            if (action === "save") {
-                saveBtn.textContent = "✅ Saved";
-            } else {
-                saveBtn.textContent = "💾 Save";
-                // Redirect to saved posts to see updated list
-                window.location.href = "/saved/my";
+        // Close search when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!searchPanel.contains(e.target) && e.target !== searchBtn && !searchBtn.contains(e.target)) {
+                searchPanel.style.display = 'none';
+                mainContainer.classList.remove('with-search');
             }
-        } else {
-            alert(data.message);
+        });
+
+        // Search Functionality
+        let searchTimeout;
+        searchInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            const query = searchInput.value.trim();
+            if (!query) {
+                searchResults.innerHTML = '';
+                return;
+            }
+            searchTimeout = setTimeout(() => performSearch(query), 300);
+        });
+
+        function performSearch(query) {
+            searchResults.innerHTML = "<div style='padding: 10px; text-align: center; color: #8e8e8e;'>Searching...</div>";
+            if (query.startsWith("#")) {
+                const hashtag = query.substring(1);
+                if (!hashtag) return;
+                searchHashtags(hashtag);
+            } else {
+                searchUsers(query);
+            }
         }
-    })
-    .catch(err => console.error(err));
-});
 
-});
-</script>
+        function searchUsers(query) {
+            fetch(`/search/users?q=${encodeURIComponent(query)}`)
+                .then(r => r.json())
+                .then(users => displayUserResults(users))
+                .catch(() => showError("Error searching users."));
+        }
 
+        function searchHashtags(text) {
+            fetch(`/search/hashtags?q=${encodeURIComponent(text)}`)
+                .then(r => r.json())
+                .then(tags => displayHashtagResults(tags))
+                .catch(() => showError("Error searching hashtags."));
+        }
 
+        function displayUserResults(users) {
+            searchResults.innerHTML = '';
+            if (!users.length) {
+                searchResults.innerHTML = "<div style='padding: 10px; text-align: center; color: #8e8e8e;'>No users found</div>";
+                return;
+            }
+            users.forEach(user => {
+                const div = document.createElement('div');
+                div.className = 'search-result';
+                const pic = user.photo ? `/uploads/profile/${user.photo}` : '/uploads/default_dp.jpg';
+                div.innerHTML = `
+                    <img src="${pic}" alt="${user.user_name}" onerror="this.src='/uploads/default_dp.jpg'">
+                    <div>
+                        <strong>${user.user_name}</strong>
+                        <div style="font-size: 12px; color: #8e8e8e;">${user.first_name} ${user.last_name}</div>
+                    </div>
+                `;
+                div.addEventListener('click', () => {
+                    fetch(`/follow/status/${user.user_id}`)
+                        .then(r => r.json())
+                        .then(data => {
+                            const url = (data.privacy === "PUBLIC" || data.isFollowing)
+                                ? `/profile/${user.user_id}`
+                                : `/user/${user.user_id}`;
+                            window.location.href = url;
+                        })
+                        .catch(() => window.location.href = `/user/${user.user_id}`);
+                });
+                searchResults.appendChild(div);
+            });
+        }
 
+        function displayHashtagResults(tags) {
+            searchResults.innerHTML = '';
+            if (!tags.length) {
+                searchResults.innerHTML = "<div style='padding: 10px; text-align: center; color: #8e8e8e;'>No hashtags found</div>";
+                return;
+            }
+            tags.forEach(tag => {
+                const div = document.createElement('div');
+                div.className = 'search-result';
+                div.innerHTML = `<div style="padding:8px;"><strong>#${tag.text}</strong><div style="font-size:12px;color:#8e8e8e;">${tag.post_count} post${tag.post_count > 1 ? 's' : ''}</div></div>`;
+                div.addEventListener('click', () => window.location.href = `/hashtag/${tag.text}`);
+                searchResults.appendChild(div);
+            });
+        }
+
+        function showError(msg) {
+            searchResults.innerHTML = `<div style='padding:10px;text-align:center;color:#8e8e8e;'>${msg}</div>`;
+        }
+
+        // Media Scroll
+        function scrollMedia(direction) {
+            const scrollBox = document.getElementById("mediaScroll");
+            const itemWidth = scrollBox.clientWidth;
+            scrollBox.scrollBy({ left: direction * itemWidth, behavior: "smooth" });
+        }
+
+        // Create Modal
+        createPostBtn.addEventListener('click', () => {
+            createModal.style.display = 'flex';
+        });
+
+        postOption.addEventListener('click', () => {
+            createModal.style.display = 'none';
+            uploadModal.style.display = 'flex';
+        });
+
+        photoUpload.addEventListener('change', (e) => {
+            const files = e.target.files;
+            previewContainer.innerHTML = '';
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    const img = document.createElement('img');
+                    img.src = ev.target.result;
+                    previewContainer.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        // Close modals on outside click
+        document.addEventListener('click', e => {
+            if (e.target === createModal) createModal.style.display = 'none';
+            if (e.target === uploadModal) {
+                uploadModal.style.display = 'none';
+                previewContainer.innerHTML = '';
+                photoUpload.value = '';
+            }
+        });
+
+        // Active state for current page
+        document.querySelectorAll('.sidebar-item a').forEach(link => {
+            if (link.getAttribute('th:href') && window.location.pathname === link.getAttribute('th:href').replace('@{', '').replace('}', '')) {
+                link.closest('.sidebar-item').classList.add('active');
+            }
+        });
+    </script>
 </body>
 </html>
