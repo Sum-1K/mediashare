@@ -95,7 +95,6 @@ for (List<Object[]> userStoryList : storiesByUser.values()) {
 }
 
 model.addAttribute("followingStories", followingStories);
-
         logger.info("Following Users for {} (ID: {}): {}", currentUser.getUser_name(), currentUser.getUser_id(), followingUsers);
         logger.info("Following Stories for {} (ID: {}): {}", currentUser.getUser_name(), currentUser.getUser_id(), followingStories);
 

@@ -580,18 +580,24 @@ function showStory(index) {
   storyUsername.textContent = story.userName;
   overlay.style.display = 'flex';
 
-  if (story.mediaFile.endsWith('.mp4')) {
-    storyVideo.src = story.mediaFile;
-    storyVideo.style.display = 'block';
-    storyImage.style.display = 'none';
-    storyVideo.play();
-  } else {
-    storyImage.src = story.mediaFile;
-    storyImage.style.display = 'block';
-    storyVideo.style.display = 'none';
-    storyVideo.pause();
-    storyVideo.src = '';
-  }
+   // ✅ Ensure full URL for media
+  const mediaUrl = story.mediaFile.startsWith('/uploads/')
+    ? story.mediaFile
+    : '/uploads/' + story.mediaFile;
+
+if (story.mediaFile.toLowerCase().endsWith('.mp4')) {
+  storyVideo.src = mediaUrl;
+  storyVideo.style.display = 'block';
+  storyImage.style.display = 'none';
+  storyVideo.load(); // Important for video
+  storyVideo.play().catch(() => {});
+} else {
+  storyImage.src = mediaUrl;
+  storyImage.style.display = 'block';
+  storyVideo.style.display = 'none';
+  storyVideo.pause();
+  storyVideo.src = '';
+}
 
   // ✅ Update button label based on current archive status
   fetch(`/stories/status/${story.storyId}`)
@@ -604,6 +610,9 @@ function showStory(index) {
       toggleArchiveBtn.textContent = 'Archive';
       toggleArchiveBtn.dataset.archived = 'false';
     });
+
+    // ✅ Update like count
+  updateStoryLikeCount(story.storyId);
 }
 
 // ✅ Toggle archive/unarchive
@@ -646,17 +655,8 @@ function updateStoryLikeCount(storyId) {
     .catch(err => console.error('Error fetching like count:', err));
 }
 
-// ✅ Extend showStory() to refresh like count too
-function showStory(index) {
-  // existing code inside your function stays same...
-  const story = currentUserStories[index];
-  currentStory = story;
 
-  // ✅ Update like count each time a story is opened
-  updateStoryLikeCount(story.storyId);
 
-  // (no other change needed here)
-}
 
 // ✅ Handle like button click
 storyLikeBtn.addEventListener('click', () => {

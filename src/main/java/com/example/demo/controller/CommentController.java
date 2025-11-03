@@ -148,5 +148,4 @@ public java.util.Map<String, Object> addStoryComment(
     return response;
 }
 
-    
 }
