@@ -403,14 +403,33 @@ input:checked + .slider:before { transform:translateX(26px); }
             </form>
         </div>
 
-        <!-- Username Update -->
-        <div class="setting-item username-section">
-            <span class="setting-label">Username</span>
-            <div class="username-actions">
-                <input type="text" id="usernameInput" placeholder="Enter new username" class="username-input">
-                <button class="save-btn" onclick="saveUsername()">Update</button>
-            </div>
-        </div>
+       <!-- Username Update -->
+<div class="setting-item username-section">
+    <span class="setting-label">Username</span>
+    <div class="username-actions">
+        <input type="text"
+               id="usernameInput"
+               class="username-input"
+               placeholder="Enter new username"
+               th:value="${user.user_name}">
+        <button class="save-btn" onclick="saveUsername()">Update</button>
+    </div>
+</div>
+
+<!-- Bio Update -->
+<div class="setting-item bio-section">
+    <span class="setting-label">Bio</span>
+    <div class="bio-actions">
+        <textarea id="bioInput"
+                  class="username-input"
+                  placeholder="Write your bio..."
+                  rows="3"
+                  th:text="${user.bio}"></textarea>
+        <button class="save-btn" onclick="saveBio()">Update</button>
+    </div>
+</div>
+
+
 
         <div class="setting-item">
             <span class="setting-label">Saved</span>
@@ -699,6 +718,56 @@ document.querySelectorAll('input[name="privacy"]').forEach(radio => {
         .catch(err => console.error('Privacy update failed:', err));
     });
 });
+
+function saveUsername() {
+    const username = document.getElementById('usernameInput').value.trim();
+    const bio = document.getElementById('bioInput').value.trim(); // Keep bio unchanged
+
+    if (!username) {
+        alert("Username cannot be empty!");
+        return;
+    }
+
+    fetch('/settings/updateProfile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `username=${encodeURIComponent(username)}&bio=${encodeURIComponent(bio)}`
+    })
+    .then(response => response.text())
+    .then(result => {
+        if (result === 'SUCCESS') {
+            window.location.href = '/profile'; // ✅ redirect to profile
+        } else if (result === 'NOT_LOGGED_IN') {
+            window.location.href = '/login';
+        } else {
+            alert('Error updating profile.');
+        }
+    })
+    .catch(error => console.error('Update failed:', error));
+}
+
+function saveBio() {
+    const username = document.getElementById('usernameInput').value.trim(); // Keep username unchanged
+    const bio = document.getElementById('bioInput').value.trim();
+
+    fetch('/settings/updateProfile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `username=${encodeURIComponent(username)}&bio=${encodeURIComponent(bio)}`
+    })
+    .then(response => response.text())
+    .then(result => {
+        if (result === 'SUCCESS') {
+            window.location.href = '/profile'; // ✅ redirect to profile
+        } else if (result === 'NOT_LOGGED_IN') {
+            window.location.href = '/login';
+        } else {
+            alert('Error updating profile.');
+        }
+    })
+    .catch(error => console.error('Update failed:', error));
+}
+
     </script>
     <!-- ====================== JAVASCRIPT ====================== -->
     <script>

@@ -209,4 +209,28 @@ public String getCurrentTheme(HttpSession session) {
     }
     return "light"; // default theme
 }
+
+@PostMapping("/updateProfile")
+@ResponseBody
+public String updateProfileSettings(@RequestParam("username") String username,
+                                    @RequestParam("bio") String bio,
+                                    HttpSession session) {
+    User currentUser = (User) session.getAttribute("loggedInUser");
+    if (currentUser == null) {
+        return "NOT_LOGGED_IN";
+    }
+
+    // Update fields
+    currentUser.setUser_name(username);
+    currentUser.setBio(bio);
+
+    // Persist to DB
+    userDao.updateUser(currentUser);
+
+    // Refresh session data
+    session.setAttribute("loggedInUser", currentUser);
+    session.setAttribute("user", currentUser);
+
+    return "SUCCESS";
+}
 }

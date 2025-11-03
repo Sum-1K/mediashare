@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.demo.dao.FollowDao;
 import com.example.demo.dao.FollowRequestDao;
@@ -325,6 +326,36 @@ public String removeCloseFriend(@PathVariable Long userId, HttpSession session) 
     }
     return "redirect:/followers/" + currentUser.getUser_id();
 }
+
+
+@GetMapping("/edit-profile")
+    public String showEditProfile(Model model, HttpSession session) {
+        // Suppose user ID is stored in session after login
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
+        User user = userDao.findById(userId);
+        model.addAttribute("user", user);
+        return "edit_profile";
+    }
+
+    @PostMapping("/edit-profile")
+    public String updateProfile(@ModelAttribute("user") User user, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
+        user.setUser_id(userId); // ensure the logged-in user is updated
+        userDao.updateUser(user);
+
+        session.setAttribute("username", user.getUser_name()); // update session if needed
+        return "redirect:/profile"; // redirect to profile page
+    }
+
+    
 
 
 }

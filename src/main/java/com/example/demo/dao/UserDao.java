@@ -191,4 +191,9 @@ public List<User> searchPublicUsers(String query) {
         return jdbcTemplate.query(sql, getRowMapper(), "%" + query + "%");
     }
 
+    public void updateUser(User user) {
+        String sql = "UPDATE users SET user_name = ?, bio = ? WHERE user_id = ?";
+        jdbcTemplate.update(sql, user.getUser_name(), user.getBio(), user.getUser_id());
+    }
+
 }
