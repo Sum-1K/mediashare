@@ -18,11 +18,15 @@ import java.util.List;
 import java.time.LocalDateTime;
 import java.sql.Timestamp;
 import java.sql.Statement;
+import org.springframework.beans.factory.annotation.Value;
 
 
 @Repository
 public class ChatDao extends BaseDao<Chat, Long> {
     private final UserDao userDao;
+
+    @Value("${CHAT_ENCRYPTION_KEY}")
+    private String encryptionKey;
 
     public ChatDao(UserDao userDao) { // ✅ inject both
         this.userDao = userDao;
@@ -84,15 +88,17 @@ public class ChatDao extends BaseDao<Chat, Long> {
     }
 
     public Long saveMessage(Long senderId, Long receiverId, String text, Long repliedToId) {
-        String sql = "INSERT INTO chats (seen, message, sent_at, sender_id, receiver_id, replied_to_id) VALUES (FALSE, ?, NOW(), ?, ?, ?) RETURNING chat_id";
-        return jdbcTemplate.queryForObject(sql, Long.class, text, senderId, receiverId, repliedToId);
+        String sql = "INSERT INTO chats (seen, message_enc, sent_at, sender_id, receiver_id, replied_to_id) VALUES (FALSE, pgp_sym_encrypt(?, ?), NOW(), ?, ?, ?) RETURNING chat_id";
+        return jdbcTemplate.queryForObject(sql, Long.class, text,
+            encryptionKey, senderId, receiverId, repliedToId);
     }
 
     public Chat saveAndReturn(Chat chat) {
-        String sql = "INSERT INTO chats (seen, message, sent_at, sender_id, receiver_id, replied_to_id) VALUES (FALSE, ?, NOW(), ?, ?, ?) RETURNING chat_id";
+        String sql = "INSERT INTO chats (seen, message, message_enc, sent_at, sender_id, receiver_id, replied_to_id) VALUES (FALSE, '[ENCRYPTED]', pgp_sym_encrypt(?, ?), NOW(), ?, ?, ?) RETURNING chat_id";
         
         Long chatId = jdbcTemplate.queryForObject(sql, Long.class, 
             chat.getMessage(), 
+            encryptionKey,
             chat.getSender_id(), 
             chat.getReceiver_id(), 
             chat.getReplied_to_id()
@@ -104,7 +110,7 @@ public class ChatDao extends BaseDao<Chat, Long> {
 
     public List<ChatMessage> findMessagesBetweenWithMedia(Long user1, Long user2) {
     String sql = """
-        SELECT c.chat_id, c.seen, c.message, c.sent_at, c.sender_id, c.receiver_id, c.replied_to_id, m.file_url, m.file_type
+        SELECT c.chat_id, c.seen, pgp_sym_decrypt(c.message_enc::bytea, ?) AS message, c.sent_at, c.sender_id, c.receiver_id, c.replied_to_id, m.file_url, m.file_type
         FROM chats c
         LEFT JOIN chat_media m ON m.chat_id = c.chat_id
         WHERE (c.sender_id = ? AND c.receiver_id = ?)
@@ -112,7 +118,7 @@ public class ChatDao extends BaseDao<Chat, Long> {
         ORDER BY c.sent_at ASC
     """;
 
-    return jdbcTemplate.query(sql, new Object[]{user1, user2, user2, user1}, (rs, rowNum) -> {
+    return jdbcTemplate.query(sql, new Object[]{encryptionKey, user1, user2, user2, user1}, (rs, rowNum) -> {
         ChatMessage msg = new ChatMessage();
         msg.setSenderId(rs.getLong("sender_id"));
         msg.setReceiverId(rs.getLong("receiver_id"));
