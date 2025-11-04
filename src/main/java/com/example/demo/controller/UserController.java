@@ -68,34 +68,6 @@ public class UserController {
     }
 
     // ✅ Handle registration (form submission)
-    @PostMapping("/register")
-    public String registerUser(@ModelAttribute User user, @RequestParam("confirmPassword") String confirmPassword, Model model) {
-        System.out.println("Received user: " + user);
-        System.out.println("Received password: " + user.getPassword());
-        if (!user.getPassword().equals(confirmPassword)) {
-            model.addAttribute("error", "Passwords do not match");
-            return "signup"; // your signup page
-        }
-
-        if (user.getUser_name() == null || user.getPassword() == null || user.getEmail() == null) {
-            model.addAttribute("error", "All fields are required");
-            return "signup";
-        }
-
-        if (userDao.existsByEmail(user.getEmail())) {
-            model.addAttribute("error", "Email already exists");
-            return "signup";
-        }
-
-        String hashed = passwordEncoder.encode(user.getPassword());
-        user.setPassword(hashed);
-        if (user.getJoin_date() == null) {
-            user.setJoin_date(LocalDateTime.now());
-        }
-
-        userDao.save(user);
-        return "redirect:/users/login"; // ✅ go to login page after successful signup
-    }
 
     // ✅ Show login page
     @GetMapping("/users/login")
