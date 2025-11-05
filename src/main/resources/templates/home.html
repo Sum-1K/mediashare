@@ -963,11 +963,9 @@ body.search-open .main-content {
         <span>Search</span>
       </a>
     </div>
-    <div class="sidebar-item" id="create-post">
-      <a href="javascript:void(0);">
-        <i class="fa-solid fa-circle-plus"></i>
-        <span>Create</span>
-      </a>
+    <div class="nav-item" id="create-btn">
+      <i class="fa-solid fa-circle-plus"></i>
+      <span>Create</span>
     </div>
     <div class="sidebar-item">
       <a th:href="@{/chat}">
@@ -1223,7 +1221,7 @@ body.search-open .main-content {
         <i class="fa-solid fa-magnifying-glass"></i>
         <span>Search</span>
       </div>
-      <div class="nav-item">
+      <div class="nav-item" id = "create-btn">
         <i class="fa-solid fa-circle-plus"></i>
         <span>Create</span>
       </div>
@@ -1412,6 +1410,19 @@ body.search-open .main-content {
 
       updateCarousel();
     });
+
+    document.addEventListener("DOMContentLoaded", () => {
+    // Existing code...
+
+    // ✅ Redirect to profile page when Create button is clicked
+    const createBtn = document.getElementById("create-btn");
+
+    if (createBtn) {
+        createBtn.addEventListener("click", () => {
+            window.location.href = "/profile";
+        });
+    }
+});
 
     // Comment popup toggle
     commentBtns.forEach(btn => {

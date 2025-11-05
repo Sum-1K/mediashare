@@ -742,5 +742,54 @@ form button:hover {
             }
         });
     </script>
+
+<script th:inline="javascript">
+document.addEventListener("DOMContentLoaded", () => {
+    const saveBtn = document.getElementById("saveBtn");
+    const postId = /*[[${post.postId}]]*/ '0';
+    console.log("Post ID:", postId);
+
+    // ✅ Step 1: Check current save status
+    fetch(`/saved/status?postId=${postId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.saved) {
+                saveBtn.textContent = "✅ Saved";
+            } else {
+                saveBtn.textContent = "💾 Save";
+            }
+
+            // ✅ Step 2: Toggle save/unsave
+            saveBtn.addEventListener("click", () => {
+                const isSaved = saveBtn.textContent === "✅ Saved";
+                const action = isSaved ? "unsave" : "save";
+
+                fetch(`/saved/${action}/${postId}`, {
+                    method: "POST"
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        if (action === "save") {
+                            saveBtn.textContent = "✅ Saved";
+                        } else {
+                            saveBtn.textContent = "💾 Save";
+                        }
+                        // Redirect to saved posts to see updated list (for both actions)
+                        window.location.href = "/saved/my";
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(err => console.error(err));
+            });
+        })
+        .catch(err => console.error(err));
+});
+</script>
+
+
+
+
 </body>
 </html>
