@@ -946,6 +946,36 @@ body.search-open .main-content {
 [data-theme="dark"] body {
   background-color: var(--bg-color);
 }
+
+#create-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: #262626;
+  font-size: 0.8rem;
+  transition: color 0.2s;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+#create-btn:hover {
+  color: #000;
+  background-color: #fafafa;
+}
+
+#create-btn i {
+  font-size: 1.5rem;
+  margin-bottom: 4px;
+}
+
+#create-btn span {
+  font-weight: 400;
+  text-transform: capitalize;
+  text-align: center;
+}
+
   </style>
 </head>
 <body th:attr="data-theme=${userTheme}" data-theme="light">
@@ -963,7 +993,7 @@ body.search-open .main-content {
         <span>Search</span>
       </a>
     </div>
-    <div class="nav-item" id="create-btn">
+    <div class="sidebar-item" id="create-btn">
       <i class="fa-solid fa-circle-plus"></i>
       <span>Create</span>
     </div>

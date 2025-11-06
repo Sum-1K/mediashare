@@ -127,7 +127,10 @@
         .stat { margin-right: 40px; font-size: 16px; }
         .stat span { font-weight: 600; }
         .bio { font-size: 16px; line-height: 24px; }
-        .posts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+        .posts-grid { display: grid; 
+            /* grid-template-columns: repeat(3, 1fr);  */
+            background-repeat: no-repeat;
+            gap: 28px; }
         .post { width: 100%; padding-top: 100%; position: relative; background-color: #fff; border: 1px solid #dbdbdb; }
         .post img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
         
@@ -215,7 +218,10 @@
             .container.with-search { margin-left: 60px; }
             .profile-header { flex-direction: column; align-items: flex-start; }
             .profile-pic { margin: 0 auto 20px; width: 100px; height: 100px; }
-            .posts-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .posts-grid { 
+                background-repeat: no-repeat;
+                /* grid-template-columns: repeat(2, 1fr); */
+                 gap: 10px; }
             .upload-modal-content { width: 90%; height: 80%; flex-direction: column; }
             .upload-preview { width: 100%; height: 50%; }
             .upload-caption { width: 100%; height: 50%; }
@@ -233,7 +239,8 @@
 
         .reel-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    /* grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); */
+    background-repeat: no-repeat;
     gap: 8px; /* reduced spacing between reels */
     margin-top: 10px;
 }
